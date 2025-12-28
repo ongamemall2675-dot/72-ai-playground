@@ -1130,6 +1130,7 @@ function getRAGManagementHTML() {
 }
 
 // 탭별 HTML 생성 함수들
+// 탭별 HTML 생성 함수들
 const RAGTabs = {
     dashboard: (stats) => `
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 animate-fade-in">
@@ -1182,7 +1183,7 @@ const RAGTabs = {
     `,
 
     documents: (docs) => `
-        <div class="bg-white dark:bg-surface-dark rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-fade-in">
+        <div class="bg-white dark:bg-surface-dark rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-fade-in relative">
             <div class="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
                 <h3 class="font-bold text-slate-900 dark:text-white">문서 목록</h3>
                 <button id="refreshDocsBtn" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors">
@@ -1195,6 +1196,7 @@ const RAGTabs = {
                     <thead class="bg-slate-50 dark:bg-slate-800/50">
                         <tr>
                             <th class="p-4 text-xs font-bold text-slate-500 uppercase">파일명</th>
+                            <th class="p-4 text-xs font-bold text-slate-500 uppercase">카테고리</th>
                             <th class="p-4 text-xs font-bold text-slate-500 uppercase">타입</th>
                             <th class="p-4 text-xs font-bold text-slate-500 uppercase">크기</th>
                             <th class="p-4 text-xs font-bold text-slate-500 uppercase">업로드 날짜</th>
@@ -1204,17 +1206,29 @@ const RAGTabs = {
                     <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
                         ${docs.map(doc => `
                             <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-                                <td class="p-4 font-medium text-slate-900 dark:text-white flex items-center gap-3">
-                                    <span class="material-symbols-outlined text-slate-400">description</span>
-                                    ${doc.filename || doc.name || 'Untitled'}
+                                <td class="p-4 font-medium text-slate-900 dark:text-white">
+                                    <div class="flex items-center gap-3">
+                                        <span class="material-symbols-outlined text-slate-400">description</span>
+                                        ${doc.filename || doc.name || 'Untitled'}
+                                    </div>
+                                </td>
+                                <td class="p-4">
+                                    <span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-600">
+                                        ${doc.category || 'General'}
+                                    </span>
                                 </td>
                                 <td class="p-4 text-sm text-slate-500">${doc.content_type || 'text/plain'}</td>
                                 <td class="p-4 text-sm text-slate-500">${doc.size ? (doc.size / 1024).toFixed(1) + ' KB' : '-'}</td>
                                 <td class="p-4 text-sm text-slate-500">${new Date(doc.created_at || Date.now()).toLocaleDateString()}</td>
                                 <td class="p-4 text-right">
-                                    <button class="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded-lg transition-colors" onclick="alert('삭제 기능 준비 중')">
-                                        <span class="material-symbols-outlined">delete</span>
-                                    </button>
+                                    <div class="flex justify-end gap-2">
+                                        <button class="view-chunks-btn p-1.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-slate-400 hover:text-indigo-500 transition-colors" data-id="${doc.id}" data-filename="${doc.filename}" title="청크 보기">
+                                            <span class="material-symbols-outlined text-lg">segment</span>
+                                        </button>
+                                        <button class="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 p-1.5 rounded-lg transition-colors" onclick="alert('삭제 기능 준비 중')" title="삭제">
+                                            <span class="material-symbols-outlined text-lg">delete</span>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         `).join('')}
@@ -1230,11 +1244,52 @@ const RAGTabs = {
                 </div>
             `}
         </div>
+
+        <!-- 청크 뷰어 모달 -->
+        <div id="chunkViewerModal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm hidden animate-fade-in">
+            <div class="w-full max-w-4xl h-[80vh] bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl flex flex-col mx-4 overflow-hidden">
+                <div class="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+                    <div>
+                        <h3 id="chunkViewerTitle" class="text-lg font-bold text-slate-900 dark:text-white">문서 청크 상세</h3>
+                        <p class="text-xs text-slate-500 mt-0.5">문서가 분할되어 저장된 내용을 확인합니다.</p>
+                    </div>
+                    <button onclick="document.getElementById('chunkViewerModal').classList.add('hidden')" class="p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 transition-colors">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+                <div id="chunkViewerContent" class="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50/30 dark:bg-black/20">
+                    <!-- 청크 내용이 여기에 로드됨 -->
+                </div>
+                <div class="p-4 border-t border-slate-100 dark:border-slate-700 bg-white dark:bg-surface-dark flex justify-between items-center text-xs text-slate-500">
+                    <span>Embedding: OpenAI text-embedding-3-small</span>
+                    <span>Total Chunks: <span id="chunkCount">0</span></span>
+                </div>
+            </div>
+        </div>
     `,
 
     upload: () => `
         <div class="max-w-2xl mx-auto animate-fade-in">
             <div class="bg-white dark:bg-surface-dark rounded-2xl border border-slate-200 dark:border-slate-700 p-8 text-center">
+                
+                <!-- 카테고리 선택 영역 -->
+                <div class="mb-6 text-left">
+                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">문서 카테고리</label>
+                    <div class="relative">
+                        <select id="uploadCategory" class="w-full appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm rounded-xl px-4 py-3 pr-10 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all cursor-pointer">
+                            <option value="general">일반 문서 (General)</option>
+                            <option value="policy">부동산 정책 (Policy)</option>
+                            <option value="market">시세/매물 데이터 (Market Data)</option>
+                            <option value="law">법률/세금 가이드 (Law & Tax)</option>
+                            <option value="manual">상담 매뉴얼 (Manual)</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-500">
+                            <span class="material-symbols-outlined">expand_more</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-1.5 ml-1">※ 올바른 카테고리를 선택하면 검색 정확도가 높아집니다.</p>
+                </div>
+
                 <div id="dropZone" class="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-2xl p-12 transition-colors hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 cursor-pointer">
                     <input type="file" id="fileInput" class="hidden" multiple accept=".txt,.pdf,.md,.csv">
                     <div class="w-20 h-20 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto mb-6">
@@ -1250,7 +1305,6 @@ const RAGTabs = {
                 <!-- 업로드 목록 -->
                 <div id="uploadList" class="mt-8 space-y-3 hidden">
                     <h4 class="text-left text-sm font-bold text-slate-500 mb-3">업로드 대기 중인 파일</h4>
-                    <!-- 파일 아이템들이 여기에 추가됨 -->
                 </div>
 
                 <button id="startUploadBtn" class="w-full mt-8 py-4 bg-slate-200 text-slate-400 rounded-xl font-bold cursor-not-allowed transition-all" disabled>
@@ -1426,14 +1480,21 @@ async function loadDocumentsList() {
 
         // 임시 데이터
         const docs = [
-            { id: 1, filename: '2024_부동산_정책_요약.pdf', content_type: 'application/pdf', size: 1024000, created_at: '2025-12-20' },
-            { id: 2, filename: '서울시_아파트_시세_데이터.csv', content_type: 'text/csv', size: 512000, created_at: '2025-12-22' },
-            { id: 3, filename: '중개실무_가이드라인_v2.txt', content_type: 'text/plain', size: 24000, created_at: '2025-12-24' }
+            { id: 1, filename: '2024_부동산_정책_요약.pdf', category: 'policy', content_type: 'application/pdf', size: 1024000, created_at: '2025-12-20' },
+            { id: 2, filename: '서울시_아파트_시세_데이터.csv', category: 'market', content_type: 'text/csv', size: 512000, created_at: '2025-12-22' },
+            { id: 3, filename: '중개실무_가이드라인_v2.txt', category: 'manual', content_type: 'text/plain', size: 24000, created_at: '2025-12-24' }
         ];
 
         document.getElementById('ragTabContent').innerHTML = RAGTabs.documents(docs);
 
         document.getElementById('refreshDocsBtn')?.addEventListener('click', loadDocumentsList);
+
+        // 청크 보기 버튼 리스너
+        document.querySelectorAll('.view-chunks-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                showChunkViewer(btn.dataset.filename, btn.dataset.id);
+            });
+        });
     } catch (e) {
         document.getElementById('ragTabContent').innerHTML = '<div class="text-red-500 p-8 text-center">문서 목록을 불러오는데 실패했습니다.</div>';
     }
@@ -1586,4 +1647,43 @@ function performSearch() {
             </div>
         `;
     }, 1500);
+}
+
+function showChunkViewer(filename, docId) {
+    const modal = document.getElementById('chunkViewerModal');
+    const title = document.getElementById('chunkViewerTitle');
+    const content = document.getElementById('chunkViewerContent');
+    const countSpan = document.getElementById('chunkCount');
+
+    if (!modal) return;
+
+    title.textContent = `문서 청크: ${filename}`;
+    modal.classList.remove('hidden');
+    content.innerHTML = '<div class="flex justify-center p-12"><div class="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div></div>';
+
+    // 모의 청크 데이터 로드
+    setTimeout(() => {
+        const mockChunks = Array.from({ length: 5 }, (_, i) => ({
+            id: i + 1,
+            content: `[Chunk ${i + 1}] 이것은 "${filename}" 문서에서 추출된 ${i + 1}번째 텍스트 조각입니다. RAG 시스템은 문서를 이러한 작은 단위로 쪼개어(Chunking) 벡터 데이터베이스에 저장합니다. 검색 시 이 조각들과의 유사도를 비교하여 가장 관련성 높은 내용을 가져옵니다. 실제 데이터가 연동되면 여기에 원본 텍스트가 표시됩니다. \n\n(Vector Dimensions: 1536, Embedding Model: text-embedding-3-small)`,
+            token_count: 150 + Math.floor(Math.random() * 50)
+        }));
+
+        countSpan.textContent = mockChunks.length;
+
+        content.innerHTML = mockChunks.map(chunk => `
+            <div class="bg-white dark:bg-surface-dark p-5 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors">
+                <div class="flex justify-between items-center mb-3">
+                    <span class="text-xs font-bold text-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 rounded">Chunk #${chunk.id}</span>
+                    <div class="flex items-center gap-3">
+                        <span class="text-xs text-slate-400 font-mono">tokens: ${chunk.token_count}</span>
+                        <button class="text-slate-400 hover:text-indigo-500 transition-colors" title="Copy Text" onclick="navigator.clipboard.writeText(this.parentElement.parentElement.nextElementSibling.textContent); alert('복사되었습니다.');">
+                            <span class="material-symbols-outlined text-sm">content_copy</span>
+                        </button>
+                    </div>
+                </div>
+                <p class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-mono whitespace-pre-wrap">${chunk.content}</p>
+            </div>
+        `).join('');
+    }, 500);
 }
