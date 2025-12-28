@@ -32,6 +32,90 @@ function saveUsers(users) {
     localStorage.setItem('aiRealtorUsers', JSON.stringify(users));
 }
 
+// =============================================
+// 앱 레지스트리 (App Store & Custom Apps)
+// =============================================
+
+const SYSTEM_APPS = [
+    {
+        id: 'app-builder',
+        title: '새 도구 만들기',
+        description: 'n8n Webhook과 연동되는 나만의 AI 도구를 만듭니다.',
+        icon: 'build_circle',
+        color: 'indigo',
+        type: 'system-builder',
+        inputs: []
+    },
+    {
+        id: 'new-workflow',
+        title: 'n8n JSON 생성',
+        description: 'n8n 워크플로우 JSON 코드를 생성해줍니다.',
+        icon: 'hub',
+        color: 'rose',
+        type: 'system-generator',
+        inputs: [
+            { id: 'prompt', type: 'textarea', label: '워크플로우 설명', placeholder: '예: 고객 문의 자동 응답' }
+        ]
+    },
+    {
+        id: 'rag-management',
+        title: 'RAG 지식 관리',
+        description: '지식 데이터베이스 및 문서를 관리합니다.',
+        icon: 'database',
+        color: 'emerald',
+        type: 'system-link',
+        targetPage: 'rag-management'
+    },
+    {
+        id: 'prompt-wizard',
+        title: '프롬프트 마법사',
+        description: '복잡한 프롬프트를 AI가 알기 쉽게 최적화해줍니다.',
+        icon: 'magic_button',
+        color: 'violet',
+        type: 'mock',
+        inputs: [{ id: 'input', type: 'textarea', label: '프롬프트 입력', placeholder: '최적화할 프롬프트 내용을 입력하세요.' }]
+    },
+    {
+        id: 'property-script',
+        title: '부동산 매물 대본',
+        description: '매물 정보를 입력하면 유튜브/블로그용 대본을 작성합니다.',
+        icon: 'description',
+        color: 'blue',
+        type: 'mock',
+        inputs: [{ id: 'input', type: 'textarea', label: '매물 정보', placeholder: '위치, 가격, 특징 등을 입력하세요.' }]
+    }
+];
+
+function getApps() {
+    const customApps = JSON.parse(localStorage.getItem('aiRealtorCustomApps') || '[]');
+    const systemIds = new Set(SYSTEM_APPS.map(a => a.id));
+    return [...SYSTEM_APPS, ...customApps.filter(a => !systemIds.has(a.id))];
+}
+
+function findApp(appId) {
+    return getApps().find(a => a.id === appId);
+}
+
+function registerCustomApp(appData) {
+    const customApps = JSON.parse(localStorage.getItem('aiRealtorCustomApps') || '[]');
+    const newApp = {
+        ...appData,
+        id: `custom-${Date.now()}`,
+        type: 'webhook',
+        color: 'cyan',
+        createdAt: new Date().toISOString()
+    };
+    customApps.push(newApp);
+    localStorage.setItem('aiRealtorCustomApps', JSON.stringify(customApps));
+    return newApp;
+}
+
+function deleteCustomApp(appId) {
+    let customApps = JSON.parse(localStorage.getItem('aiRealtorCustomApps') || '[]');
+    customApps = customApps.filter(a => a.id !== appId);
+    localStorage.setItem('aiRealtorCustomApps', JSON.stringify(customApps));
+}
+
 function findUser(id) {
     const users = getUsers();
     return users.find(u => u.id === id);
@@ -445,6 +529,17 @@ function getDashboardHTML() {
     `;
 
     // n8n 워크플로우 섹션 HTML
+    // 동적으로 시스템 앱과 커스텀 앱 로드
+    const allApps = getApps();
+    const builderApp = findApp('app-builder');
+    const generatorApp = findApp('new-workflow');
+
+    // 커스텀 앱 목록 (타입이 webhook 인 것들)
+    const customAppsHTML = allApps
+        .filter(a => a.type === 'webhook')
+        .map(a => getAppCard(a.title, a.description, a.icon || 'smart_toy', a.color || 'blue', a.id))
+        .join('');
+
     const n8nWorkflowSection = `
         <!-- n8n 워크플로우 섹션 -->
         <section class="mb-20 animate-fade-in" id="n8n-workflow">
@@ -453,16 +548,19 @@ function getDashboardHTML() {
                     <span class="material-symbols-outlined text-2xl">hub</span>
                 </div>
                 <div>
-                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white">n8n 워크플로우 연결</h2>
-                    <a class="inline-flex items-center gap-1 text-sm text-purple-600 dark:text-purple-400 hover:underline" href="https://n8n.hyehwa72.org" target="_blank">
-                        n8n.hyehwa72.org <span class="material-symbols-outlined text-[14px]">open_in_new</span>
-                    </a>
+                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white">나만의 AI 도구 & 워크플로우</h2>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">n8n과 연동된 커스텀 도구를 만들고 사용합니다.</p>
                 </div>
                 <div class="hidden sm:block h-px flex-1 bg-gradient-to-r from-slate-200 to-transparent dark:from-slate-800 ml-8"></div>
             </div>
+            
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-                ${getAppCard('내 워크플로우 목록', '현재 연결된 모든 n8n 자동화 워크플로우의 상태와 목록을 확인합니다.', 'account_tree', 'purple', 'workflow-list')}
-                ${getAppCard('새 워크플로우 생성', '새로운 자동화 작업을 시작하기 위한 빈 워크플로우를 생성합니다.', 'add_circle', 'purple', 'new-workflow')}
+                <!-- 시스템 도구 -->
+                ${builderApp ? getAppCard(builderApp.title, builderApp.description, builderApp.icon, builderApp.color, builderApp.id) : ''}
+                ${generatorApp ? getAppCard(generatorApp.title, generatorApp.description, generatorApp.icon, generatorApp.color, generatorApp.id) : ''}
+                
+                <!-- 사용자가 만든 커스텀 도구들 -->
+                ${customAppsHTML}
             </div>
         </section>
     `;
@@ -588,24 +686,10 @@ function launchApp(appId) {
 
 // 로딩 표시
 function showLoading(appId) {
-    const appNames = {
-        'prompt-wizard': '프롬프트 마법사',
-        'instruction-optimizer': '지침 최적화 도구',
-        'persona-generator': 'Persona 생성기',
-        'property-script': '부동산 매물 대본',
-        'briefing-script': '브리핑 대본',
-        'notice-script': '공지사항 대본',
-        'image-idea': '이미지 아이디어',
-        'video-storyboard': '영상 스토리보드',
-        'thumbnail-concept': '썸네일 컨셉',
-        'youtube-seo': '유튜브 SEO',
-        'insta-hashtag': '인스타 해시태그',
-        'tiktok-trend': '틱톡 트렌드',
-        'workflow-list': '내 워크플로우 목록',
-        'new-workflow': '새 워크플로우 생성'
-    };
+    const app = findApp(appId);
+    const appTitle = app ? app.title : '앱 실행 중';
 
-    document.getElementById('loadingTitle').textContent = appNames[appId] || '앱 실행 중';
+    document.getElementById('loadingTitle').textContent = appTitle;
     document.getElementById('loadingDesc').textContent = '백엔드 서버에 연결하는 중...';
     document.getElementById('loadingStep').textContent = '초기화 중...';
     document.getElementById('loadingPercent').textContent = '0%';
@@ -637,22 +721,32 @@ function showAppPage(appId) {
 
 // 앱 페이지 HTML
 function getAppPageHTML(appId) {
-    const appNames = {
-        'prompt-wizard': '프롬프트 마법사',
-        'instruction-optimizer': '지침 최적화 도구',
-        'persona-generator': 'Persona 생성기',
-        'property-script': '부동산 매물 대본',
-        'briefing-script': '브리핑 대본',
-        'notice-script': '공지사항 대본',
-        'image-idea': '이미지 아이디어',
-        'video-storyboard': '영상 스토리보드',
-        'thumbnail-concept': '썸네일 컨셉',
-        'youtube-seo': '유튜브 SEO',
-        'insta-hashtag': '인스타 해시태그',
-        'tiktok-trend': '틱톡 트렌드',
-        'workflow-list': '내 워크플로우 목록',
-        'new-workflow': '새 워크플로우 생성'
-    };
+    const app = findApp(appId);
+
+    if (!app) return '<div class="p-8 text-center">앱을 찾을 수 없습니다.</div>';
+
+    // 1. App Builder (새 도구 만들기)
+    if (app.type === 'system-builder') {
+        return getAppBuilderHTML(app);
+    }
+
+    // 2. RAG Management (링크형)
+    if (app.type === 'system-link') {
+        // 이미 라우팅 처리되었어야 하나, 안전장치
+        return `<div class="text-center p-12">Redirecting...</div>`;
+    }
+
+    // 3. 일반 앱 (시스템/커스텀)
+    // 입력 필드 생성
+    const inputFieldsHTML = (app.inputs || []).map(input => `
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">${input.label}</label>
+            ${input.type === 'textarea'
+            ? `<textarea id="input_${input.id}" class="w-full h-32 p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-${app.color}-500 resize-none" placeholder="${input.placeholder || ''}"></textarea>`
+            : `<input type="text" id="input_${input.id}" class="w-full p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-${app.color}-500" placeholder="${input.placeholder || ''}">`
+        }
+        </div>
+    `).join('');
 
     return `
         <div class="max-w-5xl mx-auto animate-fade-in">
@@ -661,32 +755,33 @@ function getAppPageHTML(appId) {
                 대시보드로 돌아가기
             </button>
             
-            <div class="flex items-center gap-4 mb-8">
-                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center shadow-lg shadow-primary/20">
-                    <span class="material-symbols-outlined text-white text-3xl">auto_fix_high</span>
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center gap-4">
+                    <div class="w-16 h-16 rounded-2xl bg-${app.color}-500 text-white flex items-center justify-center shadow-lg shadow-${app.color}-500/20">
+                        <span class="material-symbols-outlined text-3xl">${app.icon}</span>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-black text-slate-900 dark:text-white">${app.title}</h1>
+                        <p class="text-slate-500 mt-1">${app.description}</p>
+                    </div>
                 </div>
-                <div>
-                    <h1 class="text-3xl font-black text-slate-900 dark:text-white">${appNames[appId] || appId}</h1>
-                    <span class="inline-flex items-center gap-1 text-xs text-green-500 font-medium bg-green-500/10 px-2 py-1 rounded mt-2">
-                        <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                        Backend Active
-                    </span>
-                </div>
+                ${app.type === 'webhook' ? `
+                    <button id="deleteAppBtn" class="text-red-400 hover:text-red-500 text-sm flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                        <span class="material-symbols-outlined text-lg">delete</span> 삭제
+                    </button>
+                ` : ''}
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <!-- 입력 영역 -->
                 <div class="bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-sm">
-                    <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                        <span class="material-symbols-outlined text-primary">edit_note</span>
-                        입력
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-${app.color}-500">input</span>
+                        입력 설정
                     </h3>
                     <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">프롬프트 입력</label>
-                            <textarea id="appInput" class="w-full h-48 p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-primary focus:border-transparent resize-none" placeholder="원하는 내용을 자세히 입력해주세요..."></textarea>
-                        </div>
-                        <button id="runAppBtn" class="btn-primary w-full flex items-center justify-center gap-2">
+                        ${inputFieldsHTML || '<p class="text-slate-400 text-sm">입력 항목이 없습니다. 바로 실행하세요.</p>'}
+                        <button id="runAppBtn" class="w-full py-4 mt-4 bg-${app.color}-600 hover:bg-${app.color}-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-${app.color}-500/25 flex items-center justify-center gap-2">
                             <span class="material-symbols-outlined">play_arrow</span>
                             실행하기
                         </button>
@@ -694,23 +789,16 @@ function getAppPageHTML(appId) {
                 </div>
 
                 <!-- 결과 영역 -->
-                <div class="bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-sm">
-                    <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <div class="bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-sm flex flex-col">
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                         <span class="material-symbols-outlined text-emerald-500">auto_awesome</span>
-                        결과
+                        실행 결과
                     </h3>
-                    <div id="appResult" class="h-48 p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-y-auto">
-                        <p class="text-slate-400 text-sm">실행 버튼을 클릭하면 결과가 여기에 표시됩니다.</p>
-                    </div>
-                    <div class="flex gap-2 mt-4">
-                        <button id="copyResultBtn" class="flex-1 py-2 px-4 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-2">
-                            <span class="material-symbols-outlined text-lg">content_copy</span>
-                            복사
-                        </button>
-                        <button id="downloadResultBtn" class="flex-1 py-2 px-4 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-2">
-                            <span class="material-symbols-outlined text-lg">download</span>
-                            다운로드
-                        </button>
+                    <div id="appResult" class="flex-1 min-h-[300px] p-6 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-y-auto">
+                        <div class="h-full flex flex-col items-center justify-center text-slate-400 text-sm">
+                            <span class="material-symbols-outlined text-4xl mb-2 opacity-50">terminal</span>
+                            <p>입력 값을 넣고 실행 버튼을 눌러주세요.</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -718,53 +806,215 @@ function getAppPageHTML(appId) {
     `;
 }
 
+// 앱 빌더 HTML
+function getAppBuilderHTML(app) {
+    return `
+        <div class="max-w-3xl mx-auto animate-fade-in">
+             <button class="back-btn flex items-center gap-2 text-slate-500 hover:text-primary dark:text-slate-400 transition-colors text-sm font-medium mb-6">
+                <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+                대시보드로 돌아가기
+            </button>
+            
+            <div class="bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-2xl p-8 shadow-lg">
+                <div class="flex items-center gap-4 mb-8 pb-8 border-b border-slate-100 dark:border-slate-700">
+                    <div class="w-16 h-16 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                        <span class="material-symbols-outlined text-3xl">build</span>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-black text-slate-900 dark:text-white">새로운 AI 도구 만들기</h1>
+                        <p class="text-slate-500 mt-1">n8n Webhook과 연동하여 나만의 앱을 생성합니다.</p>
+                    </div>
+                </div>
+
+                <form id="createAppForm" class="space-y-6">
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">도구 이름</label>
+                            <input type="text" id="newAppTitle" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" placeholder="예: 유튜브 요약기" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">설명</label>
+                            <input type="text" id="newAppDesc" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" placeholder="이 도구에 대한 간단한 설명" required>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+                            <span class="flex items-center gap-2">
+                                n8n Webhook URL
+                                <span class="bg-indigo-100 text-indigo-600 text-[10px] px-2 py-0.5 rounded-full uppercase">POST Method</span>
+                            </span>
+                        </label>
+                        <input type="url" id="newAppWebhook" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-sm text-indigo-600" placeholder="https://your-n8n-instance.com/webhook/..." required>
+                        <p class="text-xs text-slate-400 mt-1.5 ml-1">n8n 워크플로우의 Webhook (Production URL)을 입력하세요.</p>
+                    </div>
+
+                    <div class="pt-6 border-t border-slate-100 dark:border-slate-700">
+                        <div class="flex items-center justify-between mb-4">
+                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300">입력 필드 설정</label>
+                            <button type="button" id="addInputBtn" class="text-xs font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">add_circle</span> 필드 추가
+                            </button>
+                        </div>
+                        <div id="inputFieldsList" class="space-y-3">
+                            <!-- 초기 필드 하나 -->
+                            <div class="flex gap-3 items-start field-row">
+                                <input type="text" class="field-id flex-1 p-2 rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm" placeholder="Field ID (예: prompt)" required value="prompt">
+                                <input type="text" class="field-label flex-1 p-2 rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm" placeholder="Label (예: 질문)" required value="질문">
+                                <select class="field-type w-24 p-2 rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm">
+                                    <option value="text">Text</option>
+                                    <option value="textarea" selected>TextArea</option>
+                                </select>
+                                <button type="button" class="text-slate-400 hover:text-red-500 p-2" onclick="this.parentElement.remove()"><span class="material-symbols-outlined text-lg">cancel</span></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-lg shadow-lg shadow-indigo-500/25 transition-all mt-8">
+                        도구 생성하기
+                    </button>
+                </form>
+            </div>
+        </div>
+    `;
+}
+
 // 앱 페이지 이벤트 리스너
 function setupAppPageListeners(appId) {
+    const app = findApp(appId);
     document.querySelector('.back-btn')?.addEventListener('click', showDashboard);
 
-    document.getElementById('runAppBtn')?.addEventListener('click', () => {
-        const input = document.getElementById('appInput').value;
-        if (!input.trim()) {
-            alert('내용을 입력해주세요.');
+    // 1. 앱 생성 폼 처리 (App Builder)
+    const createAppForm = document.getElementById('createAppForm');
+    if (createAppForm) {
+        // 필드 추가 버튼
+        document.getElementById('addInputBtn')?.addEventListener('click', () => {
+            const list = document.getElementById('inputFieldsList');
+            const row = document.createElement('div');
+            row.className = 'flex gap-3 items-start field-row';
+            row.innerHTML = `
+                <input type="text" class="field-id flex-1 p-2 rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm" placeholder="ID (예: topic)" required>
+                <input type="text" class="field-label flex-1 p-2 rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm" placeholder="Label (예: 주제)" required>
+                <select class="field-type w-24 p-2 rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm">
+                    <option value="text">Text</option>
+                    <option value="textarea">TextArea</option>
+                </select>
+                <button type="button" class="text-slate-400 hover:text-red-500 p-2" onclick="this.parentElement.remove()"><span class="material-symbols-outlined text-lg">cancel</span></button>
+            `;
+            list.appendChild(row);
+        });
+
+        // 폼 제출
+        createAppForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const title = document.getElementById('newAppTitle').value;
+            const desc = document.getElementById('newAppDesc').value;
+            const webhook = document.getElementById('newAppWebhook').value;
+
+            const inputs = [];
+            document.querySelectorAll('.field-row').forEach(row => {
+                inputs.push({
+                    id: row.querySelector('.field-id').value,
+                    label: row.querySelector('.field-label').value,
+                    type: row.querySelector('.field-type').value,
+                    placeholder: `${row.querySelector('.field-label').value}을(를) 입력하세요`
+                });
+            });
+
+            registerCustomApp({
+                title,
+                description: desc,
+                webhookUrl: webhook,
+                inputs,
+                icon: 'smart_toy' // 기본 아이콘
+            });
+
+            alert('새로운 도구가 생성되었습니다!');
+            showDashboard();
+        });
+        return;
+    }
+
+    // 2. 앱 실행 및 삭제 처리
+    document.getElementById('deleteAppBtn')?.addEventListener('click', () => {
+        if (confirm('이 도구를 정말 삭제하시겠습니까?')) {
+            deleteCustomApp(appId);
+            showDashboard();
+        }
+    });
+
+    document.getElementById('runAppBtn')?.addEventListener('click', async () => {
+        const resultEl = document.getElementById('appResult');
+        resultEl.innerHTML = '<div class="h-full flex items-center justify-center"><p class="text-primary animate-pulse flex items-center gap-2"><span class="material-symbols-outlined animate-spin">progress_activity</span> 처리 중...</p></div>';
+
+        // 입력 값 수집
+        const inputData = {};
+        let hasEmpty = false;
+        (app.inputs || []).forEach(input => {
+            const val = document.getElementById(`input_${input.id}`).value;
+            if (!val.trim()) hasEmpty = true;
+            inputData[input.id] = val;
+        });
+
+        if (hasEmpty) {
+            alert('모든 내용을 입력해주세요.');
+            resultEl.innerHTML = '';
             return;
         }
 
-        const resultEl = document.getElementById('appResult');
-        resultEl.innerHTML = '<p class="text-primary animate-pulse">처리 중...</p>';
-
-        // 시뮬레이션된 결과
-        setTimeout(() => {
-            if (appId === 'new-workflow') {
-                const workflowJson = generateN8nWorkflowJSON(input);
+        // Case A: JSON Generator (구 new-workflow)
+        if (app.type === 'system-generator') {
+            setTimeout(() => {
+                const workflowJson = generateN8nWorkflowJSON(inputData.prompt || '');
                 resultEl.innerHTML = `
                     <div class="text-slate-900 dark:text-white space-y-3">
                         <div class="flex items-center justify-between">
                             <p class="font-bold flex items-center gap-2">
                                 <span class="material-symbols-outlined text-[#ff6d5a]">hub</span>
-                                생성된 n8n 워크플로우
+                                n8n Workflow JSON
                             </p>
-                            <span class="text-xs bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-slate-500">JSON Format</span>
+                            <span class="text-xs bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-slate-500">Copy & Paste to n8n</span>
                         </div>
-                        <p class="text-sm text-slate-500 mb-2">아래 JSON 코드를 복사하여 n8n 편집기에 붙여넣으세요.</p>
                         <pre class="bg-slate-900 text-green-400 p-4 rounded-xl text-xs font-mono overflow-auto max-h-60 leading-relaxed custom-scrollbar select-all">${JSON.stringify(workflowJson, null, 2)}</pre>
                     </div>
                 `;
+            }, 1000);
+            return;
+        }
+
+        // Case B: Webhook Apps (Custom or Mock)
+        console.log('Sending to Webhook:', app.webhookUrl, inputData);
+
+        try {
+            // Mock Simulation
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            let mockOutput = "";
+            if (app.id === 'prompt-wizard') {
+                mockOutput = `[프롬프트 최적화 결과]\n\n"당신은 부동산 전문 마케터입니다..."`;
+            } else if (app.id === 'property-script') {
+                mockOutput = `[유튜브 대본 초안]\n\n안녕하세요! 오늘 소개해드릴 매물은...`;
             } else {
-                resultEl.innerHTML = `
-                    <div class="text-slate-900 dark:text-white space-y-3">
-                        <p class="font-medium">✨ AI가 생성한 결과:</p>
-                        <p class="text-sm leading-relaxed whitespace-pre-wrap">${generateSampleResult(input)}</p>
-                    </div>
-                `;
+                mockOutput = `[Webhook 응답 성공]\n\n워크플로우 '${app.title}' 실행 완료.\n(Webhook URL: ${app.webhookUrl})\n\n[처리 결과]\n성공적으로 데이터를 전송했습니다.`;
             }
-        }, 1500);
+
+            resultEl.innerHTML = `
+                <div class="text-slate-900 dark:text-white space-y-3">
+                    <div class="flex items-center gap-2 text-green-500 font-bold text-sm mb-2">
+                         <span class="material-symbols-outlined text-base">check_circle</span> 실행 완료
+                    </div>
+                    <p class="text-sm leading-relaxed whitespace-pre-wrap">${mockOutput}</p>
+                </div>
+            `;
+
+        } catch (e) {
+            resultEl.innerHTML = `<p class="text-red-500">실행 오류: ${e.message}</p>`;
+        }
     });
 
     document.getElementById('copyResultBtn')?.addEventListener('click', () => {
         const result = document.getElementById('appResult').innerText;
-        navigator.clipboard.writeText(result).then(() => {
-            alert('클립보드에 복사되었습니다!');
-        });
+        navigator.clipboard.writeText(result).then(() => alert('복사되었습니다.'));
     });
 
     document.getElementById('downloadResultBtn')?.addEventListener('click', () => {
@@ -775,7 +1025,6 @@ function setupAppPageListeners(appId) {
         a.href = url;
         a.download = 'result.txt';
         a.click();
-        URL.revokeObjectURL(url);
     });
 }
 
