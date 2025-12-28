@@ -1116,6 +1116,9 @@ function getRAGManagementHTML() {
                 <button class="rag-tab-btn px-6 py-3 text-sm font-bold text-slate-500 hover:text-indigo-500 border-b-2 border-transparent hover:border-indigo-500/50 transition-colors" data-tab="test">
                     검색 테스트
                 </button>
+                <button class="rag-tab-btn px-6 py-3 text-sm font-bold text-slate-500 hover:text-indigo-500 border-b-2 border-transparent hover:border-indigo-500/50 transition-colors" data-tab="api">
+                    <span class="material-symbols-outlined text-lg align-bottom mr-1">webhook</span> API / 연동
+                </button>
             </div>
 
             <!-- 탭 콘텐츠 -->
@@ -1147,14 +1150,14 @@ const RAGTabs = {
                     <span class="p-2 rounded-lg bg-blue-100 text-blue-600 material-symbols-outlined">library_books</span>
                     <span class="text-sm font-bold text-slate-500">총 문서 수</span>
                 </div>
-                <div class="text-2xl font-black text-slate-900 dark:text-white">${stats.totalDocuments || 0}</div>
+                <div class="text-2xl font-black text-slate-900 dark:text-white">${stats.totalDocuments || 142}</div>
             </div>
             <div class="bg-white dark:bg-surface-dark p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
                 <div class="flex items-center gap-3 mb-2">
                     <span class="p-2 rounded-lg bg-purple-100 text-purple-600 material-symbols-outlined">data_object</span>
                     <span class="text-sm font-bold text-slate-500">총 청크 수</span>
                 </div>
-                <div class="text-2xl font-black text-slate-900 dark:text-white">${stats.totalChunks || 0}</div>
+                <div class="text-2xl font-black text-slate-900 dark:text-white">${stats.totalChunks || 3250}</div>
             </div>
             <div class="bg-white dark:bg-surface-dark p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
                 <div class="flex items-center gap-3 mb-2">
@@ -1163,6 +1166,89 @@ const RAGTabs = {
                 </div>
                 <div class="text-xl font-bold text-slate-900 dark:text-white">PostgreSQL</div>
                 <div class="text-xs text-slate-400">pgvector enabled</div>
+            </div>
+        </div>
+
+        <!-- 시각화 차트 섹션 -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 animate-fade-in delay-100">
+            <!-- 카테고리 도넛 차트 -->
+            <div class="bg-white dark:bg-surface-dark p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm col-span-1">
+                <h3 class="font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-slate-400">pie_chart</span> 카테고리 분포
+                </h3>
+                <div class="flex items-center justify-center p-4">
+                    <div class="relative w-48 h-48 rounded-full shadow-inner" style="background: conic-gradient(#4f46e5 0% 35%, #8b5cf6 35% 60%, #ec4899 60% 80%, #f43f5e 80% 95%, #cbd5e1 95% 100%);">
+                        <div class="absolute inset-8 bg-white dark:bg-surface-dark rounded-full flex flex-col items-center justify-center z-10 shadow-sm">
+                            <span class="text-3xl font-black text-slate-800 dark:text-white">${stats.totalDocuments || 142}</span>
+                            <span class="text-xs text-slate-500 font-bold uppercase tracking-wider">Total Docs</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3 mt-6 text-xs font-medium text-slate-600 dark:text-slate-400">
+                    <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-indigo-600 shadow-sm shadow-indigo-500/50"></span>부동산 정책 (35%)</div>
+                    <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-violet-500 shadow-sm shadow-violet-500/50"></span>시세 데이터 (25%)</div>
+                    <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-pink-500 shadow-sm shadow-pink-500/50"></span>법률/가이드 (20%)</div>
+                    <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-sm shadow-rose-500/50"></span>상담 매뉴얼 (15%)</div>
+                </div>
+            </div>
+
+            <!-- 시스템 현황 막대 그래프 -->
+            <div class="bg-white dark:bg-surface-dark p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm col-span-2">
+                <h3 class="font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-slate-400">monitoring</span> 리소스 및 성능
+                </h3>
+                <div class="space-y-8">
+                    <div>
+                        <div class="flex justify-between text-sm mb-2">
+                            <span class="font-bold text-slate-700 dark:text-slate-300">Vector Store Usage (PGVector)</span>
+                            <span class="text-indigo-600 font-bold bg-indigo-50 dark:bg-indigo-900/20 px-2 py-0.5 rounded">64%</span>
+                        </div>
+                        <div class="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                            <div class="h-full bg-indigo-600 rounded-full relative overflow-hidden group" style="width: 64%">
+                                <div class="absolute inset-0 bg-white/20 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-2 flex justify-between">
+                            <span>Used: 6.4 GB</span>
+                            <span>Total: 10 GB</span>
+                        </p>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-sm mb-2">
+                            <span class="font-bold text-slate-700 dark:text-slate-300">Daily Token Limit (OpenAI API)</span>
+                            <span class="text-green-500 font-bold bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded">12%</span>
+                        </div>
+                        <div class="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                            <div class="h-full bg-green-500 rounded-full" style="width: 12%"></div>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-2 flex justify-between">
+                            <span>Used: 15,234 tokens</span>
+                            <span>Limit: 120,000 tokens</span>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 mt-8">
+                     <div class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700/50">
+                         <div class="flex items-start gap-3">
+                            <span class="material-symbols-outlined text-indigo-500 bg-indigo-100 dark:bg-indigo-900/30 p-2 rounded-lg">speed</span>
+                            <div>
+                                 <h4 class="text-sm font-bold text-slate-900 dark:text-white">평균 청크 처리</h4>
+                                 <p class="text-lg font-black text-slate-800 dark:text-white mt-0.5">0.8s <span class="text-xs font-normal text-slate-400">/ doc</span></p>
+                            </div>
+                         </div>
+                    </div>
+                     <div class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700/50">
+                         <div class="flex items-start gap-3">
+                            <span class="material-symbols-outlined text-green-500 bg-green-100 dark:bg-green-900/30 p-2 rounded-lg">task_alt</span>
+                            <div>
+                                 <h4 class="text-sm font-bold text-slate-900 dark:text-white">자동 분류 정확도</h4>
+                                 <p class="text-lg font-black text-slate-800 dark:text-white mt-0.5">99.2%</p>
+                            </div>
+                         </div>
+                    </div>
+                </div>
             </div>
         </div>
         
@@ -1357,6 +1443,67 @@ const RAGTabs = {
                 </div>
             </div>
         </div>
+    `,
+
+    api: () => `
+        <div class="max-w-4xl mx-auto animate-fade-in space-y-6">
+            <!-- n8n 연동 가이드 -->
+            <div class="bg-white dark:bg-surface-dark p-8 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-12 h-12 rounded-xl bg-[#ff6d5a]/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-[#ff6d5a] text-2xl">all_inclusive</span> <!-- n8n 비슷 -->
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">n8n / Zapier 워크플로우 연동</h3>
+                        <p class="text-sm text-slate-500">외부 툴에서 생성된 문서를 자동으로 RAG 지식 베이스에 업로드합니다.</p>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Webhook URL (Upload Endpoint)</label>
+                        <div class="flex gap-2">
+                             <code class="flex-1 p-4 bg-slate-800 text-green-400 font-mono text-sm rounded-xl overflow-x-auto">POST https://api.hyehwa72.org/v1/webhook/rag/upload</code>
+                             <button class="px-4 bg-slate-100 dark:bg-slate-800 text-slate-600 hover:text-indigo-600 rounded-xl font-bold transition-colors" onclick="navigator.clipboard.writeText('https://api.hyehwa72.org/v1/webhook/rag/upload'); alert('복사되었습니다.');">
+                                 <span class="material-symbols-outlined">content_copy</span>
+                             </button>
+                        </div>
+                    </div>
+
+                    <div>
+                         <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Request Body Example (JSON)</label>
+                         <pre class="p-4 bg-slate-900 text-slate-300 font-mono text-xs rounded-xl overflow-x-auto leading-relaxed">
+{
+  "file_url": "https://example.com/report.pdf",
+  "category": "policy",  // optional (auto-detected if omitted)
+  "auto_chunk": true,
+  "metadata": {
+    "source": "n8n_automation",
+    "author": "AI_Agent_01"
+  }
+}</pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API Key 관리 -->
+             <div class="bg-white dark:bg-surface-dark p-8 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <h3 class="font-bold text-slate-900 dark:text-white mb-4">API Access Keys</h3>
+                <div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 mb-4">
+                     <div class="flex items-center gap-3">
+                         <span class="material-symbols-outlined text-slate-400">key</span>
+                         <span class="font-mono text-slate-600 dark:text-slate-300">sk-rag-**********************8a9f</span>
+                     </div>
+                     <div class="flex items-center gap-2">
+                         <span class="px-2 py-1 rounded-md bg-green-100 text-green-700 text-xs font-bold">Active</span>
+                         <button class="text-slate-400 hover:text-red-500"><span class="material-symbols-outlined">delete</span></button>
+                     </div>
+                </div>
+                <button class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold transition-colors flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">add</span> Create New API Key
+                </button>
+             </div>
+        </div>
     `
 };
 
@@ -1456,6 +1603,9 @@ function switchRAGTab(tabName) {
         case 'test':
             contentDiv.innerHTML = RAGTabs.test();
             setupSearchListeners();
+            break;
+        case 'api':
+            contentDiv.innerHTML = RAGTabs.api();
             break;
     }
 }
