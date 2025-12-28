@@ -252,6 +252,15 @@ function showDashboard() {
             elements.mainContent.innerHTML = getDashboardHTML();
             setupAppCardListeners();
         }
+    } else if (state.currentPage === 'rag-management') {
+        if (state.currentUser?.role === 'admin') {
+            elements.mainContent.innerHTML = getRAGManagementHTML();
+            setupRAGManagementListeners();
+        } else {
+            state.currentPage = 'dashboard';
+            elements.mainContent.innerHTML = getDashboardHTML();
+            setupAppCardListeners();
+        }
     } else {
         elements.mainContent.innerHTML = getDashboardHTML();
         setupAppCardListeners();
@@ -1055,4 +1064,526 @@ function handleDeleteUser(userId) {
             alert(result.message);
         }
     }
+}
+
+// =============================================
+// RAG 데이터 관리 페이지
+// =============================================
+
+// RAG API 설정
+const RAG_API = {
+    BASE_URL: 'https://api.hyehwa72.org',
+    ENDPOINTS: {
+        HEALTH: '/health',
+        STATS: '/stats',
+        DOCUMENTS: '/documents',
+        SEARCH: '/search' // 가상의 검색 엔드포인트
+    }
+};
+
+function getRAGManagementHTML() {
+    return `
+        <div class="max-w-6xl mx-auto animate-fade-in p-2">
+            <!-- 헤더 -->
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                        <span class="material-symbols-outlined text-white text-2xl">database</span>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-black text-slate-900 dark:text-white">RAG 데이터 관리</h1>
+                        <p class="text-slate-500 text-sm mt-1">지식 베이스 문서 관리 및 검색 테스트</p>
+                    </div>
+                </div>
+                <!-- 서버 상태 배지 -->
+                <div id="serverStatusBadge" class="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-full">
+                    <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+                    <span class="text-xs font-bold text-slate-500">서버 연결 확인 중...</span>
+                </div>
+            </div>
+
+            <!-- 탭 네비게이션 -->
+            <div class="flex gap-2 mb-8 border-b border-slate-200 dark:border-slate-800">
+                <button class="rag-tab-btn active px-6 py-3 text-sm font-bold text-indigo-500 border-b-2 border-indigo-500 transition-colors" data-tab="dashboard">
+                    대시보드
+                </button>
+                <button class="rag-tab-btn px-6 py-3 text-sm font-bold text-slate-500 hover:text-indigo-500 border-b-2 border-transparent hover:border-indigo-500/50 transition-colors" data-tab="documents">
+                    문서 관리
+                </button>
+                <button class="rag-tab-btn px-6 py-3 text-sm font-bold text-slate-500 hover:text-indigo-500 border-b-2 border-transparent hover:border-indigo-500/50 transition-colors" data-tab="upload">
+                    문서 업로드
+                </button>
+                <button class="rag-tab-btn px-6 py-3 text-sm font-bold text-slate-500 hover:text-indigo-500 border-b-2 border-transparent hover:border-indigo-500/50 transition-colors" data-tab="test">
+                    검색 테스트
+                </button>
+            </div>
+
+            <!-- 탭 콘텐츠 -->
+            <div id="ragTabContent" class="min-h-[400px]">
+                <!-- 대시보드 탭 로딩 중... -->
+                <div class="flex items-center justify-center h-64">
+                    <div class="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// 탭별 HTML 생성 함수들
+const RAGTabs = {
+    dashboard: (stats) => `
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 animate-fade-in">
+            <!-- 상태 카드들 -->
+            <div class="bg-white dark:bg-surface-dark p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="p-2 rounded-lg bg-green-100 text-green-600 material-symbols-outlined">check_circle</span>
+                    <span class="text-sm font-bold text-slate-500">API 상태</span>
+                </div>
+                <div class="text-2xl font-black text-slate-900 dark:text-white">${stats.status || 'Unknown'}</div>
+            </div>
+            <div class="bg-white dark:bg-surface-dark p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="p-2 rounded-lg bg-blue-100 text-blue-600 material-symbols-outlined">library_books</span>
+                    <span class="text-sm font-bold text-slate-500">총 문서 수</span>
+                </div>
+                <div class="text-2xl font-black text-slate-900 dark:text-white">${stats.totalDocuments || 0}</div>
+            </div>
+            <div class="bg-white dark:bg-surface-dark p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="p-2 rounded-lg bg-purple-100 text-purple-600 material-symbols-outlined">data_object</span>
+                    <span class="text-sm font-bold text-slate-500">총 청크 수</span>
+                </div>
+                <div class="text-2xl font-black text-slate-900 dark:text-white">${stats.totalChunks || 0}</div>
+            </div>
+            <div class="bg-white dark:bg-surface-dark p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="p-2 rounded-lg bg-orange-100 text-orange-600 material-symbols-outlined">memory</span>
+                    <span class="text-sm font-bold text-slate-500">벡터 DB</span>
+                </div>
+                <div class="text-xl font-bold text-slate-900 dark:text-white">PostgreSQL</div>
+                <div class="text-xs text-slate-400">pgvector enabled</div>
+            </div>
+        </div>
+        
+        <!-- 시스템 정보 -->
+        <div class="bg-indigo-50 dark:bg-slate-800/50 rounded-2xl p-6 border border-indigo-100 dark:border-slate-700">
+            <h3 class="font-bold text-slate-900 dark:text-white mb-4">🔗 연결 정보</h3>
+            <div class="space-y-2 text-sm">
+                <div class="flex justify-between p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <span class="text-slate-500">API 엔드포인트</span>
+                    <span class="font-mono text-indigo-600 dark:text-indigo-400">${RAG_API.BASE_URL}</span>
+                </div>
+                <div class="flex justify-between p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <span class="text-slate-500">헬스체크 URL</span>
+                    <span class="font-mono text-indigo-600 dark:text-indigo-400">${RAG_API.BASE_URL}${RAG_API.ENDPOINTS.HEALTH}</span>
+                </div>
+            </div>
+        </div>
+    `,
+
+    documents: (docs) => `
+        <div class="bg-white dark:bg-surface-dark rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-fade-in">
+            <div class="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                <h3 class="font-bold text-slate-900 dark:text-white">문서 목록</h3>
+                <button id="refreshDocsBtn" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors">
+                    <span class="material-symbols-outlined">refresh</span>
+                </button>
+            </div>
+            
+            ${docs && docs.length > 0 ? `
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-slate-50 dark:bg-slate-800/50">
+                        <tr>
+                            <th class="p-4 text-xs font-bold text-slate-500 uppercase">파일명</th>
+                            <th class="p-4 text-xs font-bold text-slate-500 uppercase">타입</th>
+                            <th class="p-4 text-xs font-bold text-slate-500 uppercase">크기</th>
+                            <th class="p-4 text-xs font-bold text-slate-500 uppercase">업로드 날짜</th>
+                            <th class="p-4 text-xs font-bold text-slate-500 uppercase text-right">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+                        ${docs.map(doc => `
+                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                                <td class="p-4 font-medium text-slate-900 dark:text-white flex items-center gap-3">
+                                    <span class="material-symbols-outlined text-slate-400">description</span>
+                                    ${doc.filename || doc.name || 'Untitled'}
+                                </td>
+                                <td class="p-4 text-sm text-slate-500">${doc.content_type || 'text/plain'}</td>
+                                <td class="p-4 text-sm text-slate-500">${doc.size ? (doc.size / 1024).toFixed(1) + ' KB' : '-'}</td>
+                                <td class="p-4 text-sm text-slate-500">${new Date(doc.created_at || Date.now()).toLocaleDateString()}</td>
+                                <td class="p-4 text-right">
+                                    <button class="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded-lg transition-colors" onclick="alert('삭제 기능 준비 중')">
+                                        <span class="material-symbols-outlined">delete</span>
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            ` : `
+                <div class="p-12 text-center">
+                    <div class="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4 text-slate-400">
+                        <span class="material-symbols-outlined text-3xl">folder_off</span>
+                    </div>
+                    <h3 class="text-slate-900 dark:text-white font-bold mb-1">문서가 없습니다</h3>
+                    <p class="text-slate-500 text-sm">새 문서를 업로드하여 지식 베이스를 구축해보세요.</p>
+                </div>
+            `}
+        </div>
+    `,
+
+    upload: () => `
+        <div class="max-w-2xl mx-auto animate-fade-in">
+            <div class="bg-white dark:bg-surface-dark rounded-2xl border border-slate-200 dark:border-slate-700 p-8 text-center">
+                <div id="dropZone" class="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-2xl p-12 transition-colors hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 cursor-pointer">
+                    <input type="file" id="fileInput" class="hidden" multiple accept=".txt,.pdf,.md,.csv">
+                    <div class="w-20 h-20 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto mb-6">
+                        <span class="material-symbols-outlined text-4xl">cloud_upload</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">파일을 여기에 드래그하세요</h3>
+                    <p class="text-slate-500 mb-6">또는 클릭하여 파일 선택 (PDF, TXT, MD)</p>
+                    <button id="selectFileBtn" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-indigo-500/25">
+                        파일 탐색기 열기
+                    </button>
+                </div>
+                
+                <!-- 업로드 목록 -->
+                <div id="uploadList" class="mt-8 space-y-3 hidden">
+                    <h4 class="text-left text-sm font-bold text-slate-500 mb-3">업로드 대기 중인 파일</h4>
+                    <!-- 파일 아이템들이 여기에 추가됨 -->
+                </div>
+
+                <button id="startUploadBtn" class="w-full mt-8 py-4 bg-slate-200 text-slate-400 rounded-xl font-bold cursor-not-allowed transition-all" disabled>
+                    업로드 시작
+                </button>
+            </div>
+            
+            <div class="mt-6 p-4 bg-orange-50 dark:bg-orange-900/10 border border-orange-100 dark:border-orange-800/30 rounded-xl flex gap-3">
+                <span class="material-symbols-outlined text-orange-500 shrink-0">warning</span>
+                <p class="text-sm text-orange-800 dark:text-orange-200">
+                    <strong>주의:</strong> 파일 업로드 시 자동으로 벡터 임베딩이 진행되며, 파일 크기에 따라 시간이 소요될 수 있습니다.
+                </p>
+            </div>
+        </div>
+    `,
+
+    test: () => `
+        <div class="max-w-3xl mx-auto animate-fade-in">
+            <!-- 검색 바 -->
+            <div class="bg-white dark:bg-surface-dark rounded-2xl border border-slate-200 dark:border-slate-700 p-2 shadow-lg mb-8">
+                <div class="flex items-center">
+                    <div class="pl-4">
+                        <span class="material-symbols-outlined text-slate-400">search</span>
+                    </div>
+                    <input type="text" id="ragSearchInput" class="w-full p-4 bg-transparent border-none focus:ring-0 text-slate-900 dark:text-white placeholder-slate-400" placeholder="지식 베이스에서 검색할 내용을 입력하세요...">
+                    <button id="ragSearchBtn" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-colors m-1">
+                        검색
+                    </button>
+                </div>
+            </div>
+
+            <!-- 결과 영역 -->
+            <div id="ragSearchResults" class="space-y-4">
+                <div class="text-center text-slate-400 py-12">
+                    <span class="material-symbols-outlined text-4xl mb-2">manage_search</span>
+                    <p>검색어를 입력하여 RAG 성능을 테스트해보세요.</p>
+                </div>
+            </div>
+        </div>
+    `
+};
+
+let ragState = {
+    selectedFiles: []
+};
+
+function setupRAGManagementListeners() {
+    // 탭 전환 리스너
+    document.querySelectorAll('.rag-tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => switchRAGTab(btn.dataset.tab));
+    });
+
+    // 초기 로드 시 대시보드 탭 활성화 및 데이터 로드
+    checkServerStatus().then(isOnline => {
+        if (isOnline) {
+            loadRAGDashboard();
+        } else {
+            // 오프라인 상태 UI 표시 (데모용)
+            /*
+            document.getElementById('ragTabContent').innerHTML = `
+                <div class="text-center py-20 animate-fade-in">
+                    <div class="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/20 text-red-500 flex items-center justify-center mx-auto mb-4">
+                        <span class="material-symbols-outlined text-3xl">wifi_off</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">서버에 연결할 수 없습니다</h3>
+                    <p class="text-slate-500 mb-6">RAG API 서버(${RAG_API.BASE_URL})가 응답하지 않습니다.</p>
+                    <button onclick="setupRAGManagementListeners()" class="px-6 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-lg font-bold hover:opacity-90 transition-opacity">
+                        재시도
+                    </button>
+                </div>
+            `;
+            */
+            // 일단 데모 모드로 진행
+            loadRAGDashboard();
+        }
+    });
+}
+
+async function checkServerStatus() {
+    const badge = document.getElementById('serverStatusBadge');
+    if (!badge) return false;
+
+    try {
+        const response = await fetch(`${RAG_API.BASE_URL}${RAG_API.ENDPOINTS.HEALTH}`, {
+            method: 'GET',
+            mode: 'cors'
+        });
+
+        if (response.ok) {
+            badge.className = 'flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900/30 rounded-full';
+            badge.innerHTML = `
+                <span class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
+                <span class="text-xs font-bold text-green-700 dark:text-green-400">서버 온라인</span>
+            `;
+            return true;
+        } else {
+            throw new Error('Server returned ' + response.status);
+        }
+    } catch (error) {
+        console.warn('Server check failed, running in manual/demo mode:', error);
+        badge.className = 'flex items-center gap-2 px-4 py-2 bg-red-100 dark:bg-red-900/30 rounded-full';
+        badge.innerHTML = `
+            <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+            <span class="text-xs font-bold text-red-700 dark:text-red-400">서버 오프라인 (데모)</span>
+        `;
+        return false;
+    }
+}
+
+function switchRAGTab(tabName) {
+    // 탭 스타일 업데이트
+    document.querySelectorAll('.rag-tab-btn').forEach(btn => {
+        if (btn.dataset.tab === tabName) {
+            btn.classList.add('active', 'text-indigo-500', 'border-indigo-500');
+            btn.classList.remove('text-slate-500', 'border-transparent');
+        } else {
+            btn.classList.remove('active', 'text-indigo-500', 'border-indigo-500');
+            btn.classList.add('text-slate-500', 'border-transparent');
+        }
+    });
+
+    const contentDiv = document.getElementById('ragTabContent');
+    contentDiv.innerHTML = '<div class="flex justify-center p-12"><div class="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div></div>';
+
+    // 탭별 로직 실행
+    switch (tabName) {
+        case 'dashboard':
+            loadRAGDashboard();
+            break;
+        case 'documents':
+            loadDocumentsList();
+            break;
+        case 'upload':
+            renderUploadUI();
+            break;
+        case 'test':
+            contentDiv.innerHTML = RAGTabs.test();
+            setupSearchListeners();
+            break;
+    }
+}
+
+async function loadRAGDashboard() {
+    try {
+        // 실제 API 연동 시 주석 해제하여 사용
+        /*
+        const response = await fetch(`${RAG_API.BASE_URL}${RAG_API.ENDPOINTS.STATS}`);
+        const stats = await response.json();
+        */
+
+        // Mock Data for Demo
+        const stats = {
+            status: 'Healthy',
+            totalDocuments: 12,
+            totalChunks: 3450,
+            dbType: 'PostgreSQL'
+        };
+
+        document.getElementById('ragTabContent').innerHTML = RAGTabs.dashboard(stats);
+    } catch (e) {
+        console.error(e);
+        document.getElementById('ragTabContent').innerHTML = '<div class="text-red-500 p-8 text-center">데이터를 불러오는데 실패했습니다.</div>';
+    }
+}
+
+async function loadDocumentsList() {
+    try {
+        // Mock Data
+        /*
+        const response = await fetch(`${RAG_API.BASE_URL}${RAG_API.ENDPOINTS.DOCUMENTS}`);
+        const docs = await response.json();
+        */
+
+        // 임시 데이터
+        const docs = [
+            { id: 1, filename: '2024_부동산_정책_요약.pdf', content_type: 'application/pdf', size: 1024000, created_at: '2025-12-20' },
+            { id: 2, filename: '서울시_아파트_시세_데이터.csv', content_type: 'text/csv', size: 512000, created_at: '2025-12-22' },
+            { id: 3, filename: '중개실무_가이드라인_v2.txt', content_type: 'text/plain', size: 24000, created_at: '2025-12-24' }
+        ];
+
+        document.getElementById('ragTabContent').innerHTML = RAGTabs.documents(docs);
+
+        document.getElementById('refreshDocsBtn')?.addEventListener('click', loadDocumentsList);
+    } catch (e) {
+        document.getElementById('ragTabContent').innerHTML = '<div class="text-red-500 p-8 text-center">문서 목록을 불러오는데 실패했습니다.</div>';
+    }
+}
+
+function renderUploadUI() {
+    document.getElementById('ragTabContent').innerHTML = RAGTabs.upload();
+
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const selectBtn = document.getElementById('selectFileBtn');
+
+    // 드래그 앤 드롭
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('border-indigo-500', 'bg-indigo-50', 'dark:bg-indigo-900/10');
+    });
+
+    dropZone.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-indigo-500', 'bg-indigo-50', 'dark:bg-indigo-900/10');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-indigo-500', 'bg-indigo-50', 'dark:bg-indigo-900/10');
+        handleFiles(e.dataTransfer.files);
+    });
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    selectBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        fileInput.click();
+    });
+
+    fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+}
+
+function handleFiles(files) {
+    const listContainer = document.getElementById('uploadList');
+    const uploadBtn = document.getElementById('startUploadBtn');
+
+    ragState.selectedFiles = Array.from(files);
+
+    if (ragState.selectedFiles.length > 0) {
+        listContainer.classList.remove('hidden');
+        uploadBtn.disabled = false;
+        uploadBtn.classList.remove('bg-slate-200', 'text-slate-400', 'cursor-not-allowed');
+        uploadBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-700', 'text-white', 'shadow-lg');
+
+        listContainer.innerHTML = `
+            <h4 class="text-left text-sm font-bold text-slate-500 mb-3">업로드 대기 중인 파일 (${ragState.selectedFiles.length})</h4>
+            ${ragState.selectedFiles.map(file => `
+                <div class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-indigo-500">description</span>
+                        <div class="text-left">
+                            <div class="text-sm font-bold text-slate-900 dark:text-white">${file.name}</div>
+                            <div class="text-xs text-slate-500">${(file.size / 1024).toFixed(1)} KB</div>
+                        </div>
+                    </div>
+                    <button class="text-slate-400 hover:text-red-500 transition-colors">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+            `).join('')}
+        `;
+
+        uploadBtn.onclick = uploadFiles;
+    }
+}
+
+async function uploadFiles() {
+    const btn = document.getElementById('startUploadBtn');
+    const originalText = btn.innerHTML;
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="material-symbols-outlined animate-spin mr-2">progress_activity</span> 업로드 및 처리 중...';
+
+    // 실제 업로드 로직 (FormData 사용)
+    try {
+        /*
+        const formData = new FormData();
+        ragState.selectedFiles.forEach(file => formData.append('files', file));
+        
+        await fetch(`${RAG_API.BASE_URL}${RAG_API.ENDPOINTS.DOCUMENTS}`, {
+            method: 'POST',
+            body: formData
+        });
+        */
+
+        // 데모용 타임아웃
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        alert('업로드가 완료되었습니다!');
+        ragState.selectedFiles = [];
+        switchRAGTab('documents'); // 문서 목록으로 이동
+    } catch (e) {
+        alert('업로드 실패: ' + e.message);
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
+}
+
+function setupSearchListeners() {
+    const input = document.getElementById('ragSearchInput');
+    const btn = document.getElementById('ragSearchBtn');
+
+    btn.addEventListener('click', performSearch);
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') performSearch();
+    });
+}
+
+function performSearch() {
+    const query = document.getElementById('ragSearchInput').value;
+    if (!query.trim()) return;
+
+    const resultsDiv = document.getElementById('ragSearchResults');
+    resultsDiv.innerHTML = `
+        <div class="text-center py-8">
+            <div class="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p class="text-slate-500">지식 베이스 검색 및 답변 생성 중...</p>
+        </div>
+    `;
+
+    // 데모용 결과 시뮬레이션
+    setTimeout(() => {
+        resultsDiv.innerHTML = `
+             <div class="bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-800 rounded-2xl p-6">
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="material-symbols-outlined text-indigo-600">psychology</span>
+                    <h3 class="font-bold text-indigo-900 dark:text-indigo-100">AI 답변</h3>
+                </div>
+                <p class="text-slate-700 dark:text-slate-300 leading-relaxed">
+                    검색하신 <strong>"${query}"</strong>에 대한 답변입니다.<br><br>
+                    RAG 데이터베이스에서 관련된 문서를 찾아 답변을 생성합니다. 현재는 UI 테스트 모드이며, 실제 백엔드 연동 시 여기에 실시간 결과가 표시됩니다.
+                </p>
+            </div>
+            
+            <h4 class="font-bold text-slate-500 text-sm mt-6 mb-3 uppercase">참고 문서 (References)</h4>
+            <div class="space-y-3">
+                <div class="bg-white dark:bg-surface-dark p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-indigo-300 transition-colors cursor-pointer">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-sm font-bold text-indigo-600">2024_부동산_정책_요약.pdf</span>
+                        <span class="text-xs text-slate-400">유사도: 0.89</span>
+                    </div>
+                    <p class="text-xs text-slate-500 line-clamp-2">...관련된 정책 내용이 여기에 표시됩니다. 문서의 실제 내용을 발췌하여 보여주는 영역입니다...</p>
+                </div>
+            </div>
+        `;
+    }, 1500);
 }
