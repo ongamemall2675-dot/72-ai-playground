@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Web App Launcher - Login</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;family=Noto+Sans+KR:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "primary-hover": "#1170d2",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "card-dark": "#192633",
+                        "input-border": "#324d67",
+                        "text-secondary": "#92adc9",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "Noto Sans KR", "sans-serif"],
+                        "body": ["Inter", "Noto Sans KR", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', 'Noto Sans KR', sans-serif;
+        }
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #101922; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #324d67; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #137fec; 
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen flex flex-col font-display text-white overflow-x-hidden antialiased selection:bg-primary selection:text-white">
+<!-- Header / Nav (Simplified for Login Context) -->
+<header class="w-full border-b border-[#233648] bg-[#111a22]/80 backdrop-blur-md fixed top-0 z-50">
+<div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 text-primary">
+<svg class="w-full h-full" fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-white text-lg font-bold tracking-tight">NFN Launcher</h2>
+</div>
+<a class="text-sm font-medium text-text-secondary hover:text-white transition-colors" href="#">
+                도움말
+            </a>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-grow flex items-center justify-center relative px-4 pt-16">
+<!-- Abstract Background Decoration -->
+<div class="absolute inset-0 overflow-hidden pointer-events-none z-0">
+<div class="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[100px] animate-pulse"></div>
+<div class="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-[120px]"></div>
+</div>
+<!-- Login Card Container -->
+<div class="relative z-10 w-full max-w-[480px] bg-card-dark border border-[#233648] rounded-xl shadow-2xl p-8 sm:p-10">
+<!-- Header Section -->
+<div class="flex flex-col items-center text-center mb-8">
+<div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary mb-4">
+<span class="material-symbols-outlined" style="font-size: 28px;">lock_person</span>
+</div>
+<h1 class="text-2xl font-bold text-white mb-2">환영합니다</h1>
+<p class="text-text-secondary text-sm">NFN 애플리케이션에 접속하려면 로그인하세요.</p>
+</div>
+<!-- Login Form -->
+<form action="#" class="space-y-5">
+<!-- Email Field -->
+<div class="space-y-2">
+<label class="block text-sm font-medium text-white" for="email">
+                        이메일 또는 사용자 이름
+                    </label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-text-secondary">
+<span class="material-symbols-outlined" style="font-size: 20px;">mail</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-3 border border-input-border rounded-lg leading-5 bg-[#101922] text-white placeholder-text-secondary focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm transition-colors" id="email" placeholder="user@example.com" required="" type="email"/>
+</div>
+</div>
+<!-- Password Field -->
+<div class="space-y-2">
+<div class="flex items-center justify-between">
+<label class="block text-sm font-medium text-white" for="password">
+                            비밀번호
+                        </label>
+<a class="text-xs font-medium text-primary hover:text-primary-hover transition-colors" href="#">
+                            비밀번호를 잊으셨나요?
+                        </a>
+</div>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-text-secondary">
+<span class="material-symbols-outlined" style="font-size: 20px;">key</span>
+</div>
+<input class="block w-full pl-10 pr-10 py-3 border border-input-border rounded-lg leading-5 bg-[#101922] text-white placeholder-text-secondary focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm transition-colors" id="password" placeholder="비밀번호 입력" required="" type="password"/>
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-text-secondary hover:text-white transition-colors">
+<span class="material-symbols-outlined" style="font-size: 20px;">visibility_off</span>
+</div>
+</div>
+</div>
+<!-- Submit Button -->
+<button class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-primary hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:ring-offset-[#192633] transition-all duration-200 mt-2" type="submit">
+                    로그인
+                </button>
+</form>
+<!-- Divider -->
+<div class="relative mt-8 mb-6">
+<div aria-hidden="true" class="absolute inset-0 flex items-center">
+<div class="w-full border-t border-[#233648]"></div>
+</div>
+<div class="relative flex justify-center">
+<span class="px-2 bg-card-dark text-xs text-text-secondary font-medium">또는</span>
+</div>
+</div>
+<!-- Social / Secondary Options -->
+<div class="grid grid-cols-2 gap-3">
+<button class="flex items-center justify-center w-full px-4 py-2.5 border border-[#324d67] rounded-lg bg-[#101922] hover:bg-[#233648] transition-colors text-white text-sm font-medium gap-2" type="button">
+<img alt="Google Logo" class="w-5 h-5" data-alt="Google G logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAya3iuRVY0Np1E0kV7tUs2CUfkKoLNjIv-7h2j1F4bXC8wBedNnMBtYptsqGXWHQtqiEMbhcL06fldHMVo6Xq-fcqcMZ1OIN4WhiLp1zcfZASHvkf7T1xlyoBWe7spNKB7FgbaM4PUAdpE5jcf4buUjOULdhDDDxDs2REBvjiO3JPGXQusRHLDa0ntqWunhlzYe9uzzil2Rb4zRM28SXOsNgfbp54gRshICeG94i5aaOKLUl_fKqONNoHrIufRIRy4aQxApSc9HPM"/>
+<span>Google</span>
+</button>
+<button class="flex items-center justify-center w-full px-4 py-2.5 border border-[#324d67] rounded-lg bg-[#101922] hover:bg-[#233648] transition-colors text-white text-sm font-medium gap-2" type="button">
+<img alt="Microsoft Logo" class="w-5 h-5" data-alt="Microsoft square logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBtW-rNpB5i7yoKnNs6oMWDWBDKkfvrpcbz3_y6mrfw1rkqzVUxgfcxT08S21GDbvCEtyjIb_JqpMSvmlLHHL9drZKimJq4C2nmBj38J4bNXopk5M5msRa-2-8EW9jivz5NsS-m33kskHLj30MKTFcfs_fu_ZNOub94dQbJUy8poBwgZebtM_nA4VpMT_A0GsNAKNmDXeXv3YVOxTqef0-tgnik_J2NtJuG_nTb9mf8pMJWI_J6m-vg35b_NNu4bA08tYS19GglB0w"/>
+<span>Microsoft</span>
+</button>
+</div>
+<!-- Sign Up Link -->
+<div class="mt-8 text-center">
+<p class="text-sm text-text-secondary">
+                    계정이 없으신가요? 
+                    <a class="font-medium text-primary hover:text-primary-hover transition-colors ml-1" href="#">
+                        회원가입
+                    </a>
+</p>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-6 border-t border-[#233648] bg-[#111a22]">
+<div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-text-secondary">
+<p>© 2024 NFN Corp. All rights reserved.</p>
+<div class="flex gap-6">
+<a class="hover:text-white transition-colors" href="#">이용약관</a>
+<a class="hover:text-white transition-colors" href="#">개인정보 처리방침</a>
+<a class="hover:text-white transition-colors" href="#">문의하기</a>
+</div>
+</div>
+</footer>
+</body></html>

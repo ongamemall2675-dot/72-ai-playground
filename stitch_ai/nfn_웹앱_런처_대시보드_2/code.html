@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html class="dark" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AI 공인중개사 웹앱 런처 대시보드</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#3b82f6", 
+                        "primary-dark": "#2563eb",
+                        "background-light": "#f8fafc",
+                        "background-dark": "#0f172a","surface-dark": "#1e293b","surface-highlight": "#334155","text-secondary": "#94a3b8",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    boxShadow: {
+                        'glow-primary': '0 0 20px -5px rgba(59, 130, 246, 0.5)',
+                        'glow-emerald': '0 0 20px -5px rgba(16, 185, 129, 0.5)',
+                        'glow-purple': '0 0 20px -5px rgba(147, 51, 234, 0.5)',
+                    }
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer utilities {
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .glass-panel {
+                @apply bg-white/80 dark:bg-surface-dark/80 backdrop-blur-xl border border-white/20 dark:border-white/10;
+            }
+            .card-hover-effect {
+                @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-lg;
+            }
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display transition-colors duration-200 h-screen flex overflow-hidden selection:bg-primary/30 selection:text-primary-dark dark:selection:text-white">
+<aside class="w-72 bg-white dark:bg-[#111827] border-r border-slate-200 dark:border-slate-800 hidden lg:flex flex-col z-30 shadow-sm">
+<div class="h-20 flex items-center px-8 border-b border-slate-100 dark:border-slate-800/50">
+<div class="flex items-center gap-3">
+<div class="p-2 bg-primary/10 rounded-xl text-primary">
+<span class="material-symbols-outlined text-3xl">smart_toy</span>
+</div>
+<div class="flex flex-col">
+<span class="text-xl font-black tracking-tight text-slate-900 dark:text-white leading-none">AI Realtor</span>
+<span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Dashboard</span>
+</div>
+</div>
+</div>
+<nav class="flex-1 overflow-y-auto py-8 px-4 space-y-2">
+<a class="flex items-center gap-3 px-4 py-3.5 rounded-xl bg-primary text-white shadow-lg shadow-primary/30 font-bold transition-transform active:scale-95" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+            대시보드 홈
+        </a>
+<div class="pt-8 pb-3 px-4 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-2">
+            Categories
+            <div class="h-px bg-slate-200 dark:bg-slate-700 flex-1"></div>
+</div>
+<a class="group flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-primary dark:hover:text-white transition-all font-medium" href="#ai-engineer">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors text-slate-400 dark:text-slate-500">engineering</span>
+            AI 엔지니어링
+        </a>
+<a class="group flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-primary dark:hover:text-white transition-all font-medium" href="#prompt-generator">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors text-slate-400 dark:text-slate-500">auto_awesome</span>
+            프롬프트 생성기
+        </a>
+<a class="group flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-primary dark:hover:text-white transition-all font-medium" href="#n8n-workflow">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors text-slate-400 dark:text-slate-500">hub</span>
+            n8n 워크플로우
+        </a>
+</nav>
+<div class="p-6 border-t border-slate-100 dark:border-slate-800">
+<div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 mb-4 border border-slate-100 dark:border-slate-700/50">
+<div class="flex items-center gap-3 mb-2">
+<span class="material-symbols-outlined text-yellow-500">lightbulb</span>
+<span class="text-xs font-bold text-slate-700 dark:text-slate-300">Tip of the day</span>
+</div>
+<p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                프롬프트 마법사를 사용하여 매물 설명을 3배 더 빠르게 작성해보세요.
+            </p>
+</div>
+<button class="w-full flex items-center justify-center gap-2 text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 py-2.5 rounded-lg transition-colors text-sm font-semibold">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+            로그아웃
+        </button>
+<div class="mt-4 text-[10px] text-center text-slate-400 dark:text-slate-600 font-medium">
+            © 2024 NFN Corp. All rights reserved.
+        </div>
+</div>
+</aside>
+<div class="flex-1 flex flex-col min-w-0 bg-background-light dark:bg-background-dark relative">
+<header class="sticky top-0 z-20 flex items-center justify-between h-20 px-6 sm:px-10 glass-panel border-b border-slate-200/50 dark:border-slate-800/50">
+<div class="flex items-center gap-4 lg:hidden">
+<button class="p-2 -ml-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<span class="text-lg font-black tracking-tight text-slate-900 dark:text-white">AI Realtor</span>
+</div>
+<div class="hidden lg:flex flex-1 max-w-xl mx-8">
+<label class="relative w-full group">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-primary transition-colors material-symbols-outlined">search</span>
+<input class="w-full h-11 pl-12 pr-4 rounded-xl bg-slate-100 dark:bg-slate-800/50 border border-transparent focus:bg-white dark:focus:bg-slate-800 focus:border-primary/30 focus:ring-4 focus:ring-primary/10 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 transition-all" placeholder="필요한 AI 도구를 검색하세요..." type="text"/>
+</label>
+</div>
+<div class="flex items-center gap-4 sm:gap-6 ml-auto">
+<button class="relative p-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors group">
+<span class="material-symbols-outlined group-hover:animate-pulse">notifications</span>
+<span class="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-[#101922]"></span>
+</button>
+<div class="flex items-center gap-4 pl-6 border-l border-slate-200 dark:border-slate-800">
+<div class="hidden md:flex flex-col items-end">
+<span class="text-sm font-bold text-slate-900 dark:text-white leading-tight">김철수</span>
+<span class="text-[11px] text-primary font-bold uppercase tracking-wide bg-primary/10 px-1.5 py-0.5 rounded mt-0.5">Premium</span>
+</div>
+<div class="size-10 rounded-xl bg-cover bg-center border-2 border-white dark:border-slate-700 shadow-sm cursor-pointer hover:ring-2 hover:ring-primary hover:ring-offset-2 dark:hover:ring-offset-slate-900 transition-all" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCaCcpMcVVDrFXh_r0JwyigTJeJ3WTvv6FJ0yVB9VHgjmAcAo_fgZ5emoBAHxWg8sS3jToqN6ITPAuXI76mED4ESaYXfhYmV2QgyqIKSAkS-ySURPQhzMJmPiwC4m3mgStWTT1-r5lz8xQIi6P4akO5WhbCLXxP4i9uF37xakjwbLUH27YJn8fPplnvB2fqW_CJt9-2LUL8HCg38axorKEiJHdRkWTqsLsoqJR-DOZEPys1PzgQ-QI_a_Kd3QFKiONLmFbXBAq27ns");'></div>
+</div>
+</div>
+</header>
+<main class="flex-1 overflow-y-auto p-6 sm:p-10 lg:p-12 scroll-smooth">
+<div class="relative mb-16 mt-4">
+<div class="absolute -top-20 -left-20 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+<div class="absolute top-10 right-20 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+<div class="relative z-10">
+<div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-500/10 to-indigo-500/10 border border-blue-500/20 text-primary text-xs font-bold uppercase tracking-wider mb-6 shadow-sm">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                    NFN Powered System
+                </div>
+<h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white leading-[1.1] mb-6 tracking-tight">
+                    AI 공부하는 <br class="sm:hidden"/>
+<span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">공인중개사의 놀이터</span>
+</h1>
+<p class="text-slate-600 dark:text-slate-400 text-lg sm:text-xl max-w-3xl leading-relaxed font-medium">
+                    환영합니다, 김철수님. <br class="hidden sm:block"/>
+                    업무 효율을 극대화할 수 있는 AI 도구들이 준비되어 있습니다. 모든 결과물은 자동으로 RAG 서버에 저장되어 데이터 자산이 됩니다.
+                </p>
+<div class="mt-8 sm:mt-10 max-w-2xl relative z-20">
+<div class="relative group">
+<div class="absolute -inset-1 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl blur opacity-20 group-hover:opacity-30 transition duration-500"></div>
+<div class="relative flex items-center">
+<input class="block w-full py-4 pl-12 pr-12 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700/80 rounded-2xl focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all shadow-sm text-base sm:text-lg" placeholder="앱 이름, 키워드, 카테고리로 검색..." type="text"/>
+<div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+<span class="material-symbols-outlined text-slate-400 dark:text-slate-500 text-2xl group-focus-within:text-primary transition-colors">search</span>
+</div>
+<div class="absolute inset-y-0 right-0 flex items-center pr-3">
+<button class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined">tune</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<section class="mb-20 relative" id="ai-engineer">
+<div class="flex items-center justify-between mb-8">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-900/30 text-primary shadow-inner">
+<span class="material-symbols-outlined text-2xl">engineering</span>
+</div>
+<div>
+<h2 class="text-2xl font-bold text-slate-900 dark:text-white">AI 어시스턴스 지침 생성</h2>
+<p class="text-sm text-slate-500 dark:text-slate-400 mt-1">프롬프트 엔지니어링 도구 모음</p>
+</div>
+</div>
+<div class="hidden sm:block h-px flex-1 bg-gradient-to-r from-slate-200 to-transparent dark:from-slate-800 ml-8"></div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+<div class="group relative flex flex-col p-7 rounded-[2rem] bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700/60 card-hover-effect hover:shadow-glow-primary hover:border-primary/50 dark:hover:border-primary/50 overflow-hidden cursor-pointer">
+<div class="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-transparent to-transparent dark:from-blue-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+<div class="relative z-10 flex flex-col h-full">
+<div class="flex justify-between items-start mb-6">
+<div class="size-16 rounded-2xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-primary border border-blue-100 dark:border-blue-500/20 shadow-sm group-hover:scale-110 transition-transform duration-300">
+<span class="material-symbols-outlined text-3xl">auto_fix_high</span>
+</div>
+<div class="p-2 rounded-full bg-slate-50 dark:bg-slate-800 text-slate-400 group-hover:text-primary group-hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined text-xl">arrow_outward</span>
+</div>
+</div>
+<h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-primary transition-colors">프롬프트 마법사</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-6">
+                            복잡한 요구사항을 입력하면 최적의 AI 프롬프트로 변환해주는 마법 같은 도구입니다.
+                        </p>
+<div class="mt-auto pt-5 border-t border-slate-100 dark:border-slate-700/50 flex flex-col gap-2">
+<div class="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-base">save</span>
+<span>자동 저장 지원</span>
+</div>
+<div class="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-base">content_copy</span>
+<span>다운로드/복사 가능</span>
+</div>
+</div>
+</div>
+</div>
+<div class="group relative flex flex-col p-7 rounded-[2rem] bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700/60 card-hover-effect hover:shadow-glow-primary hover:border-primary/50 dark:hover:border-primary/50 overflow-hidden cursor-pointer">
+<div class="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-transparent to-transparent dark:from-blue-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+<div class="relative z-10 flex flex-col h-full">
+<div class="flex justify-between items-start mb-6">
+<div class="size-16 rounded-2xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-primary border border-blue-100 dark:border-blue-500/20 shadow-sm group-hover:scale-110 transition-transform duration-300">
+<span class="material-symbols-outlined text-3xl">settings_suggest</span>
+</div>
+<div class="p-2 rounded-full bg-slate-50 dark:bg-slate-800 text-slate-400 group-hover:text-primary group-hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined text-xl">arrow_outward</span>
+</div>
+</div>
+<h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-primary transition-colors">지침 최적화 도구</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-6">
+                            기존의 지침을 분석하여 더 명확하고 효과적인 AI 지시문으로 개선합니다.
+                        </p>
+<div class="mt-auto pt-5 border-t border-slate-100 dark:border-slate-700/50 flex flex-col gap-2">
+<div class="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-base">save</span>
+<span>자동 저장 지원</span>
+</div>
+<div class="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-base">content_copy</span>
+<span>다운로드/복사 가능</span>
+</div>
+</div>
+</div>
+</div>
+<div class="group relative flex flex-col p-7 rounded-[2rem] bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700/60 card-hover-effect hover:shadow-glow-primary hover:border-primary/50 dark:hover:border-primary/50 overflow-hidden cursor-pointer">
+<div class="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-transparent to-transparent dark:from-blue-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+<div class="relative z-10 flex flex-col h-full">
+<div class="flex justify-between items-start mb-6">
+<div class="size-16 rounded-2xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-primary border border-blue-100 dark:border-blue-500/20 shadow-sm group-hover:scale-110 transition-transform duration-300">
+<span class="material-symbols-outlined text-3xl">person_search</span>
+</div>
+<div class="p-2 rounded-full bg-slate-50 dark:bg-slate-800 text-slate-400 group-hover:text-primary group-hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined text-xl">arrow_outward</span>
+</div>
+</div>
+<h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-primary transition-colors">Persona 생성기</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-6">
+                            중개사님의 스타일을 반영한 AI 페르소나를 생성하여 일관된 톤앤매너를 유지합니다.
+                        </p>
+<div class="mt-auto pt-5 border-t border-slate-100 dark:border-slate-700/50 flex flex-col gap-2">
+<div class="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-base">save</span>
+<span>자동 저장 지원</span>
+</div>
+<div class="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-base">content_copy</span>
+<span>다운로드/복사 가능</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="mb-20 relative" id="prompt-generator">
+<div class="flex items-center justify-between mb-8">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 shadow-inner">
+<span class="material-symbols-outlined text-2xl">auto_awesome</span>
+</div>
+<div>
+<h2 class="text-2xl font-bold text-slate-900 dark:text-white">프롬프트 생성기</h2>
+<div class="flex items-center gap-2 mt-1">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">CONTENTS</span>
+<p class="text-sm text-slate-500 dark:text-slate-400">다양한 콘텐츠 생성을 위한 도구</p>
+</div>
+</div>
+</div>
+<div class="hidden sm:block h-px flex-1 bg-gradient-to-r from-slate-200 to-transparent dark:from-slate-800 ml-8"></div>
+</div>
+<div class="mb-10 bg-slate-50/50 dark:bg-slate-800/20 rounded-[2.5rem] p-6 sm:p-8 border border-slate-100 dark:border-slate-800">
+<div class="flex items-center gap-3 mb-6">
+<span class="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold text-sm">1</span>
+<h3 class="text-lg font-bold text-slate-700 dark:text-slate-200">대본 생성 도구</h3>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+<div class="group relative flex flex-col p-6 rounded-3xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700/60 card-hover-effect hover:shadow-glow-emerald hover:border-emerald-500/50 dark:hover:border-emerald-500/50 overflow-hidden cursor-pointer">
+<div class="absolute inset-0 bg-gradient-to-br from-emerald-50/50 via-transparent to-transparent dark:from-emerald-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+<div class="relative z-10">
+<div class="flex items-center gap-4 mb-4">
+<div class="size-12 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20">
+<span class="material-symbols-outlined text-2xl">home_work</span>
+</div>
+<h3 class="text-lg font-bold text-slate-900 dark:text-white group-hover:text-emerald-500 transition-colors">부동산 매물 대본</h3>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-4 min-h-[40px]">
+                                아파트, 빌라, 상가 등 매물의 특징을 살린 매력적인 소개 대본을 작성합니다.
+                            </p>
+<div class="pt-4 border-t border-slate-100 dark:border-slate-700/50 text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex justify-between items-center">
+<span>앱 실행하기</span>
+<span class="material-symbols-outlined text-sm transform group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</div>
+</div>
+</div>
+<div class="group relative flex flex-col p-6 rounded-3xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700/60 card-hover-effect hover:shadow-glow-emerald hover:border-emerald-500/50 dark:hover:border-emerald-500/50 overflow-hidden cursor-pointer">
+<div class="absolute inset-0 bg-gradient-to-br from-emerald-50/50 via-transparent to-transparent dark:from-emerald-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+<div class="relative z-10">
+<div class="flex items-center gap-4 mb-4">
+<div class="size-12 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20">
+<span class="material-symbols-outlined text-2xl">mic</span>
+</div>
+<h3 class="text-lg font-bold text-slate-900 dark:text-white group-hover:text-emerald-500 transition-colors">브리핑 대본</h3>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-4 min-h-[40px]">
+                                고객 미팅 전, 핵심 정보를 요약하여 전문적으로 브리핑할 수 있는 대본을 준비합니다.
+                            </p>
+<div class="pt-4 border-t border-slate-100 dark:border-slate-700/50 text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex justify-between items-center">
+<span>앱 실행하기</span>
+<span class="material-symbols-outlined text-sm transform group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</div>
+</div>
+</div>
+<div class="group relative flex flex-col p-6 rounded-3xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700/60 card-hover-effect hover:shadow-glow-emerald hover:border-emerald-500/50 dark:hover:border-emerald-500/50 overflow-hidden cursor-pointer">
+<div class="absolute inset-0 bg-gradient-to-br from-emerald-50/50 via-transparent to-transparent dark:from-emerald-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+<div class="relative z-10">
+<div class="flex items-center gap-4 mb-4">
+<div class="size-12 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20">
+<span class="material-symbols-outlined text-2xl">campaign</span>
+</div>
+<h3 class="text-lg font-bold text-slate-900 dark:text-white group-hover:text-emerald-500 transition-colors">공지사항 대본</h3>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-4 min-h-[40px]">
+                                휴무 일정, 정책 변경 등 고객에게 알릴 공지사항 문구를 정중하게 작성합니다.
+                            </p>
+<div class="pt-4 border-t border-slate-100 dark:border-slate-700/50 text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex justify-between items-center">
+<span>앱 실행하기</span>
+<span class="material-symbols-outlined text-sm transform group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="mb-10 bg-slate-50/50 dark:bg-slate-800/20 rounded-[2.5rem] p-6 sm:p-8 border border-slate-100 dark:border-slate-800">
+<div class="flex items-center gap-3 mb-6">
+<span class="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold text-sm">2</span>
+<h3 class="text-lg font-bold text-slate-700 dark:text-slate-200">이미지/영상/썸네일 생성</h3>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+<div class="group relative flex flex-col p-6 rounded-3xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700/60 card-hover-effect hover:shadow-glow-emerald hover:border-emerald-500/50 dark:hover:border-emerald-500/50 overflow-hidden cursor-pointer">
+<div class="absolute inset-0 bg-gradient-to-br from-emerald-50/50 via-transparent to-transparent dark:from-emerald-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+<div class="relative z-10">
+<div class="flex items-center gap-4 mb-4">
+<div class="size-12 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20">
+<span class="material-symbols-outlined text-2xl">photo_camera</span>
+</div>
+<h3 class="text-lg font-bold text-slate-900 dark:text-white group-hover:text-emerald-500 transition-colors">이미지 아이디어</h3>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-4 min-h-[40px]">
+                                매물 홍보에 적합한 이미지 컨셉과 구도 아이디어를 AI가 제안합니다.
+                            </p>
+<div class="pt-4 border-t border-slate-100 dark:border-slate-700/50 text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex justify-between items-center">
+<span>앱 실행하기</span>
+<span class="material-symbols-outlined text-sm transform group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</div>
+</div>
+</div>
+<div class="group relative flex flex-col p-6 rounded-3xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700/60 card-hover-effect hover:shadow-glow-emerald hover:border-emerald-500/50 dark:hover:border-emerald-500/50 overflow-hidden cursor-pointer">
+<div class="absolute inset-0 bg-gradient-to-br from-emerald-50/50 via-transparent to-transparent dark:from-emerald-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+<div class="relative z-10">
+<div class="flex items-center gap-4 mb-4">
+<div class="size-12 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20">
+<span class="material-symbols-outlined text-2xl">movie_filter</span>
+</div>
+<h3 class="text-lg font-bold text-slate-900 dark:text-white group-hover:text-emerald-500 transition-colors">영상 스토리보드</h3>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-4 min-h-[40px]">
+                                매물 영상 촬영을 위한 컷 구성과 스토리보드 흐름을 기획합니다.
+                            </p>
+<div class="pt-4 border-t border-slate-100 dark:border-slate-700/50 text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex justify-between items-center">
+<span>앱 실행하기</span>
+<span class="material-symbols-outlined text-sm transform group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</div>
+</div>
+</div>
+<div class="group relative flex flex-col p-6 rounded-3xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700/60 card-hover-effect hover:shadow-glow-emerald hover:border-emerald-500/50 dark:hover:border-emerald-500/50 overflow-hidden cursor-pointer">
+<div class="absolute inset-0 bg-gradient-to-br from-emerald-50/50 via-transparent to-transparent dark:from-emerald-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+<div class="relative z-10">
+<div class="flex items-center gap-4 mb-4">
+<div class="size-12 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20">
+<span class="material-symbols-outlined text-2xl">image</span>
+</div>
+<h3 class="text-lg font-bold text-slate-900 dark:text-white group-hover:text-emerald-500 transition-colors">썸네일 컨셉</h3>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-4 min-h-[40px]">
+                                클릭을 유도하는 매력적인 썸네일 디자인 컨셉과 문구를 추천합니다.
+                            </p>
+<div class="pt-4 border-t border-slate-100 dark:border-slate-700/50 text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex justify-between items-center">
+<span>앱 실행하기</span>
+<span class="material-symbols-outlined text-sm transform group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="mb-0 bg-slate-50/50 dark:bg-slate-800/20 rounded-[2.5rem] p-6 sm:p-8 border border-slate-100 dark:border-slate-800">
+<div class="flex items-center gap-3 mb-6">
+<span class="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold text-sm">3</span>
+<h3 class="text-lg font-bold text-slate-700 dark:text-slate-200">SEO 규격 콘텐츠 생성</h3>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+<div class="group relative flex flex-col p-6 rounded-3xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700/60 card-hover-effect hover:shadow-glow-emerald hover:border-emerald-500/50 dark:hover:border-emerald-500/50 overflow-hidden cursor-pointer">
+<div class="absolute inset-0 bg-gradient-to-br from-emerald-50/50 via-transparent to-transparent dark:from-emerald-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+<div class="relative z-10">
+<div class="flex items-center gap-4 mb-4">
+<div class="size-12 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20">
+<span class="material-symbols-outlined text-2xl">smart_display</span>
+</div>
+<h3 class="text-lg font-bold text-slate-900 dark:text-white group-hover:text-emerald-500 transition-colors">유튜브 SEO</h3>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-4 min-h-[40px]">
+                                유튜브 검색 상위 노출을 위한 제목, 설명, 태그 최적화 가이드를 제공합니다.
+                            </p>
+<div class="pt-4 border-t border-slate-100 dark:border-slate-700/50 text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex justify-between items-center">
+<span>앱 실행하기</span>
+<span class="material-symbols-outlined text-sm transform group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</div>
+</div>
+</div>
+<div class="group relative flex flex-col p-6 rounded-3xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700/60 card-hover-effect hover:shadow-glow-emerald hover:border-emerald-500/50 dark:hover:border-emerald-500/50 overflow-hidden cursor-pointer">
+<div class="absolute inset-0 bg-gradient-to-br from-emerald-50/50 via-transparent to-transparent dark:from-emerald-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+<div class="relative z-10">
+<div class="flex items-center gap-4 mb-4">
+<div class="size-12 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20">
+<span class="material-symbols-outlined text-2xl">grid_on</span>
+</div>
+<h3 class="text-lg font-bold text-slate-900 dark:text-white group-hover:text-emerald-500 transition-colors">인스타 해시태그</h3>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-4 min-h-[40px]">
+                                게시물 노출을 극대화할 수 있는 인기 해시태그 조합을 생성합니다.
+                            </p>
+<div class="pt-4 border-t border-slate-100 dark:border-slate-700/50 text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex justify-between items-center">
+<span>앱 실행하기</span>
+<span class="material-symbols-outlined text-sm transform group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</div>
+</div>
+</div>
+<div class="group relative flex flex-col p-6 rounded-3xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700/60 card-hover-effect hover:shadow-glow-emerald hover:border-emerald-500/50 dark:hover:border-emerald-500/50 overflow-hidden cursor-pointer">
+<div class="absolute inset-0 bg-gradient-to-br from-emerald-50/50 via-transparent to-transparent dark:from-emerald-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+<div class="relative z-10">
+<div class="flex items-center gap-4 mb-4">
+<div class="size-12 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20">
+<span class="material-symbols-outlined text-2xl">music_note</span>
+</div>
+<h3 class="text-lg font-bold text-slate-900 dark:text-white group-hover:text-emerald-500 transition-colors">틱톡 트렌드</h3>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-4 min-h-[40px]">
+                                틱톡에서 유행하는 챌린지와 트렌드를 분석하여 콘텐츠에 적용합니다.
+                            </p>
+<div class="pt-4 border-t border-slate-100 dark:border-slate-700/50 text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex justify-between items-center">
+<span>앱 실행하기</span>
+<span class="material-symbols-outlined text-sm transform group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="mb-20 relative" id="n8n-workflow">
+<div class="flex items-center justify-between mb-8">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center w-12 h-12 rounded-2xl bg-purple-100 dark:bg-purple-900/30 text-purple-600 shadow-inner">
+<span class="material-symbols-outlined text-2xl">hub</span>
+</div>
+<div>
+<h2 class="text-2xl font-bold text-slate-900 dark:text-white">n8n 워크플로우 연결</h2>
+<a class="inline-flex items-center gap-1 text-sm text-purple-600 dark:text-purple-400 hover:underline" href="https://n8n.hyehwa72.org" target="_blank">
+                            n8n.hyehwa72.org <span class="material-symbols-outlined text-[14px]">open_in_new</span>
+</a>
+</div>
+</div>
+<div class="hidden sm:block h-px flex-1 bg-gradient-to-r from-slate-200 to-transparent dark:from-slate-800 ml-8"></div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+<div class="group relative flex flex-col p-7 rounded-[2rem] bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700/60 card-hover-effect hover:shadow-glow-purple hover:border-purple-500/50 dark:hover:border-purple-500/50 overflow-hidden cursor-pointer">
+<div class="absolute inset-0 bg-gradient-to-br from-purple-50/50 via-transparent to-transparent dark:from-purple-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+<div class="relative z-10 flex flex-col h-full">
+<div class="flex justify-between items-start mb-6">
+<div class="size-16 rounded-2xl bg-purple-50 dark:bg-purple-500/10 flex items-center justify-center text-purple-600 dark:text-purple-400 border border-purple-100 dark:border-purple-500/20 shadow-sm group-hover:scale-110 transition-transform duration-300">
+<span class="material-symbols-outlined text-3xl">account_tree</span>
+</div>
+<div class="p-2 rounded-full bg-slate-50 dark:bg-slate-800 text-slate-400 group-hover:text-purple-500 group-hover:bg-purple-500/10 transition-colors">
+<span class="material-symbols-outlined text-xl">arrow_outward</span>
+</div>
+</div>
+<h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-purple-500 transition-colors">내 워크플로우 목록</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-6">
+                            현재 연결된 모든 n8n 자동화 워크플로우의 상태와 목록을 확인합니다.
+                        </p>
+<div class="mt-auto pt-5 border-t border-slate-100 dark:border-slate-700/50 flex flex-col gap-2">
+<div class="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-base">save</span>
+<span>자동 저장 지원</span>
+</div>
+<div class="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-base">content_copy</span>
+<span>다운로드/복사 가능</span>
+</div>
+</div>
+</div>
+</div>
+<div class="group relative flex flex-col p-7 rounded-[2rem] bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700/60 card-hover-effect hover:shadow-glow-purple hover:border-purple-500/50 dark:hover:border-purple-500/50 overflow-hidden cursor-pointer">
+<div class="absolute inset-0 bg-gradient-to-br from-purple-50/50 via-transparent to-transparent dark:from-purple-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+<div class="relative z-10 flex flex-col h-full">
+<div class="flex justify-between items-start mb-6">
+<div class="size-16 rounded-2xl bg-purple-50 dark:bg-purple-500/10 flex items-center justify-center text-purple-600 dark:text-purple-400 border border-purple-100 dark:border-purple-500/20 shadow-sm group-hover:scale-110 transition-transform duration-300">
+<span class="material-symbols-outlined text-3xl">add_circle</span>
+</div>
+<div class="p-2 rounded-full bg-slate-50 dark:bg-slate-800 text-slate-400 group-hover:text-purple-500 group-hover:bg-purple-500/10 transition-colors">
+<span class="material-symbols-outlined text-xl">arrow_outward</span>
+</div>
+</div>
+<h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-purple-500 transition-colors">새 워크플로우 생성</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-6">
+                            새로운 자동화 작업을 시작하기 위한 빈 워크플로우를 생성합니다.
+                        </p>
+<div class="mt-auto pt-5 border-t border-slate-100 dark:border-slate-700/50 flex flex-col gap-2">
+<div class="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-base">save</span>
+<span>자동 저장 지원</span>
+</div>
+<div class="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-base">content_copy</span>
+<span>다운로드/복사 가능</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+</div>
+</body></html>

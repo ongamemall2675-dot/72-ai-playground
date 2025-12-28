@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html class="dark" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NFN 웹앱 상세 정보</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-dark": "#1e293b",
+                        "text-secondary": "#94a3b8",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display transition-colors duration-200">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+<header class="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-[#233648] bg-white/90 dark:bg-[#111a22]/90 backdrop-blur-md px-4 sm:px-10 py-3">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-4 text-slate-900 dark:text-white">
+<a class="size-8 flex items-center justify-center text-primary" href="#">
+<span class="material-symbols-outlined" style="font-size: 32px;">grid_view</span>
+</a>
+<h2 class="text-lg font-bold leading-tight tracking-[-0.015em] hidden sm:block">NFN Dashboard</h2>
+</div>
+<label class="hidden md:flex flex-col min-w-40 !h-10 max-w-64">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full group focus-within:ring-2 ring-primary/50 transition-all">
+<div class="text-slate-400 dark:text-[#92adc9] flex border-none bg-slate-100 dark:bg-[#233648] items-center justify-center pl-4 rounded-l-lg border-r-0">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg rounded-l-none border-none bg-slate-100 dark:bg-[#233648] text-slate-900 dark:text-white focus:outline-0 focus:ring-0 placeholder:text-slate-400 dark:placeholder:text-[#92adc9] px-4 pl-2 text-sm font-normal leading-normal h-full" placeholder="앱 검색..." value=""/>
+</div>
+</label>
+</div>
+<div class="flex flex-1 justify-end gap-4 sm:gap-8 items-center">
+<div class="hidden lg:flex items-center gap-9">
+<a class="text-slate-600 dark:text-white hover:text-primary transition-colors text-sm font-medium leading-normal" href="#">대시보드</a>
+<a class="text-slate-600 dark:text-white hover:text-primary transition-colors text-sm font-medium leading-normal" href="#">설정</a>
+<a class="text-slate-600 dark:text-white hover:text-primary transition-colors text-sm font-medium leading-normal" href="#">지원</a>
+</div>
+<button class="hidden sm:flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-9 px-4 bg-primary hover:bg-blue-600 transition-colors text-white text-sm font-bold leading-normal tracking-[0.015em]">
+<span class="truncate">로그아웃</span>
+</button>
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-10 border-2 border-slate-200 dark:border-[#233648] cursor-pointer" data-alt="User profile avatar showing a smiling person" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCaCcpMcVVDrFXh_r0JwyigTJeJ3WTvv6FJ0yVB9VHgjmAcAo_fgZ5emoBAHxWg8sS3jToqN6ITPAuXI76mED4ESaYXfhYmV2QgyqIKSAkS-ySURPQhzMJmPiwC4m3mgStWTT1-r5lz8xQIi6P4akO5WhbCLXxP4i9uF37xakjwbLUH27YJn8fPplnvB2fqW_CJt9-2LUL8HCg38axorKEiJHdRkWTqsLsoqJR-DOZEPys1PzgQ-QI_a_Kd3QFKiONLmFbXBAq27ns");'></div>
+</div>
+</header>
+<div class="layout-container flex h-full grow flex-col">
+<div class="px-4 sm:px-10 lg:px-40 flex flex-1 justify-center py-5 sm:py-10">
+<div class="layout-content-container flex flex-col max-w-[1024px] flex-1 w-full">
+<div class="mb-6">
+<button class="flex items-center gap-2 text-slate-500 hover:text-primary dark:text-[#92adc9] dark:hover:text-primary transition-colors text-sm font-medium">
+<span class="material-symbols-outlined text-[20px]">arrow_back</span>
+                            대시보드로 돌아가기
+                        </button>
+</div>
+<div class="flex flex-col md:flex-row gap-6 md:gap-8 items-start mb-8">
+<div class="size-24 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0 border border-emerald-200 dark:border-emerald-800/50 shadow-sm">
+<span class="material-symbols-outlined text-6xl">monitoring</span>
+</div>
+<div class="flex-1 min-w-0 flex flex-col gap-3">
+<div class="flex items-center gap-3 flex-wrap">
+<span class="px-2.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold">데이터 분석</span>
+<span class="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-[14px]">schedule</span> 업데이트: 2024.05.20
+                                </span>
+</div>
+<h1 class="text-slate-900 dark:text-white text-3xl sm:text-4xl font-black leading-tight tracking-[-0.033em]">
+                                매출 리포트
+                            </h1>
+<p class="text-slate-500 dark:text-[#92adc9] text-base sm:text-lg font-normal leading-relaxed max-w-3xl">
+                                월간 및 분기별 매출 성과를 시각화하여 분석합니다. 복잡한 데이터를 직관적인 그래프로 변환하여 빠르고 정확한 의사결정을 지원합니다.
+                            </p>
+</div>
+<div class="flex flex-row md:flex-col gap-3 shrink-0 w-full md:w-auto mt-2 md:mt-0">
+<button class="flex w-full md:w-auto min-w-[160px] cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-primary hover:bg-blue-600 transition-all text-white text-base font-bold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transform active:scale-95">
+<span class="material-symbols-outlined mr-2">rocket_launch</span>
+                                웹앱 실행
+                            </button>
+</div>
+</div>
+<div class="w-full aspect-video md:aspect-[21/9] rounded-xl bg-slate-100 dark:bg-[#1e293b] border border-slate-200 dark:border-[#233648] mb-10 overflow-hidden flex items-center justify-center relative group shadow-sm">
+<div class="absolute inset-0 opacity-10 dark:opacity-5" style="background-image: radial-gradient(#64748b 1px, transparent 1px); background-size: 20px 20px;"></div>
+<div class="flex flex-col items-center gap-4 z-10">
+<span class="material-symbols-outlined text-6xl text-slate-300 dark:text-slate-600">bar_chart_4_bars</span>
+<span class="text-slate-400 dark:text-slate-500 font-medium">미리보기 이미지가 준비되지 않았습니다</span>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-slate-900/10 to-transparent pointer-events-none"></div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+<div class="lg:col-span-2 flex flex-col gap-10">
+<section>
+<h2 class="text-xl font-bold text-slate-900 dark:text-white mb-4 border-b border-slate-200 dark:border-[#233648] pb-2">상세 설명</h2>
+<div class="text-slate-600 dark:text-[#92adc9] leading-7 space-y-4">
+<p>
+                                        매출 리포트 앱은 기업의 재무 건전성을 한눈에 파악할 수 있도록 돕는 강력한 분석 도구입니다. ERP 시스템과 연동하여 실시간으로 매출 데이터를 수집하고, 이를 다양한 차트와 그래프로 시각화하여 제공합니다.
+                                    </p>
+<p>
+                                        단순히 과거 데이터를 보여주는 것을 넘어, NFN의 AI 엔진을 활용한 예측 모델링을 통해 향후 매출 추이를 전망하고, 계절성 요인이나 마케팅 캠페인의 영향을 심층적으로 분석할 수 있습니다. 이를 통해 경영진은 데이터 기반의 확실한 전략을 수립할 수 있습니다.
+                                    </p>
+</div>
+</section>
+<section>
+<h2 class="text-xl font-bold text-slate-900 dark:text-white mb-6 border-b border-slate-200 dark:border-[#233648] pb-2">주요 기능</h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div class="flex items-start gap-4 p-5 rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-[#233648] hover:border-primary/50 transition-colors">
+<div class="size-10 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined">analytics</span>
+</div>
+<div>
+<h3 class="font-bold text-slate-900 dark:text-white text-sm mb-1">실시간 대시보드</h3>
+<p class="text-xs text-slate-500 dark:text-text-secondary leading-normal">주요 KPI 및 매출 지표를 실시간으로 모니터링합니다.</p>
+</div>
+</div>
+<div class="flex items-start gap-4 p-5 rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-[#233648] hover:border-primary/50 transition-colors">
+<div class="size-10 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined">picture_as_pdf</span>
+</div>
+<div>
+<h3 class="font-bold text-slate-900 dark:text-white text-sm mb-1">보고서 자동화</h3>
+<p class="text-xs text-slate-500 dark:text-text-secondary leading-normal">원하는 주기로 PDF, Excel 리포트를 자동 생성하여 발송합니다.</p>
+</div>
+</div>
+<div class="flex items-start gap-4 p-5 rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-[#233648] hover:border-primary/50 transition-colors">
+<div class="size-10 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined">filter_alt</span>
+</div>
+<div>
+<h3 class="font-bold text-slate-900 dark:text-white text-sm mb-1">다차원 필터링</h3>
+<p class="text-xs text-slate-500 dark:text-text-secondary leading-normal">지역, 상품군, 담당자별로 데이터를 세분화하여 분석합니다.</p>
+</div>
+</div>
+<div class="flex items-start gap-4 p-5 rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-[#233648] hover:border-primary/50 transition-colors">
+<div class="size-10 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined">trending_up</span>
+</div>
+<div>
+<h3 class="font-bold text-slate-900 dark:text-white text-sm mb-1">AI 매출 예측</h3>
+<p class="text-xs text-slate-500 dark:text-text-secondary leading-normal">과거 패턴을 학습하여 향후 매출 추이를 과학적으로 예측합니다.</p>
+</div>
+</div>
+</div>
+</section>
+</div>
+<div class="flex flex-col gap-6">
+<div class="p-6 rounded-xl bg-white dark:bg-[#16202a] border border-slate-200 dark:border-[#233648] shadow-sm">
+<h3 class="font-bold text-slate-900 dark:text-white mb-5 text-sm uppercase tracking-wider flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">info</span> 앱 정보
+                                </h3>
+<div class="flex flex-col gap-4">
+<div class="flex justify-between items-center text-sm group">
+<span class="text-slate-500 dark:text-slate-400">버전</span>
+<span class="text-slate-900 dark:text-white font-medium group-hover:text-primary transition-colors">v2.4.0</span>
+</div>
+<div class="w-full h-px bg-slate-100 dark:bg-[#233648]"></div>
+<div class="flex justify-between items-center text-sm group">
+<span class="text-slate-500 dark:text-slate-400">개발사</span>
+<span class="text-slate-900 dark:text-white font-medium group-hover:text-primary transition-colors">NFN Corp.</span>
+</div>
+<div class="w-full h-px bg-slate-100 dark:bg-[#233648]"></div>
+<div class="flex justify-between items-center text-sm group">
+<span class="text-slate-500 dark:text-slate-400">라이선스</span>
+<span class="text-slate-900 dark:text-white font-medium group-hover:text-primary transition-colors">Enterprise</span>
+</div>
+<div class="w-full h-px bg-slate-100 dark:bg-[#233648]"></div>
+<div class="flex justify-between items-center text-sm group">
+<span class="text-slate-500 dark:text-slate-400">지원 언어</span>
+<span class="text-slate-900 dark:text-white font-medium group-hover:text-primary transition-colors">한국어, English</span>
+</div>
+</div>
+</div>
+<div class="p-6 rounded-xl border border-slate-200 dark:border-[#233648] bg-slate-50 dark:bg-transparent">
+<h3 class="font-bold text-slate-900 dark:text-white mb-2 text-sm">도움이 필요하신가요?</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400 mb-4 leading-normal">
+                                     앱 사용 중 문제가 발생하거나 기능에 대한 문의가 있다면 지원팀에 연락주세요.
+                                 </p>
+<button class="w-full py-2.5 px-4 rounded-lg bg-white dark:bg-[#1e293b] border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-primary dark:hover:text-white transition-all shadow-sm">
+                                     기술 지원 문의하기
+                                 </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<footer class="flex justify-center pb-8 pt-4 border-t border-slate-200 dark:border-[#233648] mt-auto">
+<p class="text-slate-400 dark:text-[#92adc9] text-sm">
+                    © 2024 NFN Corp. All rights reserved.
+                </p>
+</footer>
+</div>
+</div>
+
+</body></html>

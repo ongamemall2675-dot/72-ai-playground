@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Web App Launcher - Loading</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white antialiased transition-colors duration-200">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<!-- Top Navigation -->
+<header class="sticky top-0 z-50 flex w-full items-center justify-between border-b border-solid border-slate-200 dark:border-[#233648] bg-white dark:bg-[#101922] px-6 py-4 md:px-10">
+<div class="flex items-center gap-4">
+<div class="size-8 text-primary">
+<svg class="w-full h-full" fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-lg font-bold leading-tight tracking-tight text-slate-900 dark:text-white">Web App Launcher</h2>
+</div>
+<div class="flex items-center gap-4 md:gap-8">
+<div class="hidden md:flex gap-2">
+<button class="group flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#233648] dark:hover:bg-[#2f455a] text-slate-600 dark:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+</button>
+<button class="group flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#233648] dark:hover:bg-[#2f455a] text-slate-600 dark:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+</button>
+</div>
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-10 ring-2 ring-slate-100 dark:ring-[#233648]" data-alt="User profile avatar showing abstract colorful gradient" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAhi0D-J2Ov2qsuDK0ySlijRJowJNzVx7A76kNAYw7yxKS_lMcvoaCdVcvqZzxTHkxpYQ1N3kvEiDPzjkVsTkAkI2gDb06lPUlBbuievF4n3wwD7SK59IsPK77npkEmk-fkNRlqR8yLYYHzczs9d6Eo2rVwrLL_GA698zH1luIPN_fQ8HwCVApuQyh7Qe8M3thxOuVl_4HV7t2kXDvBpRhhxieKFMIQ79pCKqq2xnSoYCEdlAW60AbxB4WxZhvM3fQ-LESshcGf5H8");'></div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex flex-1 flex-col items-center justify-center p-4 sm:p-8">
+<!-- Central Status Card -->
+<div class="w-full max-w-[560px] animate-fade-in">
+<!-- Card Container -->
+<div class="relative overflow-hidden rounded-xl border border-slate-200 dark:border-[#233648] bg-white dark:bg-[#16212e] shadow-xl">
+<!-- Decorative Top Border -->
+<div class="absolute top-0 left-0 h-1 w-full bg-primary/80"></div>
+<div class="p-8 sm:p-10 flex flex-col items-center">
+<!-- App Icon/Logo Visual -->
+<div class="mb-8 relative">
+<div class="absolute inset-0 animate-ping rounded-full bg-primary/20"></div>
+<div class="relative flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-[#0f60b6] shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-white text-[48px]">terminal</span>
+</div>
+</div>
+<!-- Text Status -->
+<h1 class="mb-2 text-center text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
+                            Starting Web Terminal
+                        </h1>
+<p class="mb-10 text-center text-sm text-slate-500 dark:text-[#93adc8]">
+                            Establishing secure connection to NFN Backend...
+                        </p>
+<!-- Progress Bar Component -->
+<div class="w-full mb-8">
+<div class="mb-3 flex justify-between text-sm font-medium">
+<span class="text-slate-700 dark:text-slate-200">Allocating Resources...</span>
+<span class="text-primary font-bold">45%</span>
+</div>
+<!-- Progress Track -->
+<div class="h-3 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-[#233648]">
+<!-- Progress Fill -->
+<div class="h-full w-[45%] rounded-full bg-primary shadow-[0_0_10px_rgba(19,127,236,0.5)] transition-all duration-1000 ease-out" style="width: 45%;"></div>
+</div>
+<p class="mt-3 text-center text-xs text-slate-400 dark:text-[#58728d]">
+                                This process typically takes 15-30 seconds.
+                            </p>
+</div>
+<!-- Contextual Tip Box -->
+<div class="flex w-full items-start gap-3 rounded-lg border border-slate-100 dark:border-[#233648] bg-slate-50 dark:bg-[#111a22] p-4">
+<div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-yellow-500/10 text-yellow-600 dark:text-yellow-400">
+<span class="material-symbols-outlined text-[16px]">lightbulb</span>
+</div>
+<div class="flex-1">
+<h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Did you know?</h3>
+<p class="text-sm leading-relaxed text-slate-600 dark:text-[#93adc8]">
+                                    NFN isolates every app instance in a unique container, ensuring maximum security and zero interference for your data pipelines.
+                                </p>
+</div>
+</div>
+</div>
+</div>
+<!-- Cancel / Action Area -->
+<div class="mt-6 flex justify-center">
+<button class="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-slate-500 transition-colors hover:bg-slate-200 hover:text-slate-700 dark:text-[#58728d] dark:hover:bg-[#1f2e3d] dark:hover:text-slate-200">
+<span class="material-symbols-outlined text-[18px]">close</span>
+                        Cancel Startup
+                    </button>
+</div>
+</div>
+</main>
+</div>
+</body></html>
