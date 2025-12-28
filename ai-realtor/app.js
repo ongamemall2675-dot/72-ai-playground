@@ -632,7 +632,7 @@ function hideLoading() {
 // 앱 페이지 표시
 function showAppPage(appId) {
     elements.mainContent.innerHTML = getAppPageHTML(appId);
-    setupAppPageListeners();
+    setupAppPageListeners(appId);
 }
 
 // 앱 페이지 HTML
@@ -719,7 +719,7 @@ function getAppPageHTML(appId) {
 }
 
 // 앱 페이지 이벤트 리스너
-function setupAppPageListeners() {
+function setupAppPageListeners(appId) {
     document.querySelector('.back-btn')?.addEventListener('click', showDashboard);
 
     document.getElementById('runAppBtn')?.addEventListener('click', () => {
@@ -734,12 +734,29 @@ function setupAppPageListeners() {
 
         // 시뮬레이션된 결과
         setTimeout(() => {
-            resultEl.innerHTML = `
-                <div class="text-slate-900 dark:text-white space-y-3">
-                    <p class="font-medium">✨ AI가 생성한 결과:</p>
-                    <p class="text-sm leading-relaxed">${generateSampleResult(input)}</p>
-                </div>
-            `;
+            if (appId === 'new-workflow') {
+                const workflowJson = generateN8nWorkflowJSON(input);
+                resultEl.innerHTML = `
+                    <div class="text-slate-900 dark:text-white space-y-3">
+                        <div class="flex items-center justify-between">
+                            <p class="font-bold flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[#ff6d5a]">hub</span>
+                                생성된 n8n 워크플로우
+                            </p>
+                            <span class="text-xs bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-slate-500">JSON Format</span>
+                        </div>
+                        <p class="text-sm text-slate-500 mb-2">아래 JSON 코드를 복사하여 n8n 편집기에 붙여넣으세요.</p>
+                        <pre class="bg-slate-900 text-green-400 p-4 rounded-xl text-xs font-mono overflow-auto max-h-60 leading-relaxed custom-scrollbar select-all">${JSON.stringify(workflowJson, null, 2)}</pre>
+                    </div>
+                `;
+            } else {
+                resultEl.innerHTML = `
+                    <div class="text-slate-900 dark:text-white space-y-3">
+                        <p class="font-medium">✨ AI가 생성한 결과:</p>
+                        <p class="text-sm leading-relaxed whitespace-pre-wrap">${generateSampleResult(input)}</p>
+                    </div>
+                `;
+            }
         }, 1500);
     });
 
@@ -771,6 +788,67 @@ function generateSampleResult(input) {
     ];
 
     return templates[Math.floor(Math.random() * templates.length)];
+}
+
+// n8n 워크플로우 JSON 생성기 (Mock)
+function generateN8nWorkflowJSON(input) {
+    // 사용자의 입력 내용을 바탕으로 프롬프트 구성
+    const userPrompt = input.replace(/"/g, '\\"').substring(0, 100);
+
+    return {
+        "name": "AI Realtor Auto-Workflow",
+        "nodes": [
+            {
+                "parameters": {
+                    "path": "webhook-trigger",
+                    "responseMode": "lastNode",
+                    "options": {}
+                },
+                "id": "uuid-1",
+                "name": "Webhook",
+                "type": "n8n-nodes-base.webhook",
+                "typeVersion": 1,
+                "position": [100, 300]
+            },
+            {
+                "parameters": {
+                    "model": "gpt-4",
+                    "prompt": `Role: Professional Real Estate Marketer\nRequest: ${userPrompt}\n\nClient Data: {{ $json.body }}`,
+                    "temperature": 0.7,
+                    "options": {}
+                },
+                "id": "uuid-2",
+                "name": "AI Generator",
+                "type": "n8n-nodes-base.openAi",
+                "typeVersion": 1,
+                "position": [300, 300]
+            },
+            {
+                "parameters": {
+                    "subject": "자동 응답: 문의 감사드립니다",
+                    "html": "<html><body><p>{{ $json.message.content }}</p><hr><p>72놀이터 부동산 제공</p></body></html>",
+                    "toEmail": "{{ $json.body.email }}"
+                },
+                "id": "uuid-3",
+                "name": "Send Email",
+                "type": "n8n-nodes-base.emailSend",
+                "typeVersion": 1,
+                "position": [500, 300]
+            }
+        ],
+        "connections": {
+            "Webhook": {
+                "main": [
+                    [{ "node": "AI Generator", "type": "main", "index": 0 }]
+                ]
+            },
+            "AI Generator": {
+                "main": [
+                    [{ "node": "Send Email", "type": "main", "index": 0 }]
+                ]
+            }
+        }
+    };
 }
 
 // =============================================
