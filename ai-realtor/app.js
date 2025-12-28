@@ -2077,37 +2077,7 @@ function handleFiles(files) {
     }
 }
 
-async function uploadFiles() {
-    const btn = document.getElementById('startUploadBtn');
-    const originalText = btn.innerHTML;
-
-    btn.disabled = true;
-    btn.innerHTML = '<span class="material-symbols-outlined animate-spin mr-2">progress_activity</span> 업로드 및 처리 중...';
-
-    // 실제 업로드 로직 (FormData 사용)
-    try {
-        /*
-        const formData = new FormData();
-        ragState.selectedFiles.forEach(file => formData.append('files', file));
-        
-        await fetch(`${RAG_API.BASE_URL}${RAG_API.ENDPOINTS.DOCUMENTS}`, {
-            method: 'POST',
-            body: formData
-        });
-        */
-
-        // 데모용 타임아웃
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        alert('업로드가 완료되었습니다!');
-        ragState.selectedFiles = [];
-        switchRAGTab('documents'); // 문서 목록으로 이동
-    } catch (e) {
-        alert('업로드 실패: ' + e.message);
-        btn.disabled = false;
-        btn.innerHTML = originalText;
-    }
-}
+// (Duplicate uploadFiles function removed)
 
 function setupSearchListeners() {
     const input = document.getElementById('ragSearchInput');
