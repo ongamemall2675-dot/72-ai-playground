@@ -7,11 +7,69 @@ const state = {
     currentPage: 'dashboard'
 };
 
-// 관리자 계정 정보
-const ADMIN_CREDENTIALS = {
+// 기본 관리자 계정 (초기화용)
+const DEFAULT_ADMIN = {
     id: 'ongamemall',
-    password: 'realhun0506'
+    password: 'realhun0506',
+    name: '관리자',
+    role: 'admin',
+    createdAt: new Date().toISOString()
 };
+
+// 사용자 데이터 관리
+function getUsers() {
+    const users = localStorage.getItem('aiRealtorUsers');
+    if (!users) {
+        // 기본 관리자 계정 초기화
+        const initialUsers = [DEFAULT_ADMIN];
+        localStorage.setItem('aiRealtorUsers', JSON.stringify(initialUsers));
+        return initialUsers;
+    }
+    return JSON.parse(users);
+}
+
+function saveUsers(users) {
+    localStorage.setItem('aiRealtorUsers', JSON.stringify(users));
+}
+
+function findUser(id) {
+    const users = getUsers();
+    return users.find(u => u.id === id);
+}
+
+function addUser(userData) {
+    const users = getUsers();
+    if (users.find(u => u.id === userData.id)) {
+        return { success: false, message: '이미 존재하는 ID입니다.' };
+    }
+    users.push({
+        ...userData,
+        createdAt: new Date().toISOString()
+    });
+    saveUsers(users);
+    return { success: true, message: '계정이 생성되었습니다.' };
+}
+
+function deleteUser(id) {
+    const users = getUsers();
+    const index = users.findIndex(u => u.id === id);
+    if (index === -1) return { success: false, message: '사용자를 찾을 수 없습니다.' };
+    if (users[index].role === 'admin' && users.filter(u => u.role === 'admin').length === 1) {
+        return { success: false, message: '마지막 관리자는 삭제할 수 없습니다.' };
+    }
+    users.splice(index, 1);
+    saveUsers(users);
+    return { success: true, message: '계정이 삭제되었습니다.' };
+}
+
+function updateUser(id, updates) {
+    const users = getUsers();
+    const index = users.findIndex(u => u.id === id);
+    if (index === -1) return { success: false, message: '사용자를 찾을 수 없습니다.' };
+    users[index] = { ...users[index], ...updates };
+    saveUsers(users);
+    return { success: true, message: '계정이 수정되었습니다.' };
+}
 
 // DOM 요소
 const elements = {
@@ -29,6 +87,7 @@ const elements = {
 
 // 초기화
 document.addEventListener('DOMContentLoaded', () => {
+    getUsers(); // 사용자 데이터 초기화
     checkAuth();
     setupEventListeners();
 });
@@ -40,9 +99,32 @@ function checkAuth() {
         state.isLoggedIn = true;
         state.currentUser = JSON.parse(savedUser);
         elements.userName.textContent = state.currentUser.name || '사용자';
+        updateUserBadge();
         showDashboard();
     } else {
         showLogin();
+    }
+}
+
+// 사용자 뱃지 업데이트 및 관리자 메뉴 표시
+function updateUserBadge() {
+    const badge = document.querySelector('#userName + span');
+    const adminMenuSection = document.getElementById('adminMenuSection');
+
+    if (badge && state.currentUser) {
+        badge.textContent = state.currentUser.role === 'admin' ? 'ADMIN' : 'USER';
+        badge.className = state.currentUser.role === 'admin'
+            ? 'text-[11px] text-red-500 font-bold uppercase tracking-wide bg-red-500/10 px-1.5 py-0.5 rounded mt-0.5'
+            : 'text-[11px] text-primary font-bold uppercase tracking-wide bg-primary/10 px-1.5 py-0.5 rounded mt-0.5';
+    }
+
+    // 관리자 메뉴 표시/숨김
+    if (adminMenuSection) {
+        if (state.currentUser?.role === 'admin') {
+            adminMenuSection.classList.remove('hidden');
+        } else {
+            adminMenuSection.classList.add('hidden');
+        }
     }
 }
 
@@ -74,17 +156,23 @@ function setupEventListeners() {
 function handleLogin(e) {
     e.preventDefault();
 
-    const email = document.getElementById('email').value;
+    const id = document.getElementById('email').value;
     const password = document.getElementById('password').value;
 
-    // 인증 확인
-    if (email === ADMIN_CREDENTIALS.id && password === ADMIN_CREDENTIALS.password) {
+    const user = findUser(id);
+
+    if (user && user.password === password) {
         state.isLoggedIn = true;
-        state.currentUser = { id: email, name: '관리자' };
+        state.currentUser = {
+            id: user.id,
+            name: user.name,
+            role: user.role
+        };
         localStorage.setItem('aiRealtorUser', JSON.stringify(state.currentUser));
 
         elements.loginError.classList.add('hidden');
         elements.userName.textContent = state.currentUser.name;
+        updateUserBadge();
 
         hideLogin();
         showDashboard();
@@ -153,8 +241,21 @@ function handleSearch(e) {
 
 // 대시보드 표시
 function showDashboard() {
-    elements.mainContent.innerHTML = getDashboardHTML();
-    setupAppCardListeners();
+    // 계정 관리 페이지인 경우 별도 처리
+    if (state.currentPage === 'user-management') {
+        if (state.currentUser?.role === 'admin') {
+            elements.mainContent.innerHTML = getUserManagementHTML();
+            setupUserManagementListeners();
+        } else {
+            // 관리자가 아닐 경우 대시보드로 리다이렉트
+            state.currentPage = 'dashboard';
+            elements.mainContent.innerHTML = getDashboardHTML();
+            setupAppCardListeners();
+        }
+    } else {
+        elements.mainContent.innerHTML = getDashboardHTML();
+        setupAppCardListeners();
+    }
 }
 
 // 대시보드 HTML
@@ -661,4 +762,297 @@ function generateSampleResult(input) {
     ];
 
     return templates[Math.floor(Math.random() * templates.length)];
+}
+
+// =============================================
+// 계정 관리 페이지
+// =============================================
+
+function getUserManagementHTML() {
+    const users = getUsers();
+
+    const userRows = users.map(user => `
+        <tr class="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+            <td class="py-4 px-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl ${user.role === 'admin' ? 'bg-red-100 dark:bg-red-500/20 text-red-500' : 'bg-primary/10 text-primary'} flex items-center justify-center font-bold">
+                        ${user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                        <div class="font-semibold text-slate-900 dark:text-white">${user.name}</div>
+                        <div class="text-xs text-slate-500">${user.id}</div>
+                    </div>
+                </div>
+            </td>
+            <td class="py-4 px-4">
+                <span class="px-3 py-1 rounded-full text-xs font-bold ${user.role === 'admin' ? 'bg-red-100 dark:bg-red-500/20 text-red-500' : 'bg-blue-100 dark:bg-blue-500/20 text-blue-500'}">
+                    ${user.role === 'admin' ? '관리자' : '사용자'}
+                </span>
+            </td>
+            <td class="py-4 px-4 text-sm text-slate-500">
+                ${new Date(user.createdAt).toLocaleDateString('ko-KR')}
+            </td>
+            <td class="py-4 px-4">
+                <div class="flex gap-2">
+                    <button class="edit-user-btn p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 text-slate-400 hover:text-blue-500 transition-colors" data-id="${user.id}" title="수정">
+                        <span class="material-symbols-outlined text-lg">edit</span>
+                    </button>
+                    <button class="delete-user-btn p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500 transition-colors ${user.id === state.currentUser.id ? 'opacity-30 cursor-not-allowed' : ''}" data-id="${user.id}" title="삭제" ${user.id === state.currentUser.id ? 'disabled' : ''}>
+                        <span class="material-symbols-outlined text-lg">delete</span>
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+
+    return `
+        <div class="max-w-5xl mx-auto animate-fade-in">
+            <!-- 헤더 -->
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-lg shadow-red-500/20">
+                        <span class="material-symbols-outlined text-white text-2xl">manage_accounts</span>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-black text-slate-900 dark:text-white">계정 관리</h1>
+                        <p class="text-slate-500 text-sm mt-1">사용자 계정을 생성하고 관리합니다</p>
+                    </div>
+                </div>
+                <button id="addUserBtn" class="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-bold shadow-lg shadow-red-500/25 transition-all hover:-translate-y-0.5 active:scale-95">
+                    <span class="material-symbols-outlined">person_add</span>
+                    새 계정 추가
+                </button>
+            </div>
+
+            <!-- 통계 카드 -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                <div class="bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-2xl p-5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500">
+                            <span class="material-symbols-outlined">group</span>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-black text-slate-900 dark:text-white">${users.length}</div>
+                            <div class="text-xs text-slate-500 font-medium">전체 계정</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-2xl p-5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-500/20 flex items-center justify-center text-red-500">
+                            <span class="material-symbols-outlined">admin_panel_settings</span>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-black text-slate-900 dark:text-white">${users.filter(u => u.role === 'admin').length}</div>
+                            <div class="text-xs text-slate-500 font-medium">관리자</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-2xl p-5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center text-blue-500">
+                            <span class="material-symbols-outlined">person</span>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-black text-slate-900 dark:text-white">${users.filter(u => u.role === 'user').length}</div>
+                            <div class="text-xs text-slate-500 font-medium">일반 사용자</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 사용자 목록 테이블 -->
+            <div class="bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden">
+                <table class="w-full">
+                    <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+                        <tr>
+                            <th class="py-4 px-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">사용자</th>
+                            <th class="py-4 px-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">권한</th>
+                            <th class="py-4 px-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">생성일</th>
+                            <th class="py-4 px-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">작업</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${userRows}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 계정 추가/수정 모달 -->
+        <div id="userModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden">
+            <div class="w-full max-w-md bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl p-8 mx-4">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 id="userModalTitle" class="text-xl font-bold text-slate-900 dark:text-white">새 계정 추가</h2>
+                    <button id="closeUserModalBtn" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 transition-colors">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+                <form id="userForm" class="space-y-5">
+                    <input type="hidden" id="editUserId" value="">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">아이디</label>
+                        <input type="text" id="userIdInput" class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="아이디 입력" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">이름</label>
+                        <input type="text" id="userNameInput" class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="이름 입력" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">비밀번호</label>
+                        <input type="password" id="userPasswordInput" class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="비밀번호 입력">
+                        <p id="passwordHint" class="text-xs text-slate-400 mt-1 hidden">수정 시 비워두면 기존 비밀번호 유지</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">권한</label>
+                        <select id="userRoleInput" class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                            <option value="user">일반 사용자</option>
+                            <option value="admin">관리자</option>
+                        </select>
+                    </div>
+                    <div id="userFormError" class="text-red-500 text-sm hidden"></div>
+                    <button type="submit" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-bold transition-all">
+                        저장
+                    </button>
+                </form>
+            </div>
+        </div>
+    `;
+}
+
+function setupUserManagementListeners() {
+    // 새 계정 추가 버튼
+    document.getElementById('addUserBtn')?.addEventListener('click', () => {
+        openUserModal();
+    });
+
+    // 모달 닫기
+    document.getElementById('closeUserModalBtn')?.addEventListener('click', closeUserModal);
+    document.getElementById('userModal')?.addEventListener('click', (e) => {
+        if (e.target.id === 'userModal') closeUserModal();
+    });
+
+    // 사용자 폼 제출
+    document.getElementById('userForm')?.addEventListener('submit', handleUserFormSubmit);
+
+    // 수정 버튼들
+    document.querySelectorAll('.edit-user-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const userId = btn.dataset.id;
+            openUserModal(userId);
+        });
+    });
+
+    // 삭제 버튼들
+    document.querySelectorAll('.delete-user-btn').forEach(btn => {
+        if (!btn.disabled) {
+            btn.addEventListener('click', () => {
+                const userId = btn.dataset.id;
+                handleDeleteUser(userId);
+            });
+        }
+    });
+}
+
+function openUserModal(userId = null) {
+    const modal = document.getElementById('userModal');
+    const title = document.getElementById('userModalTitle');
+    const idInput = document.getElementById('userIdInput');
+    const nameInput = document.getElementById('userNameInput');
+    const passwordInput = document.getElementById('userPasswordInput');
+    const roleInput = document.getElementById('userRoleInput');
+    const editIdInput = document.getElementById('editUserId');
+    const passwordHint = document.getElementById('passwordHint');
+    const errorDiv = document.getElementById('userFormError');
+
+    errorDiv.classList.add('hidden');
+
+    if (userId) {
+        // 수정 모드
+        const user = findUser(userId);
+        if (user) {
+            title.textContent = '계정 수정';
+            editIdInput.value = userId;
+            idInput.value = user.id;
+            idInput.disabled = true;
+            nameInput.value = user.name;
+            passwordInput.value = '';
+            passwordInput.required = false;
+            passwordHint.classList.remove('hidden');
+            roleInput.value = user.role;
+        }
+    } else {
+        // 추가 모드
+        title.textContent = '새 계정 추가';
+        editIdInput.value = '';
+        idInput.value = '';
+        idInput.disabled = false;
+        nameInput.value = '';
+        passwordInput.value = '';
+        passwordInput.required = true;
+        passwordHint.classList.add('hidden');
+        roleInput.value = 'user';
+    }
+
+    modal.classList.remove('hidden');
+}
+
+function closeUserModal() {
+    document.getElementById('userModal')?.classList.add('hidden');
+}
+
+function handleUserFormSubmit(e) {
+    e.preventDefault();
+
+    const editId = document.getElementById('editUserId').value;
+    const id = document.getElementById('userIdInput').value.trim();
+    const name = document.getElementById('userNameInput').value.trim();
+    const password = document.getElementById('userPasswordInput').value;
+    const role = document.getElementById('userRoleInput').value;
+    const errorDiv = document.getElementById('userFormError');
+
+    if (editId) {
+        // 수정
+        const updates = { name, role };
+        if (password) updates.password = password;
+
+        const result = updateUser(editId, updates);
+        if (result.success) {
+            closeUserModal();
+            showDashboard();
+        } else {
+            errorDiv.textContent = result.message;
+            errorDiv.classList.remove('hidden');
+        }
+    } else {
+        // 추가
+        if (!password) {
+            errorDiv.textContent = '비밀번호를 입력해주세요.';
+            errorDiv.classList.remove('hidden');
+            return;
+        }
+
+        const result = addUser({ id, name, password, role });
+        if (result.success) {
+            closeUserModal();
+            showDashboard();
+        } else {
+            errorDiv.textContent = result.message;
+            errorDiv.classList.remove('hidden');
+        }
+    }
+}
+
+function handleDeleteUser(userId) {
+    const user = findUser(userId);
+    if (!user) return;
+
+    if (confirm(`"${user.name}" 계정을 삭제하시겠습니까?`)) {
+        const result = deleteUser(userId);
+        if (result.success) {
+            showDashboard();
+        } else {
+            alert(result.message);
+        }
+    }
 }
