@@ -1274,9 +1274,19 @@ const RAGTabs = {
                 
                 <!-- 카테고리 선택 영역 -->
                 <div class="mb-6 text-left">
-                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">문서 카테고리</label>
-                    <div class="relative">
-                        <select id="uploadCategory" class="w-full appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm rounded-xl px-4 py-3 pr-10 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all cursor-pointer">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="block text-sm font-bold text-slate-700 dark:text-slate-300">문서 카테고리</label>
+                        <div class="flex items-center gap-2">
+                            <label class="relative inline-flex items-center cursor-pointer group">
+                                <input type="checkbox" id="autoClassifyToggle" class="peer sr-only" checked>
+                                <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                                <span class="ml-2 text-xs font-bold text-slate-500 peer-checked:text-indigo-600 transition-colors">AI 자동 분류</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="relative transition-all duration-300 opacity-50 grayscale pointer-events-none" id="categorySelectWrapper">
+                        <select id="uploadCategory" class="w-full appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm rounded-xl px-4 py-3 pr-10 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all cursor-pointer" disabled>
                             <option value="general">일반 문서 (General)</option>
                             <option value="policy">부동산 정책 (Policy)</option>
                             <option value="market">시세/매물 데이터 (Market Data)</option>
@@ -1287,7 +1297,10 @@ const RAGTabs = {
                             <span class="material-symbols-outlined">expand_more</span>
                         </div>
                     </div>
-                    <p class="text-xs text-slate-400 mt-1.5 ml-1">※ 올바른 카테고리를 선택하면 검색 정확도가 높아집니다.</p>
+                    <p class="text-xs text-slate-400 mt-1.5 ml-1 transition-colors" id="categoryHelpText">
+                        <span class="material-symbols-outlined text-[10px] align-middle mr-0.5">smart_toy</span>
+                        AI가 문서 내용을 분석하여 자동으로 카테고리를 지정합니다.
+                    </p>
                 </div>
 
                 <div id="dropZone" class="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-2xl p-12 transition-colors hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 cursor-pointer">
@@ -1507,6 +1520,26 @@ function renderUploadUI() {
     const fileInput = document.getElementById('fileInput');
     const selectBtn = document.getElementById('selectFileBtn');
 
+    // AI 자동분류 토글 로직
+    const toggle = document.getElementById('autoClassifyToggle');
+    const selectWrapper = document.getElementById('categorySelectWrapper');
+    const select = document.getElementById('uploadCategory');
+    const helpText = document.getElementById('categoryHelpText');
+
+    toggle?.addEventListener('change', (e) => {
+        if (e.target.checked) {
+            selectWrapper.classList.add('opacity-50', 'grayscale', 'pointer-events-none');
+            select.disabled = true;
+            helpText.innerHTML = '<span class="material-symbols-outlined text-[10px] align-middle mr-0.5">smart_toy</span> AI가 문서 내용을 분석하여 자동으로 카테고리를 지정합니다.';
+            helpText.className = 'text-xs text-indigo-500 mt-1.5 ml-1 transition-colors font-medium';
+        } else {
+            selectWrapper.classList.remove('opacity-50', 'grayscale', 'pointer-events-none');
+            select.disabled = false;
+            helpText.textContent = '※ 문서를 가장 잘 설명하는 카테고리를 직접 선택해주세요.';
+            helpText.className = 'text-xs text-slate-400 mt-1.5 ml-1 transition-colors';
+        }
+    });
+
     // 드래그 앤 드롭
     dropZone.addEventListener('dragover', (e) => {
         e.preventDefault();
@@ -1686,4 +1719,68 @@ function showChunkViewer(filename, docId) {
             </div>
         `).join('');
     }, 500);
+}
+
+/* Override uploadFiles to support Auto Classification Mock */
+async function uploadFiles() {
+    const btn = document.getElementById('startUploadBtn');
+    const categorySelect = document.getElementById('uploadCategory');
+    const autoClassify = document.getElementById('autoClassifyToggle')?.checked;
+    let category = categorySelect ? categorySelect.value : 'general';
+    const originalText = btn.innerHTML;
+
+    btn.disabled = true;
+
+    // AI 자동분류 시뮬레이션
+    if (autoClassify && ragState.selectedFiles.length > 0) {
+        btn.innerHTML = '<span class="material-symbols-outlined animate-spin mr-2">smart_toy</span> AI가 문서 내용을 분석 중...';
+
+        // 시각적 효과를 위한 지연
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        // 간단한 Mock 로직: 파일명 기반 추론
+        const filename = ragState.selectedFiles[0].name.toLowerCase();
+        let detected = false;
+
+        if (filename.includes('정책') || filename.includes('policy')) { category = 'policy'; detected = true; }
+        else if (filename.includes('시세') || filename.includes('가격') || filename.includes('price')) { category = 'market'; detected = true; }
+        else if (filename.includes('법') || filename.includes('세금') || filename.includes('tax')) { category = 'law'; detected = true; }
+        else if (filename.includes('가이드') || filename.includes('매뉴얼') || filename.includes('manual')) { category = 'manual'; detected = true; }
+
+        const categoryNames = {
+            'general': '일반 문서', 'policy': '부동산 정책', 'market': '시세/매물 데이터',
+            'law': '법률/세금 가이드', 'manual': '상담 매뉴얼'
+        };
+
+        if (detected) {
+            alert(`[AI 자동 분류 완료]\n\n문서 내용이 <${categoryNames[category]}> 카테고리와 가장 유사합니다.\n해당 카테고리로 자동 설정되었습니다.`);
+        }
+    }
+
+    btn.innerHTML = '<span class="material-symbols-outlined animate-spin mr-2">progress_activity</span> 업로드 및 처리 중...';
+    console.log(`Uploading files to category: ${category}`);
+
+    // 실제 업로드 로직 (FormData 사용) - Mock
+    try {
+        /*
+        const formData = new FormData();
+        ragState.selectedFiles.forEach(file => formData.append('files', file));
+        formData.append('category', category);
+        
+        await fetch(`${RAG_API.BASE_URL}${RAG_API.ENDPOINTS.DOCUMENTS}`, {
+            method: 'POST',
+            body: formData
+        });
+        */
+
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        alert('업로드가 완료되었습니다!');
+        ragState.selectedFiles = [];
+        switchRAGTab('documents'); // 문서 목록으로 이동
+    } catch (e) {
+        alert('업로드 실패: ' + e.message);
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
 }
