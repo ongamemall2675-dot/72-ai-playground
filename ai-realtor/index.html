@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Realtor Premium Dashboard</title>
+    <title>Ai Realhun | AI Creative Studio</title>
 
     <!-- Fonts -->
     <link
@@ -21,9 +21,9 @@
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#050505", /* Pitch Black */
-                        "primary-light": "#121212", /* Surface */
-                        "accent": "#d4af37", /* Gold */
+                        "primary": "#050505",
+                        "primary-light": "#121212",
+                        "accent": "#d4af37",
                         "accent-light": "#f1c40f",
                         "accent-dim": "rgba(212, 175, 55, 0.1)",
                         "text-main": "#f8fafc",
@@ -37,10 +37,7 @@
                     boxShadow: {
                         'glow': '0 0 20px -5px rgba(212, 175, 55, 0.3)',
                     },
-                    backgroundImage: {
-                        'gold-gradient': 'linear-gradient(135deg, #fceda4 0%, #d4af37 50%, #b48a1c 100%)',
-                    }
-                },
+                }
             },
         }
     </script>
@@ -62,12 +59,12 @@
         class="fixed bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] bg-accent/5 rounded-full blur-[120px] pointer-events-none z-0">
     </div>
 
-    <!-- Sidebar: High Visibility & Contrast -->
+    <!-- Sidebar -->
     <aside id="sidebar"
-        class="w-20 lg:w-64 flex-shrink-0 flex flex-col justify-between transition-all duration-300 transform">
+        class="w-20 lg:w-64 flex-shrink-0 flex flex-col justify-between transition-all duration-300 transform bg-[#080808] border-r border-border-dark">
         <!-- Logo -->
         <div class="h-20 flex items-center justify-center lg:justify-start lg:px-6 border-b border-border-dark">
-            <span class="material-symbols-outlined text-4xl text-accent animate-float-subtle">token</span>
+            <span class="material-symbols-outlined text-4xl text-accent">token</span>
             <div class="hidden lg:block ml-3">
                 <h1 class="font-serif text-xl font-bold tracking-wider text-white">Ai Realhun</h1>
                 <p class="text-[0.6rem] text-accent uppercase tracking-[0.2em]">AI Creative Studio</p>
@@ -76,17 +73,17 @@
 
         <!-- Navigation -->
         <nav class="flex-1 py-8 px-3 space-y-2 overflow-y-auto">
-            <a href="#" class="nav-link active flex items-center px-4 py-3 rounded-xl group">
+            <a href="#" data-page="dashboard" class="nav-link active flex items-center px-4 py-3 rounded-xl group">
                 <span
                     class="material-symbols-outlined text-2xl group-hover:text-accent transition-colors">dashboard</span>
                 <span class="hidden lg:block ml-4 font-medium">대시보드</span>
             </a>
-            <a href="#" class="nav-link flex items-center px-4 py-3 rounded-xl group">
+            <a href="#" data-page="workflows" class="nav-link flex items-center px-4 py-3 rounded-xl group">
                 <span
                     class="material-symbols-outlined text-2xl group-hover:text-accent transition-colors">account_tree</span>
                 <span class="hidden lg:block ml-4 font-medium">나의 워크플로우</span>
             </a>
-            <a href="#" class="nav-link flex items-center px-4 py-3 rounded-xl group">
+            <a href="#" data-page="rag" class="nav-link flex items-center px-4 py-3 rounded-xl group">
                 <span
                     class="material-symbols-outlined text-2xl group-hover:text-accent transition-colors">library_books</span>
                 <span class="hidden lg:block ml-4 font-medium">RAG 지식베이스</span>
@@ -96,20 +93,20 @@
                     창작 도구</div>
                 <div class="lg:hidden h-px bg-white/5 my-2 mx-4"></div>
             </div>
-            <a href="#" class="nav-link flex items-center px-4 py-3 rounded-xl group">
+            <a href="#" data-page="script" class="nav-link flex items-center px-4 py-3 rounded-xl group">
                 <span
                     class="material-symbols-outlined text-2xl group-hover:text-accent transition-colors">edit_note</span>
                 <span class="hidden lg:block ml-4 font-medium">대본 생성</span>
             </a>
-            <a href="#" class="nav-link flex items-center px-4 py-3 rounded-xl group">
+            <a href="#" data-page="image" class="nav-link flex items-center px-4 py-3 rounded-xl group">
                 <span class="material-symbols-outlined text-2xl group-hover:text-accent transition-colors">image</span>
                 <span class="hidden lg:block ml-4 font-medium">이미지 생성</span>
             </a>
-            <a href="#" class="nav-link flex items-center px-4 py-3 rounded-xl group">
+            <a href="#" data-page="video" class="nav-link flex items-center px-4 py-3 rounded-xl group">
                 <span class="material-symbols-outlined text-2xl group-hover:text-accent transition-colors">movie</span>
                 <span class="hidden lg:block ml-4 font-medium">영상 생성</span>
             </a>
-            <a href="#" class="nav-link flex items-center px-4 py-3 rounded-xl group">
+            <a href="#" data-page="tts" class="nav-link flex items-center px-4 py-3 rounded-xl group">
                 <span
                     class="material-symbols-outlined text-2xl group-hover:text-accent transition-colors">graphic_eq</span>
                 <span class="hidden lg:block ml-4 font-medium">음성/TTS 생성</span>
@@ -118,7 +115,7 @@
 
         <!-- User Profile (Bottom Sidebar) -->
         <div class="p-4 border-t border-border-dark">
-            <button class="flex items-center w-full p-2 rounded-xl hover:bg-white/5 transition-colors">
+            <button id="settingsBtn" class="flex items-center w-full p-2 rounded-xl hover:bg-white/5 transition-colors">
                 <img src="https://images.unsplash.com/photo-1560250097-9b93dbddb426?q=80&w=100&auto=format&fit=crop"
                     alt="User" class="w-10 h-10 rounded-full border border-accent object-cover">
                 <div class="hidden lg:block ml-3 text-left">
@@ -133,247 +130,540 @@
     <!-- Main Content -->
     <main class="flex-1 flex flex-col relative z-10 overflow-hidden">
 
-        <!-- Top Header (Floating, Transparent) -->
-        <header class="h-20 flex items-center justify-between px-8 z-30">
+        <!-- Top Header -->
+        <header
+            class="h-16 flex items-center justify-between px-8 z-30 border-b border-border-dark bg-primary/80 backdrop-blur-md">
             <div class="flex items-center text-text-muted">
                 <span class="material-symbols-outlined mr-2">dns</span>
-                <span class="text-sm font-medium text-green-400 flex items-center gap-2">
+                <span id="n8nStatus" class="text-sm font-medium text-green-400 flex items-center gap-2">
                     <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                    n8n Connected
+                    n8n 연결됨
                 </span>
             </div>
-
-            <div class="flex items-center gap-6">
-                <!-- RAG Status -->
-                <div
+            <div class="flex items-center gap-4">
+                <div id="ragStatus"
                     class="hidden md:flex items-center gap-2 px-3 py-1 bg-primary-light border border-white/10 rounded-full">
                     <span class="material-symbols-outlined text-accent text-sm">database</span>
-                    <span class="text-xs text-gray-300">RAG Server: <span
-                            class="text-white font-bold">Online</span></span>
+                    <span class="text-xs text-gray-300">RAG: <span class="text-white font-bold">Online</span></span>
                 </div>
-
-                <!-- Notifications -->
                 <button class="relative p-2 rounded-full hover:bg-white/5 transition-colors group">
                     <span class="material-symbols-outlined text-gray-400 group-hover:text-accent">notifications</span>
-                    <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-primary"></span>
-                </button>
-
-                <!-- Settings Button -->
-                <button id="loginBtn"
-                    class="flex items-center px-4 py-2 bg-primary-light border border-accent/30 rounded-full hover:bg-accent/10 hover:border-accent transition-all group shadow-lg">
-                    <span class="text-sm font-bold text-accent mr-2">설정</span>
-                    <span
-                        class="material-symbols-outlined text-accent text-lg group-hover:rotate-90 transition-transform">settings</span>
+                    <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                 </button>
             </div>
         </header>
 
-        <!-- Scrollable Dashboard Content -->
-        <div class="flex-1 overflow-y-auto overflow-x-hidden p-8">
+        <!-- Page Container -->
+        <div id="pageContainer" class="flex-1 overflow-y-auto overflow-x-hidden">
 
-            <!-- Hero/Welcome Section -->
-            <div class="max-w-5xl mx-auto mb-12 text-center pt-8">
-                <h2 class="font-serif text-5xl font-bold mb-4 animate-float-subtle">
-                    <span class="text-white">환영합니다, </span>
-                    <span class="text-gold-gradient">대표님</span>
-                </h2>
-                <p class="text-gray-400 text-lg max-w-2xl mx-auto">
-                    AI 크리에이티브 스튜디오가 준비되었습니다. 오늘은 어떤 콘텐츠를 생성할까요?
-                </p>
+            <!-- === PAGE: Dashboard === -->
+            <section id="page-dashboard" class="page-content p-8">
+                <div class="max-w-5xl mx-auto mb-12 text-center pt-4">
+                    <h2 class="font-serif text-4xl md:text-5xl font-bold mb-4">
+                        <span class="text-white">환영합니다, </span>
+                        <span
+                            class="bg-gradient-to-r from-yellow-200 via-yellow-400 to-amber-500 bg-clip-text text-transparent">대표님</span>
+                    </h2>
+                    <p class="text-gray-400 text-lg max-w-2xl mx-auto">
+                        AI 크리에이티브 스튜디오가 준비되었습니다. 오늘은 어떤 콘텐츠를 생성할까요?
+                    </p>
 
-                <!-- Main Action Search -->
-                <div class="mt-10 relative max-w-2xl mx-auto group">
-                    <div
-                        class="absolute inset-0 bg-accent/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    <!-- Main Action Search -->
+                    <div class="mt-10 relative max-w-2xl mx-auto group">
+                        <div
+                            class="absolute inset-0 bg-accent/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                        </div>
+                        <div
+                            class="relative flex items-center bg-primary-light border border-border-dark rounded-2xl p-2 shadow-2xl group-focus-within:border-accent transition-all duration-300">
+                            <span class="material-symbols-outlined text-3xl text-gray-500 ml-4">auto_awesome</span>
+                            <input id="mainSearchInput" type="text" placeholder="생성할 콘텐츠의 주제를 입력하세요..."
+                                class="w-full bg-transparent border-none text-white text-lg px-4 py-3 focus:outline-none placeholder-gray-600">
+                            <button id="mainSearchBtn"
+                                class="bg-accent hover:bg-accent-light text-primary-dark font-bold py-3 px-6 rounded-xl transition-colors flex items-center">
+                                <span>생성 시작</span>
+                            </button>
+                        </div>
                     </div>
-                    <div
-                        class="relative flex items-center bg-primary-light border border-border-dark rounded-2xl p-2 shadow-2xl group-focus-within:border-accent transition-all duration-300">
-                        <span class="material-symbols-outlined text-3xl text-gray-500 ml-4">auto_awesome</span>
-                        <input type="text" placeholder="생성할 콘텐츠의 주제를 입력하세요 (예: 강남 맛집 유튜브 대본)..."
-                            class="w-full bg-transparent border-none text-white text-lg px-4 py-3 focus:outline-none placeholder-gray-600">
+                </div>
+
+                <!-- Dashboard Grid -->
+                <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+                    <div class="card-luxury p-6 group cursor-pointer" onclick="navigateTo('script')">
+                        <div class="flex justify-between items-start mb-4">
+                            <div
+                                class="p-3 rounded-full bg-blue-500/10 text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                                <span class="material-symbols-outlined">edit_note</span>
+                            </div>
+                            <span class="text-xs font-bold text-green-400 flex items-center">빠른 접근</span>
+                        </div>
+                        <h3 class="text-gray-400 text-sm font-medium uppercase tracking-wider">대본 생성</h3>
+                        <p class="text-xl font-bold text-white mt-1">유튜브/숏폼 대본 AI</p>
+                        <p class="text-xs text-gray-500 mt-2">클릭하여 대본 생성 시작</p>
+                    </div>
+
+                    <div class="card-luxury p-6 group cursor-pointer border-accent/20"
+                        onclick="navigateTo('workflows')">
+                        <div class="flex justify-between items-start mb-4">
+                            <div
+                                class="p-3 rounded-full bg-accent/10 text-accent group-hover:bg-accent group-hover:text-black transition-colors">
+                                <span class="material-symbols-outlined">hub</span>
+                            </div>
+                            <span class="text-xs font-bold text-accent px-2 py-1 bg-accent/10 rounded-full">n8n</span>
+                        </div>
+                        <h3 class="text-gray-400 text-sm font-medium uppercase tracking-wider">워크플로우</h3>
+                        <p class="text-xl font-bold text-white mt-1">자동화 관리</p>
+                        <p class="text-xs text-gray-500 mt-2">n8n 워크플로우 열기</p>
+                    </div>
+
+                    <div class="card-luxury p-6 group cursor-pointer" onclick="navigateTo('image')">
+                        <div class="flex justify-between items-start mb-4">
+                            <div
+                                class="p-3 rounded-full bg-purple-500/10 text-purple-400 group-hover:bg-purple-500 group-hover:text-white transition-colors">
+                                <span class="material-symbols-outlined">image</span>
+                            </div>
+                            <span class="text-xs font-bold text-purple-400">AI Art</span>
+                        </div>
+                        <h3 class="text-gray-400 text-sm font-medium uppercase tracking-wider">이미지 생성</h3>
+                        <p class="text-xl font-bold text-white mt-1">썸네일 & 삽화</p>
+                        <p class="text-xs text-gray-500 mt-2">클릭하여 이미지 생성 시작</p>
+                    </div>
+                </div>
+
+                <!-- Recent Activity Table -->
+                <div class="max-w-7xl mx-auto glass-panel rounded-2xl p-6">
+                    <h3 class="font-serif text-xl font-bold text-white mb-6 flex items-center">
+                        <span class="material-symbols-outlined text-accent mr-2">list_alt</span>
+                        최근 작업 기록
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="text-gray-500 text-sm border-b border-white/10">
+                                    <th class="pb-3 pl-2 font-medium">프로젝트명</th>
+                                    <th class="pb-3 font-medium">작업 유형</th>
+                                    <th class="pb-3 font-medium">시간</th>
+                                    <th class="pb-3 font-medium text-right">상태</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm">
+                                <tr class="group hover:bg-white/5 transition-colors">
+                                    <td class="py-4 pl-2 font-medium text-white">SNS 마케팅 영상 3편</td>
+                                    <td class="py-4 text-gray-400">영상 생성</td>
+                                    <td class="py-4 text-gray-400">오늘, 10:23 AM</td>
+                                    <td class="py-4 text-right"><span
+                                            class="px-3 py-1 bg-green-500/10 text-green-400 rounded-full text-xs font-bold">완료</span>
+                                    </td>
+                                </tr>
+                                <tr class="group hover:bg-white/5 transition-colors">
+                                    <td class="py-4 pl-2 font-medium text-white">신규 서비스 소개자료</td>
+                                    <td class="py-4 text-gray-400">이미지 생성</td>
+                                    <td class="py-4 text-gray-400">어제</td>
+                                    <td class="py-4 text-right"><span
+                                            class="px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full text-xs font-bold">대기중</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- === PAGE: Workflows (n8n iframe) === -->
+            <section id="page-workflows" class="page-content hidden h-full">
+                <div class="h-full flex flex-col">
+                    <div class="p-4 border-b border-border-dark flex items-center justify-between">
+                        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                            <span class="material-symbols-outlined text-accent">account_tree</span>
+                            n8n 워크플로우 관리
+                        </h2>
+                        <a href="https://n8n.hyehwa72.org/home/workflows" target="_blank"
+                            class="text-sm text-accent hover:text-accent-light flex items-center gap-1">
+                            새 탭에서 열기 <span class="material-symbols-outlined text-sm">open_in_new</span>
+                        </a>
+                    </div>
+                    <iframe src="https://n8n.hyehwa72.org/home/workflows"
+                        class="flex-1 w-full border-none bg-black"></iframe>
+                </div>
+            </section>
+
+            <!-- === PAGE: RAG Knowledge Base === -->
+            <section id="page-rag" class="page-content hidden h-full">
+                <div class="h-full flex flex-col">
+                    <div class="p-4 border-b border-border-dark flex items-center justify-between">
+                        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                            <span class="material-symbols-outlined text-accent">library_books</span>
+                            RAG 지식베이스
+                        </h2>
+                        <span class="text-sm text-gray-500">서버: hyehwa72.org</span>
+                    </div>
+                    <div class="flex-1 p-8">
+                        <div class="max-w-4xl mx-auto">
+                            <div class="glass-panel rounded-2xl p-8 text-center">
+                                <span class="material-symbols-outlined text-6xl text-accent mb-4">database</span>
+                                <h3 class="text-2xl font-bold text-white mb-2">RAG 지식베이스 관리</h3>
+                                <p class="text-gray-400 mb-6">문서를 업로드하거나 기존 지식을 검색하세요.</p>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+                                    <div
+                                        class="card-luxury p-6 cursor-pointer hover:border-accent/50 transition-colors">
+                                        <span
+                                            class="material-symbols-outlined text-3xl text-blue-400 mb-2">upload_file</span>
+                                        <h4 class="font-bold text-white mb-1">문서 업로드</h4>
+                                        <p class="text-xs text-gray-500">PDF, TXT, DOCX 지원</p>
+                                    </div>
+                                    <div
+                                        class="card-luxury p-6 cursor-pointer hover:border-accent/50 transition-colors">
+                                        <span
+                                            class="material-symbols-outlined text-3xl text-green-400 mb-2">search</span>
+                                        <h4 class="font-bold text-white mb-1">지식 검색</h4>
+                                        <p class="text-xs text-gray-500">자연어로 검색하기</p>
+                                    </div>
+                                </div>
+
+                                <div class="mt-8 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl text-left">
+                                    <p class="text-yellow-400 text-sm flex items-center gap-2">
+                                        <span class="material-symbols-outlined">info</span>
+                                        RAG 서버 연결 설정이 필요합니다. 설정에서 서버 URL을 입력하세요.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- === PAGE: Script Generation === -->
+            <section id="page-script" class="page-content hidden p-8">
+                <div class="max-w-4xl mx-auto">
+                    <h2 class="text-3xl font-bold text-white mb-2 flex items-center gap-3">
+                        <span class="material-symbols-outlined text-accent text-4xl">edit_note</span>
+                        대본 생성
+                    </h2>
+                    <p class="text-gray-400 mb-8">유튜브, 숏폼, 팟캐스트 등 다양한 콘텐츠에 맞는 대본을 AI로 생성하세요.</p>
+
+                    <div class="glass-panel rounded-2xl p-6 mb-6">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">콘텐츠 유형 선택</label>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                            <button
+                                class="p-3 rounded-xl bg-accent/10 border border-accent text-accent text-sm font-bold">유튜브</button>
+                            <button
+                                class="p-3 rounded-xl bg-white/5 border border-white/10 text-gray-400 text-sm hover:border-accent hover:text-accent transition-colors">숏폼</button>
+                            <button
+                                class="p-3 rounded-xl bg-white/5 border border-white/10 text-gray-400 text-sm hover:border-accent hover:text-accent transition-colors">블로그</button>
+                            <button
+                                class="p-3 rounded-xl bg-white/5 border border-white/10 text-gray-400 text-sm hover:border-accent hover:text-accent transition-colors">팟캐스트</button>
+                        </div>
+
+                        <label class="block text-sm font-medium text-gray-300 mb-2">대본 주제</label>
+                        <input type="text" placeholder="예: 강남역 맛집 소개, 부동산 투자 팁"
+                            class="w-full p-4 rounded-xl bg-black/30 border border-white/10 text-white placeholder-gray-600 focus:border-accent outline-none mb-6">
+
+                        <label class="block text-sm font-medium text-gray-300 mb-2">스타일 & 톤</label>
+                        <select
+                            class="w-full p-4 rounded-xl bg-black/30 border border-white/10 text-white focus:border-accent outline-none mb-6">
+                            <option>전문적이고 신뢰감 있는</option>
+                            <option>친근하고 재미있는</option>
+                            <option>감성적이고 따뜻한</option>
+                            <option>짧고 임팩트 있는</option>
+                        </select>
+
                         <button
-                            class="bg-accent hover:bg-accent-light text-primary-dark font-bold py-3 px-6 rounded-xl transition-colors flex items-center">
-                            <span>생성 시작</span>
+                            class="w-full py-4 bg-accent hover:bg-accent-light text-black font-bold rounded-xl transition-all flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined">auto_awesome</span>
+                            대본 생성하기
+                        </button>
+                    </div>
+
+                    <div class="glass-panel rounded-2xl p-6">
+                        <h3 class="font-bold text-white mb-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-accent">description</span>
+                            생성된 대본
+                        </h3>
+                        <textarea rows="10" placeholder="생성된 대본이 여기에 표시됩니다..."
+                            class="w-full p-4 rounded-xl bg-black/30 border border-white/10 text-white placeholder-gray-600 focus:border-accent outline-none resize-none"></textarea>
+                    </div>
+                </div>
+            </section>
+
+            <!-- === PAGE: Image Generation === -->
+            <section id="page-image" class="page-content hidden p-8">
+                <div class="max-w-4xl mx-auto">
+                    <h2 class="text-3xl font-bold text-white mb-2 flex items-center gap-3">
+                        <span class="material-symbols-outlined text-accent text-4xl">image</span>
+                        이미지 생성
+                    </h2>
+                    <p class="text-gray-400 mb-8">썸네일, 삽화, 배너 등 다양한 이미지를 AI로 생성하세요.</p>
+
+                    <div class="glass-panel rounded-2xl p-6 mb-6">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">이미지 프롬프트</label>
+                        <textarea rows="4" placeholder="생성할 이미지를 자세히 설명하세요..."
+                            class="w-full p-4 rounded-xl bg-black/30 border border-white/10 text-white placeholder-gray-600 focus:border-accent outline-none resize-none mb-6"></textarea>
+
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">스타일</label>
+                                <select
+                                    class="w-full p-3 rounded-xl bg-black/30 border border-white/10 text-white focus:border-accent outline-none">
+                                    <option>사실적 (Realistic)</option>
+                                    <option>일러스트 (Illustration)</option>
+                                    <option>3D 렌더링</option>
+                                    <option>미니멀</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">비율</label>
+                                <select
+                                    class="w-full p-3 rounded-xl bg-black/30 border border-white/10 text-white focus:border-accent outline-none">
+                                    <option>16:9 (유튜브)</option>
+                                    <option>9:16 (숏폼)</option>
+                                    <option>1:1 (정사각형)</option>
+                                    <option>4:3</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button
+                            class="w-full py-4 bg-accent hover:bg-accent-light text-black font-bold rounded-xl transition-all flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined">brush</span>
+                            이미지 생성하기
+                        </button>
+                    </div>
+
+                    <div class="glass-panel rounded-2xl p-6">
+                        <h3 class="font-bold text-white mb-4">생성된 이미지</h3>
+                        <div
+                            class="aspect-video bg-black/50 rounded-xl flex items-center justify-center border border-dashed border-white/20">
+                            <div class="text-center text-gray-500">
+                                <span class="material-symbols-outlined text-5xl mb-2">add_photo_alternate</span>
+                                <p>이미지가 여기에 표시됩니다</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- === PAGE: Video Generation === -->
+            <section id="page-video" class="page-content hidden p-8">
+                <div class="max-w-4xl mx-auto">
+                    <h2 class="text-3xl font-bold text-white mb-2 flex items-center gap-3">
+                        <span class="material-symbols-outlined text-accent text-4xl">movie</span>
+                        영상 생성
+                    </h2>
+                    <p class="text-gray-400 mb-8">대본과 이미지를 기반으로 영상을 자동으로 생성하세요.</p>
+
+                    <div class="glass-panel rounded-2xl p-6 mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div
+                                class="card-luxury p-6 cursor-pointer hover:border-accent/50 transition-colors text-center">
+                                <span class="material-symbols-outlined text-4xl text-blue-400 mb-3">upload</span>
+                                <h4 class="font-bold text-white mb-1">대본 업로드</h4>
+                                <p class="text-xs text-gray-500">TXT, SRT 파일 지원</p>
+                            </div>
+                            <div
+                                class="card-luxury p-6 cursor-pointer hover:border-accent/50 transition-colors text-center">
+                                <span
+                                    class="material-symbols-outlined text-4xl text-green-400 mb-3">photo_library</span>
+                                <h4 class="font-bold text-white mb-1">이미지 업로드</h4>
+                                <p class="text-xs text-gray-500">JPG, PNG 파일 지원</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-6">
+                            <label class="block text-sm font-medium text-gray-300 mb-2">영상 템플릿</label>
+                            <select
+                                class="w-full p-3 rounded-xl bg-black/30 border border-white/10 text-white focus:border-accent outline-none">
+                                <option>유튜브 숏폼 (9:16)</option>
+                                <option>유튜브 장편 (16:9)</option>
+                                <option>인스타 릴스 (9:16)</option>
+                                <option>틱톡 (9:16)</option>
+                            </select>
+                        </div>
+
+                        <button
+                            class="w-full mt-6 py-4 bg-accent hover:bg-accent-light text-black font-bold rounded-xl transition-all flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined">videocam</span>
+                            영상 생성 시작
                         </button>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <!-- Dashboard Grid -->
-            <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            <!-- === PAGE: TTS Generation === -->
+            <section id="page-tts" class="page-content hidden p-8">
+                <div class="max-w-4xl mx-auto">
+                    <h2 class="text-3xl font-bold text-white mb-2 flex items-center gap-3">
+                        <span class="material-symbols-outlined text-accent text-4xl">graphic_eq</span>
+                        음성/TTS 생성
+                    </h2>
+                    <p class="text-gray-400 mb-8">텍스트를 자연스러운 AI 음성으로 변환하세요.</p>
 
-                <!-- Stats Card -->
-                <div class="card-luxury p-6 group cursor-pointer">
-                    <div class="flex justify-between items-start mb-4">
+                    <div class="glass-panel rounded-2xl p-6 mb-6">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">변환할 텍스트</label>
+                        <textarea rows="6" placeholder="음성으로 변환할 텍스트를 입력하세요..."
+                            class="w-full p-4 rounded-xl bg-black/30 border border-white/10 text-white placeholder-gray-600 focus:border-accent outline-none resize-none mb-6"></textarea>
+
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">음성 선택</label>
+                                <select
+                                    class="w-full p-3 rounded-xl bg-black/30 border border-white/10 text-white focus:border-accent outline-none">
+                                    <option>한국어 남성 1</option>
+                                    <option>한국어 여성 1</option>
+                                    <option>한국어 남성 2 (차분)</option>
+                                    <option>한국어 여성 2 (밝음)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">속도</label>
+                                <select
+                                    class="w-full p-3 rounded-xl bg-black/30 border border-white/10 text-white focus:border-accent outline-none">
+                                    <option>보통 (1.0x)</option>
+                                    <option>느리게 (0.8x)</option>
+                                    <option>빠르게 (1.2x)</option>
+                                    <option>매우 빠르게 (1.5x)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button
+                            class="w-full py-4 bg-accent hover:bg-accent-light text-black font-bold rounded-xl transition-all flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined">record_voice_over</span>
+                            음성 생성하기
+                        </button>
+                    </div>
+
+                    <div class="glass-panel rounded-2xl p-6">
+                        <h3 class="font-bold text-white mb-4">생성된 음성</h3>
                         <div
-                            class="p-3 rounded-full bg-blue-500/10 text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-colors">
-                            <span class="material-symbols-outlined">history_edu</span>
-                        </div>
-                        <span class="text-xs font-bold text-green-400 flex items-center">+12% <span
-                                class="material-symbols-outlined text-sm">arrow_upward</span></span>
-                    </div>
-                    <h3 class="text-gray-400 text-sm font-medium uppercase tracking-wider">이달의 생성량</h3>
-                    <p class="text-3xl font-bold text-white mt-1">128건</p>
-                    <div class="mt-4 h-1 w-full bg-gray-800 rounded-full overflow-hidden">
-                        <div class="h-full bg-blue-500 w-[70%]"></div>
-                    </div>
-                </div>
-
-                <!-- Server Status Card (Gold Highlight) -->
-                <div class="card-luxury p-6 group cursor-pointer border-accent/20">
-                    <div class="flex justify-between items-start mb-4">
-                        <div
-                            class="p-3 rounded-full bg-accent/10 text-accent group-hover:bg-accent group-hover:text-black transition-colors">
-                            <span class="material-symbols-outlined">hub</span>
-                        </div>
-                        <span class="text-xs font-bold text-accent px-2 py-1 bg-accent/10 rounded-full">Good</span>
-                    </div>
-                    <h3 class="text-gray-400 text-sm font-medium uppercase tracking-wider">n8n 서버 상태</h3>
-                    <p class="text-3xl font-bold text-white mt-1">정상 작동</p>
-                    <p class="text-xs text-gray-500 mt-2">트리거 대기 중: 5개</p>
-                </div>
-
-                <!-- AI Tasks Card -->
-                <div class="card-luxury p-6 group cursor-pointer">
-                    <div class="flex justify-between items-start mb-4">
-                        <div
-                            class="p-3 rounded-full bg-purple-500/10 text-purple-400 group-hover:bg-purple-500 group-hover:text-white transition-colors">
-                            <span class="material-symbols-outlined">pending</span>
-                        </div>
-                        <span class="text-xs font-bold text-purple-400">Processing</span>
-                    </div>
-                    <h3 class="text-gray-400 text-sm font-medium uppercase tracking-wider">진행 중인 작업</h3>
-                    <div class="mt-2 space-y-2">
-                        <div class="flex items-center text-sm text-gray-300">
-                            <span class="w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></span>
-                            유튜브 쇼츠 대본 생성 중...
-                        </div>
-                        <div class="flex items-center text-sm text-gray-300">
-                            <span class="w-1.5 h-1.5 bg-yellow-500 rounded-full mr-2"></span>
-                            이미지 렌더링: 썸네일 #4
+                            class="bg-black/50 rounded-xl p-6 flex items-center justify-center border border-dashed border-white/20">
+                            <div class="text-center text-gray-500">
+                                <span class="material-symbols-outlined text-5xl mb-2">volume_up</span>
+                                <p>음성 파일이 여기에 표시됩니다</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-
-            </div>
-
-            <!-- Recent Activity Table -->
-            <div class="max-w-7xl mx-auto glass-panel rounded-2xl p-6">
-                <h3 class="font-serif text-xl font-bold text-white mb-6 flex items-center">
-                    <span class="material-symbols-outlined text-accent mr-2">list_alt</span>
-                    최근 작업 기록
-                </h3>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="text-gray-500 text-sm border-b border-white/10">
-                                <th class="pb-3 pl-2 font-medium">프로젝트명</th>
-                                <th class="pb-3 font-medium">작업 유형</th>
-                                <th class="pb-3 font-medium">시간</th>
-                                <th class="pb-3 font-medium text-right">상태</th>
-                            </tr>
-                        </thead>
-                        <tbody class="text-sm">
-                            <tr class="group hover:bg-white/5 transition-colors">
-                                <td class="py-4 pl-2 font-medium text-white">SNS 마케팅 영상 3편</td>
-                                <td class="py-4 text-gray-400">영상 생성</td>
-                                <td class="py-4 text-gray-400">오늘, 10:23 AM</td>
-                                <td class="py-4 text-right"><span
-                                        class="px-3 py-1 bg-green-500/10 text-green-400 rounded-full text-xs font-bold">완료</span>
-                                </td>
-                            </tr>
-                            <tr class="group hover:bg-white/5 transition-colors">
-                                <td class="py-4 pl-2 font-medium text-white">신규 서비스 소개자료</td>
-                                <td class="py-4 text-gray-400">이미지 생성</td>
-                                <td class="py-4 text-gray-400">어제</td>
-                                <td class="py-4 text-right"><span
-                                        class="px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full text-xs font-bold">대기중</span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            </section>
 
         </div>
     </main>
 
-    <!-- Login Modal (Hidden by default) -->
-    <div id="loginModal"
+    <!-- Settings Modal -->
+    <div id="settingsModal"
         class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
-        <div class="modal-overlay absolute inset-0"></div>
+        <div class="modal-overlay absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
         <div
-            class="modal-content relative w-full max-w-md p-8 rounded-2xl transform scale-95 transition-transform duration-300">
-            <button id="closeModal" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+            class="modal-content relative w-full max-w-lg p-8 rounded-2xl bg-primary-light border border-accent transform scale-95 transition-transform duration-300">
+            <button id="closeSettings" class="absolute top-4 right-4 text-gray-400 hover:text-white">
                 <span class="material-symbols-outlined">close</span>
             </button>
 
-            <div class="text-center mb-8">
-                <span class="material-symbols-outlined text-5xl text-accent mb-4">diamond</span>
-                <h2 class="font-serif text-3xl font-bold text-white">Member Login</h2>
-                <p class="text-gray-500 mt-2">Access your premium real estate suite</p>
+            <div class="text-center mb-6">
+                <span class="material-symbols-outlined text-4xl text-accent mb-2">settings</span>
+                <h2 class="font-serif text-2xl font-bold text-white">서버 설정</h2>
             </div>
 
-            <form class="space-y-4">
+            <div class="space-y-4">
                 <div>
-                    <label class="block text-gray-400 text-xs uppercase tracking-wider mb-2">Email Address</label>
-                    <input type="email" class="w-full p-4 rounded-xl input-luxury" placeholder="agent@hyehwa72.org">
+                    <label class="block text-gray-400 text-xs uppercase tracking-wider mb-2">n8n 서버 URL</label>
+                    <input type="url" id="n8nUrl" value="https://n8n.hyehwa72.org"
+                        class="w-full p-4 rounded-xl bg-black/30 border border-white/10 text-white focus:border-accent outline-none"
+                        placeholder="https://n8n.example.com">
                 </div>
                 <div>
-                    <label class="block text-gray-400 text-xs uppercase tracking-wider mb-2">Password</label>
-                    <input type="password" class="w-full p-4 rounded-xl input-luxury" placeholder="••••••••">
+                    <label class="block text-gray-400 text-xs uppercase tracking-wider mb-2">RAG 서버 URL</label>
+                    <input type="url" id="ragUrl" value=""
+                        class="w-full p-4 rounded-xl bg-black/30 border border-white/10 text-white focus:border-accent outline-none"
+                        placeholder="https://rag.example.com">
                 </div>
-                <div class="flex justify-between items-center text-sm">
-                    <label class="flex items-center text-gray-400 cursor-pointer">
-                        <input type="checkbox" class="mr-2 accent-accent"> Remember me
-                    </label>
-                    <a href="#" class="text-accent hover:text-accent-light">Forgot Password?</a>
-                </div>
-                <button type="submit"
-                    class="w-full py-4 bg-accent hover:bg-accent-light text-black font-bold rounded-xl transition-all shadow-glow transform hover:scale-[1.02]">
-                    Sign In
+                <button id="saveSettings"
+                    class="w-full py-4 bg-accent hover:bg-accent-light text-black font-bold rounded-xl transition-all">
+                    설정 저장
                 </button>
-            </form>
+            </div>
         </div>
     </div>
 
     <!-- Scripts -->
     <script>
-        // Date Display
-        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', dateOptions);
+        // Page Navigation
+        const navLinks = document.querySelectorAll('.nav-link');
+        const pages = document.querySelectorAll('.page-content');
 
-        // Sidebar Animations (GSAP)
-        gsap.from("#sidebar", { x: -80, opacity: 0, duration: 1, ease: "power3.out", delay: 0.2 });
-        gsap.from(".nav-link", { opacity: 0, x: -20, duration: 0.5, stagger: 0.1, delay: 0.5 });
+        function navigateTo(pageId) {
+            // Update nav active state
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.dataset.page === pageId) {
+                    link.classList.add('active');
+                }
+            });
 
-        // Modal Logic
-        const loginBtn = document.getElementById('loginBtn');
-        const loginModal = document.getElementById('loginModal');
-        const closeModal = document.getElementById('closeModal');
-        const modalContent = loginModal.querySelector('.modal-content');
+            // Show/hide pages
+            pages.forEach(page => {
+                if (page.id === `page-${pageId}`) {
+                    page.classList.remove('hidden');
+                    gsap.fromTo(page, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" });
+                } else {
+                    page.classList.add('hidden');
+                }
+            });
+        }
 
-        const openModal = () => {
-            loginModal.classList.remove('opacity-0', 'pointer-events-none');
-            modalContent.classList.remove('scale-95');
-            modalContent.classList.add('scale-100');
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const pageId = link.dataset.page;
+                navigateTo(pageId);
+            });
+        });
+
+        // Settings Modal
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsModal = document.getElementById('settingsModal');
+        const closeSettings = document.getElementById('closeSettings');
+        const saveSettings = document.getElementById('saveSettings');
+
+        const openSettings = () => {
+            settingsModal.classList.remove('opacity-0', 'pointer-events-none');
+            settingsModal.querySelector('.modal-content').classList.remove('scale-95');
+            settingsModal.querySelector('.modal-content').classList.add('scale-100');
         };
 
-        const hideModal = () => {
-            loginModal.classList.add('opacity-0', 'pointer-events-none');
-            modalContent.classList.remove('scale-100');
-            modalContent.classList.add('scale-95');
+        const hideSettings = () => {
+            settingsModal.classList.add('opacity-0', 'pointer-events-none');
+            settingsModal.querySelector('.modal-content').classList.remove('scale-100');
+            settingsModal.querySelector('.modal-content').classList.add('scale-95');
         };
 
-        loginBtn.addEventListener('click', openModal);
-        closeModal.addEventListener('click', hideModal);
-
-        // Close on outside click
-        loginModal.addEventListener('click', (e) => {
-            if (e.target === loginModal || e.target.classList.contains('modal-overlay')) {
-                hideModal();
+        settingsBtn.addEventListener('click', openSettings);
+        closeSettings.addEventListener('click', hideSettings);
+        settingsModal.addEventListener('click', (e) => {
+            if (e.target === settingsModal || e.target.classList.contains('modal-overlay')) {
+                hideSettings();
             }
         });
+
+        saveSettings.addEventListener('click', () => {
+            const n8nUrl = document.getElementById('n8nUrl').value;
+            const ragUrl = document.getElementById('ragUrl').value;
+            localStorage.setItem('n8nUrl', n8nUrl);
+            localStorage.setItem('ragUrl', ragUrl);
+            alert('설정이 저장되었습니다!');
+            hideSettings();
+        });
+
+        // Load saved settings
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedN8n = localStorage.getItem('n8nUrl');
+            const savedRag = localStorage.getItem('ragUrl');
+            if (savedN8n) document.getElementById('n8nUrl').value = savedN8n;
+            if (savedRag) document.getElementById('ragUrl').value = savedRag;
+        });
+
+        // GSAP Animations
+        gsap.from("#sidebar", { x: -80, opacity: 0, duration: 0.8, ease: "power3.out" });
+        gsap.from(".nav-link", { opacity: 0, x: -20, duration: 0.4, stagger: 0.05, delay: 0.3 });
     </script>
 </body>
 
