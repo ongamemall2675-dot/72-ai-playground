@@ -1,360 +1,367 @@
 <!DOCTYPE html>
-<html class="dark" lang="ko">
+<html lang="ko" class="dark">
 
 <head>
-    <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>AI 공부하는 공인중개사 - Premium Dashboard</title>
-    <meta name="description" content="AI 도구를 활용한 공인중개사 업무 자동화 플랫폼">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Realtor Premium Dashboard</title>
 
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com" rel="preconnect" />
-    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <!-- Fonts -->
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap"
-        rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-        rel="stylesheet" />
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
     <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             darkMode: "class",
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#0f172a", /* Deep Navy */
-                        "primary-light": "#334155",
-                        "accent": "#d97706", /* Amber/Gold */
-                        "accent-light": "#fbbf24",
-                        "background-light": "#fdfbf7", /* Warm White */
-                        "background-dark": "#020617", /* Darker Navy */
-                        "surface-light": "#ffffff",
-                        "surface-dark": "#0f172a",
-                        "text-main": "#0f172a",
-                        "text-muted": "#64748b",
+                        "primary": "#050505", /* Pitch Black */
+                        "primary-light": "#121212", /* Surface */
+                        "accent": "#d4af37", /* Gold */
+                        "accent-light": "#f1c40f",
+                        "accent-dim": "rgba(212, 175, 55, 0.1)",
+                        "text-main": "#f8fafc",
+                        "text-muted": "#9ca3af",
+                        "border-dark": "rgba(255, 255, 255, 0.08)"
                     },
                     fontFamily: {
                         "sans": ["Inter", "sans-serif"],
                         "serif": ["Playfair Display", "serif"],
                     },
                     boxShadow: {
-                        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
-                        'glow': '0 0 20px -5px rgba(217, 119, 6, 0.3)',
+                        'glow': '0 0 20px -5px rgba(212, 175, 55, 0.3)',
                     },
                     backgroundImage: {
-                        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+                        'gold-gradient': 'linear-gradient(135deg, #fceda4 0%, #d4af37 50%, #b48a1c 100%)',
                     }
                 },
             },
         }
     </script>
-    <!-- GSAP -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="styles.css">
+
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 </head>
 
-<body
-    class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-200 font-sans transition-colors duration-500 h-screen flex overflow-hidden selection:bg-accent selection:text-white">
+<body class="bg-primary text-text-main antialiased overflow-hidden flex h-screen">
 
-    <!-- Background Ambiance -->
-    <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div
-            class="absolute -top-[20%] -right-[10%] w-[50%] h-[50%] rounded-full bg-blue-100/50 dark:bg-blue-900/10 blur-[100px] animate-pulse-slow">
-        </div>
-        <div class="absolute top-[40%] -left-[10%] w-[40%] h-[40%] rounded-full bg-amber-100/50 dark:bg-amber-900/10 blur-[100px] animate-pulse-slow"
-            style="animation-delay: 2s;"></div>
+    <!-- Ambient Background Light -->
+    <div
+        class="fixed top-[-20%] left-[-10%] w-[50vw] h-[50vw] bg-accent/5 rounded-full blur-[120px] pointer-events-none z-0">
+    </div>
+    <div
+        class="fixed bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] bg-accent/5 rounded-full blur-[120px] pointer-events-none z-0">
     </div>
 
-    <!-- Sidebar -->
+    <!-- Sidebar: High Visibility & Contrast -->
     <aside id="sidebar"
-        class="w-72 bg-white/95 dark:bg-[#0b1121]/95 backdrop-blur-2xl border-r border-slate-200/50 dark:border-white/5 hidden lg:flex flex-col z-30 shadow-2xl relative">
-        <!-- Shine Effect -->
-        <div class="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none"></div>
-
-        <div class="h-24 flex items-center px-8 border-b border-slate-100/50 dark:border-white/5 relative z-10">
-            <div class="flex items-center gap-4">
-                <div class="relative group">
-                    <div
-                        class="absolute inset-0 bg-accent/50 blur-lg rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                    </div>
-                    <div
-                        class="relative p-2.5 bg-primary dark:bg-white rounded-xl text-white dark:text-primary shadow-xl ring-1 ring-white/10">
-                        <span class="material-symbols-outlined text-2xl">smart_toy</span>
-                    </div>
-                </div>
-                <div class="flex flex-col">
-                    <span
-                        class="text-2xl font-serif font-bold tracking-tight text-primary dark:text-white leading-none drop-shadow-md">AI
-                        Realtor</span>
-                    <span
-                        class="text-[10px] font-bold text-accent uppercase tracking-[0.3em] mt-1.5 ml-0.5 text-shadow-glow">Premium
-                        Suite</span>
-                </div>
+        class="w-20 lg:w-64 flex-shrink-0 flex flex-col justify-between transition-all duration-300 transform">
+        <!-- Logo -->
+        <div class="h-20 flex items-center justify-center lg:justify-start lg:px-6 border-b border-border-dark">
+            <span class="material-symbols-outlined text-4xl text-accent animate-float-subtle">diamond</span>
+            <div class="hidden lg:block ml-3">
+                <h1 class="font-serif text-xl font-bold tracking-wider text-white">AI REALTOR</h1>
+                <p class="text-[0.6rem] text-accent uppercase tracking-[0.2em]">Premium Suite</p>
             </div>
         </div>
 
-        <nav class="flex-1 overflow-y-auto py-8 px-5 space-y-2 relative z-10">
-            <a class="nav-item nav-link active flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-all duration-300 group border border-transparent"
-                href="#" data-page="dashboard">
+        <!-- Navigation -->
+        <nav class="flex-1 py-8 px-3 space-y-2 overflow-y-auto">
+            <a href="#" class="nav-link active flex items-center px-4 py-3 rounded-xl group">
                 <span
-                    class="material-symbols-outlined group-hover:scale-110 transition-transform duration-300">dashboard</span>
-                대시보드 홈
+                    class="material-symbols-outlined text-2xl group-hover:text-accent transition-colors">dashboard</span>
+                <span class="hidden lg:block ml-4 font-medium">Dashboard</span>
             </a>
-
-            <div class="mt-8 mb-4 px-4 flex items-center gap-3">
+            <a href="#" class="nav-link flex items-center px-4 py-3 rounded-xl group">
                 <span
-                    class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Tools</span>
-                <div class="h-px bg-slate-200 dark:bg-white/5 flex-1"></div>
+                    class="material-symbols-outlined text-2xl group-hover:text-accent transition-colors">real_estate_agent</span>
+                <span class="hidden lg:block ml-4 font-medium">My Listings</span>
+            </a>
+            <a href="#" class="nav-link flex items-center px-4 py-3 rounded-xl group">
+                <span
+                    class="material-symbols-outlined text-2xl group-hover:text-accent transition-colors">analytics</span>
+                <span class="hidden lg:block ml-4 font-medium">Market Analytics</span>
+            </a>
+            <div class="pt-4 pb-2">
+                <div class="hidden lg:block px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">AI
+                    Tools</div>
+                <div class="lg:hidden h-px bg-white/5 my-2 mx-4"></div>
             </div>
-
-            <a class="nav-item nav-link group flex items-center gap-3 px-4 py-3.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary dark:hover:text-white transition-all font-medium border border-transparent hover:border-slate-200 dark:hover:border-white/5"
-                href="#ai-engineer" data-page="ai-engineer">
+            <a href="#" class="nav-link flex items-center px-4 py-3 rounded-xl group">
                 <span
-                    class="material-symbols-outlined text-slate-400 dark:text-slate-500 group-hover:text-accent transition-colors duration-300">engineering</span>
-                AI 엔지니어링
+                    class="material-symbols-outlined text-2xl group-hover:text-accent transition-colors">auto_awesome</span>
+                <span class="hidden lg:block ml-4 font-medium">Gen AI Studio</span>
             </a>
-            <a class="nav-item nav-link group flex items-center gap-3 px-4 py-3.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary dark:hover:text-white transition-all font-medium border border-transparent hover:border-slate-200 dark:hover:border-white/5"
-                href="#prompt-generator" data-page="prompt-generator">
+            <a href="#" class="nav-link flex items-center px-4 py-3 rounded-xl group">
                 <span
-                    class="material-symbols-outlined text-slate-400 dark:text-slate-500 group-hover:text-accent transition-colors duration-300">auto_awesome</span>
-                프롬프트 생성기
+                    class="material-symbols-outlined text-2xl group-hover:text-accent transition-colors">movie_edit</span>
+                <span class="hidden lg:block ml-4 font-medium">Video Creator</span>
             </a>
-            <a class="nav-item nav-link group flex items-center gap-3 px-4 py-3.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary dark:hover:text-white transition-all font-medium border border-transparent hover:border-slate-200 dark:hover:border-white/5"
-                href="#n8n-workflow" data-page="n8n-workflow">
-                <span
-                    class="material-symbols-outlined text-slate-400 dark:text-slate-500 group-hover:text-accent transition-colors duration-300">hub</span>
-                n8n 워크플로우
-            </a>
-
-            <!-- 관리자 메뉴 -->
-            <div id="adminMenuSection" class="hidden">
-                <div class="mt-8 mb-4 px-4 flex items-center gap-3">
-                    <span class="text-[10px] font-bold text-red-400 uppercase tracking-widest">Admin</span>
-                    <div class="h-px bg-red-100 dark:bg-red-900/30 flex-1"></div>
-                </div>
-                <a class="nav-item nav-link group flex items-center gap-3 px-4 py-3.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-all font-medium"
-                    href="#user-management" data-page="user-management">
-                    <span
-                        class="material-symbols-outlined group-hover:text-red-500 transition-colors">manage_accounts</span>
-                    계정 관리
-                </a>
-                <a class="nav-item nav-link group flex items-center gap-3 px-4 py-3.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all font-medium"
-                    href="#rag-management" data-page="rag-management">
-                    <span
-                        class="material-symbols-outlined group-hover:text-indigo-500 transition-colors">database</span>
-                    RAG 데이터 관리
-                </a>
-            </div>
         </nav>
 
-        <div class="p-6 border-t border-slate-100 dark:border-white/5 relative z-10">
-            <div
-                class="relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 dark:from-slate-800 dark:to-slate-900 rounded-2xl p-5 mb-4 shadow-xl group cursor-pointer ring-1 ring-white/10 hover:ring-accent/50 transition-all">
-                <div
-                    class="absolute top-0 right-0 w-20 h-20 bg-accent/20 rounded-full blur-2xl -mr-10 -mt-10 transition-all duration-500 group-hover:bg-accent/30 animate-pulse-slow">
+        <!-- User Profile (Bottom Sidebar) -->
+        <div class="p-4 border-t border-border-dark">
+            <button class="flex items-center w-full p-2 rounded-xl hover:bg-white/5 transition-colors">
+                <img src="https://images.unsplash.com/photo-1560250097-9b93dbddb426?q=80&w=100&auto=format&fit=crop"
+                    alt="User" class="w-10 h-10 rounded-full border border-accent object-cover">
+                <div class="hidden lg:block ml-3 text-left">
+                    <p class="text-sm font-bold text-white">Agent Kim</p>
+                    <p class="text-xs text-accent">Pro Member</p>
                 </div>
-                <div class="flex items-center gap-3 mb-3 relative z-10">
-                    <span class="material-symbols-outlined text-accent dark:text-accent-light">lightbulb</span>
-                    <span class="text-xs font-bold text-white uppercase tracking-wide">Pro Tip</span>
-                </div>
-                <p class="text-xs text-slate-300 leading-relaxed relative z-10">
-                    프롬프트 마법사를 사용하여<br>매물 설명을 <span class="text-white font-bold text-shadow-sm">3배 더 빠르게</span> 작성하세요.
-                </p>
-            </div>
-            <button id="logoutBtn"
-                class="w-full flex items-center justify-center gap-2 text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-white hover:bg-red-50 dark:hover:bg-red-600/20 py-3 rounded-xl transition-all duration-300 text-sm font-semibold border border-transparent hover:border-red-500/30">
-                <span class="material-symbols-outlined text-[20px]">logout</span>
-                로그아웃
+                <span class="material-symbols-outlined ml-auto text-gray-500 hidden lg:block">more_vert</span>
             </button>
         </div>
     </aside>
 
     <!-- Main Content -->
-    <div class="flex-1 flex flex-col min-w-0 relative z-10">
-        <!-- Header -->
-        <header
-            class="sticky top-0 z-20 flex items-center justify-between h-24 px-8 glass-panel border-b border-slate-200/50 dark:border-white/5 transition-all duration-300 backdrop-blur-xl bg-white/80 dark:bg-[#0b1121]/80">
-            <div class="flex items-center gap-4 lg:hidden">
-                <button id="menuBtn"
-                    class="p-2 -ml-2 text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
-                    <span class="material-symbols-outlined">menu</span>
-                </button>
-                <span class="text-xl font-serif font-bold tracking-tight text-primary dark:text-white">AI Realtor</span>
+    <main class="flex-1 flex flex-col relative z-10 overflow-hidden">
+
+        <!-- Top Header (Floating, Transparent) -->
+        <header class="h-20 flex items-center justify-between px-8 z-30">
+            <div class="flex items-center text-text-muted">
+                <span class="material-symbols-outlined mr-2">calendar_today</span>
+                <span class="text-sm font-medium" id="currentDate">December 29, 2025</span>
             </div>
 
-            <div class="hidden lg:flex flex-1 max-w-xl mx-8">
-                <label class="relative w-full group">
-                    <span
-                        class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-accent transition-colors material-symbols-outlined">search</span>
-                    <input id="searchInput"
-                        class="w-full h-12 pl-12 pr-4 rounded-2xl bg-slate-100/50 dark:bg-white/5 border border-transparent focus:bg-white dark:focus:bg-slate-900 focus:border-accent/50 focus:ring-4 focus:ring-accent/10 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 transition-all shadow-inner hover:bg-slate-100 dark:hover:bg-white/10"
-                        placeholder="Premium Search..." type="text" />
-                </label>
-            </div>
-
-            <div class="flex items-center gap-4 sm:gap-6 ml-auto">
-                <a href="https://hyehwa72.org/" target="_blank"
-                    class="hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-accent to-orange-600 text-white font-bold text-sm shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 transition-all transform hover:-translate-y-0.5 active:scale-95 group ring-1 ring-orange-400/50">
-                    <span
-                        class="material-symbols-outlined text-[18px] group-hover:rotate-12 transition-transform">home</span>
-                    <span>혜화72</span>
-                </a>
-
-                <button
-                    class="relative p-3 text-slate-500 hover:text-primary dark:text-slate-300 dark:hover:text-white rounded-2xl hover:bg-slate-100 dark:hover:bg-white/5 transition-all duration-300 border border-transparent hover:border-slate-200 dark:hover:border-white/10">
-                    <span class="material-symbols-outlined">notifications</span>
-                    <span
-                        class="absolute top-3 right-3 w-2 h-2 bg-red-500 rounded-full border border-white dark:border-[#0f172a] shadow-sm"></span>
-                </button>
-
-                <div class="flex items-center gap-4 pl-6 border-l border-slate-200 dark:border-white/10">
-                    <div class="hidden md:flex flex-col items-end">
-                        <span id="userName"
-                            class="text-sm font-bold text-slate-900 dark:text-white leading-tight font-serif drop-shadow-sm">Admin
-                            User</span>
-                        <span
-                            class="text-[10px] text-accent font-bold uppercase tracking-widest mt-0.5 text-shadow-glow">Administrator</span>
-                    </div>
-                    <div
-                        class="size-11 rounded-full bg-gradient-to-br from-primary to-slate-800 flex items-center justify-center text-white border-2 border-slate-200 dark:border-slate-700 shadow-xl cursor-pointer hover:scale-105 transition-transform ring-2 ring-transparent hover:ring-accent/50">
-                        <span class="material-symbols-outlined">person</span>
-                    </div>
+            <div class="flex items-center gap-6">
+                <!-- Search Bar (Compact) -->
+                <div class="relative hidden md:block">
+                    <input type="text" placeholder="Search properties, clients..."
+                        class="bg-primary-light/50 border border-white/10 rounded-full py-2 pl-10 pr-4 text-sm w-64 text-white focus:border-accent focus:w-80 transition-all duration-300 outline-none">
+                    <span class="material-symbols-outlined absolute left-3 top-2 text-gray-500 text-lg">search</span>
                 </div>
+
+                <!-- Notifications -->
+                <button class="relative p-2 rounded-full hover:bg-white/5 transition-colors group">
+                    <span class="material-symbols-outlined text-gray-400 group-hover:text-accent">notifications</span>
+                    <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-primary"></span>
+                </button>
+
+                <!-- Login / Action Box -->
+                <button id="loginBtn"
+                    class="flex items-center px-4 py-2 bg-primary-light border border-accent/30 rounded-full hover:bg-accent/10 hover:border-accent transition-all group shadow-lg">
+                    <span class="text-sm font-bold text-accent mr-2">Login</span>
+                    <span
+                        class="material-symbols-outlined text-accent text-lg group-hover:translate-x-1 transition-transform">login</span>
+                </button>
             </div>
         </header>
 
-        <!-- Main Content Area -->
-        <main id="mainContent" class="flex-1 overflow-y-auto p-6 sm:p-10 lg:p-12 scroll-smooth">
-            <!-- Content will be loaded dynamically -->
-        </main>
-    </div>
+        <!-- Scrollable Dashboard Content -->
+        <div class="flex-1 overflow-y-auto overflow-x-hidden p-8">
 
-    <!-- Login Modal -->
+            <!-- Hero/Welcome Section -->
+            <div class="max-w-5xl mx-auto mb-12 text-center pt-8">
+                <h2 class="font-serif text-5xl font-bold mb-4 animate-float-subtle">
+                    <span class="text-white">Welcome back, </span>
+                    <span class="text-gold-gradient">Agent Kim</span>
+                </h2>
+                <p class="text-gray-400 text-lg max-w-2xl mx-auto">
+                    Your AI-powered real estate command center is ready. Market analysis is up 12% this week.
+                </p>
+
+                <!-- Main Action Search -->
+                <div class="mt-10 relative max-w-2xl mx-auto group">
+                    <div
+                        class="absolute inset-0 bg-accent/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    </div>
+                    <div
+                        class="relative flex items-center bg-primary-light border border-border-dark rounded-2xl p-2 shadow-2xl group-focus-within:border-accent transition-all duration-300">
+                        <span class="material-symbols-outlined text-3xl text-gray-500 ml-4">sparkles</span>
+                        <input type="text" placeholder="Ask AI to analyze a property or generate a listing..."
+                            class="w-full bg-transparent border-none text-white text-lg px-4 py-3 focus:outline-none placeholder-gray-600">
+                        <button
+                            class="bg-accent hover:bg-accent-light text-primary-dark font-bold py-3 px-6 rounded-xl transition-colors flex items-center">
+                            <span>Analyze</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Grid -->
+            <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+
+                <!-- Stats Card -->
+                <div class="card-luxury p-6 group cursor-pointer">
+                    <div class="flex justify-between items-start mb-4">
+                        <div
+                            class="p-3 rounded-full bg-blue-500/10 text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                            <span class="material-symbols-outlined">trending_up</span>
+                        </div>
+                        <span class="text-xs font-bold text-green-400 flex items-center">+4.5% <span
+                                class="material-symbols-outlined text-sm">arrow_upward</span></span>
+                    </div>
+                    <h3 class="text-gray-400 text-sm font-medium uppercase tracking-wider">Total Revenue</h3>
+                    <p class="text-3xl font-bold text-white mt-1">₩1.2B</p>
+                    <div class="mt-4 h-1 w-full bg-gray-800 rounded-full overflow-hidden">
+                        <div class="h-full bg-blue-500 w-[70%]"></div>
+                    </div>
+                </div>
+
+                <!-- Active Listings Card (Gold Highlight) -->
+                <div class="card-luxury p-6 group cursor-pointer border-accent/20">
+                    <div class="flex justify-between items-start mb-4">
+                        <div
+                            class="p-3 rounded-full bg-accent/10 text-accent group-hover:bg-accent group-hover:text-black transition-colors">
+                            <span class="material-symbols-outlined">apartment</span>
+                        </div>
+                        <span class="text-xs font-bold text-accent px-2 py-1 bg-accent/10 rounded-full">Active</span>
+                    </div>
+                    <h3 class="text-gray-400 text-sm font-medium uppercase tracking-wider">Active Listings</h3>
+                    <p class="text-3xl font-bold text-white mt-1">24</p>
+                    <p class="text-xs text-gray-500 mt-2">3 properties require attention</p>
+                </div>
+
+                <!-- AI Tasks Card -->
+                <div class="card-luxury p-6 group cursor-pointer">
+                    <div class="flex justify-between items-start mb-4">
+                        <div
+                            class="p-3 rounded-full bg-purple-500/10 text-purple-400 group-hover:bg-purple-500 group-hover:text-white transition-colors">
+                            <span class="material-symbols-outlined">smart_toy</span>
+                        </div>
+                        <span class="text-xs font-bold text-purple-400">Running</span>
+                    </div>
+                    <h3 class="text-gray-400 text-sm font-medium uppercase tracking-wider">AI Tasks</h3>
+                    <div class="mt-2 space-y-2">
+                        <div class="flex items-center text-sm text-gray-300">
+                            <span class="w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></span>
+                            Generating Gangnam Villa Listing
+                        </div>
+                        <div class="flex items-center text-sm text-gray-300">
+                            <span class="w-1.5 h-1.5 bg-yellow-500 rounded-full mr-2"></span>
+                            Video Render: Unit 201
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Recent Activity Table -->
+            <div class="max-w-7xl mx-auto glass-panel rounded-2xl p-6">
+                <h3 class="font-serif text-xl font-bold text-white mb-6 flex items-center">
+                    <span class="material-symbols-outlined text-accent mr-2">history</span>
+                    Recent Activity
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="text-gray-500 text-sm border-b border-white/10">
+                                <th class="pb-3 pl-2 font-medium">Property</th>
+                                <th class="pb-3 font-medium">Action</th>
+                                <th class="pb-3 font-medium">Date</th>
+                                <th class="pb-3 font-medium text-right">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm">
+                            <tr class="group hover:bg-white/5 transition-colors">
+                                <td class="py-4 pl-2 font-medium text-white">Hyehwa Luxury Suite</td>
+                                <td class="py-4 text-gray-400">Video Generation</td>
+                                <td class="py-4 text-gray-400">Today, 10:23 AM</td>
+                                <td class="py-4 text-right"><span
+                                        class="px-3 py-1 bg-green-500/10 text-green-400 rounded-full text-xs font-bold">Completed</span>
+                                </td>
+                            </tr>
+                            <tr class="group hover:bg-white/5 transition-colors">
+                                <td class="py-4 pl-2 font-medium text-white">Mapo Riverview Apt</td>
+                                <td class="py-4 text-gray-400">Listing Description</td>
+                                <td class="py-4 text-gray-400">Yesterday</td>
+                                <td class="py-4 text-right"><span
+                                        class="px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full text-xs font-bold">Draft</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Login Modal (Hidden by default) -->
     <div id="loginModal"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-[#0f172a]/90 backdrop-blur-md hidden transition-all duration-500">
+        class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="modal-overlay absolute inset-0"></div>
         <div
-            class="relative z-10 w-full max-w-[480px] bg-white dark:bg-[#1e293b] border border-white/10 rounded-3xl shadow-2xl p-10 mx-4 overflow-hidden ring-1 ring-white/5">
-            <div
-                class="absolute inset-0 bg-gradient-to-br from-transparent to-slate-100/50 dark:to-slate-900/80 pointer-events-none">
+            class="modal-content relative w-full max-w-md p-8 rounded-2xl transform scale-95 transition-transform duration-300">
+            <button id="closeModal" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+
+            <div class="text-center mb-8">
+                <span class="material-symbols-outlined text-5xl text-accent mb-4">diamond</span>
+                <h2 class="font-serif text-3xl font-bold text-white">Member Login</h2>
+                <p class="text-gray-500 mt-2">Access your premium real estate suite</p>
             </div>
 
-            <div class="relative flex flex-col items-center text-center mb-10">
-                <div
-                    class="w-16 h-16 bg-gradient-to-br from-primary to-slate-900 rounded-2xl flex items-center justify-center text-white mb-6 shadow-2xl transform rotate-3 ring-1 ring-white/10">
-                    <!-- ... -->class="material-symbols-outlined" style="font-size: 32px;">lock_clock</span>
+            <form class="space-y-4">
+                <div>
+                    <label class="block text-gray-400 text-xs uppercase tracking-wider mb-2">Email Address</label>
+                    <input type="email" class="w-full p-4 rounded-xl input-luxury" placeholder="agent@hyehwa72.org">
                 </div>
-                <h1 class="text-3xl font-serif font-bold text-slate-900 dark:text-white mb-3">Welcome Back</h1>
-                <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">프리미엄 부동산 관리 시스템에 접속하세요</p>
-            </div>
-
-            <form id="loginForm" class="space-y-6 relative">
-                <div class="space-y-2">
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest ml-1"
-                        for="email">Email Account</label>
-                    <div class="relative group">
-                        <div
-                            class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-accent transition-colors">
-                            <span class="material-symbols-outlined">mail</span>
-                        </div>
-                        <input
-                            class="block w-full pl-12 pr-4 py-4 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all duration-300 font-medium"
-                            id="email" placeholder="user@hyehwa72.com" required="" type="text" />
-                    </div>
+                <div>
+                    <label class="block text-gray-400 text-xs uppercase tracking-wider mb-2">Password</label>
+                    <input type="password" class="w-full p-4 rounded-xl input-luxury" placeholder="••••••••">
                 </div>
-                <div class="space-y-2">
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest ml-1"
-                        for="password">Password</label>
-                    <div class="relative group">
-                        <div
-                            class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-accent transition-colors">
-                            <span class="material-symbols-outlined">key</span>
-                        </div>
-                        <input
-                            class="block w-full pl-12 pr-4 py-4 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all duration-300 font-medium"
-                            id="password" placeholder="••••••••" required="" type="password" />
-                    </div>
+                <div class="flex justify-between items-center text-sm">
+                    <label class="flex items-center text-gray-400 cursor-pointer">
+                        <input type="checkbox" class="mr-2 accent-accent"> Remember me
+                    </label>
+                    <a href="#" class="text-accent hover:text-accent-light">Forgot Password?</a>
                 </div>
-                <button
-                    class="w-full flex justify-center py-4 px-4 border border-transparent rounded-xl shadow-lg text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200 transition-all duration-300 transform hover:-translate-y-0.5 mt-4"
-                    type="submit">
-                    SECURE LOGIN
+                <button type="submit"
+                    class="w-full py-4 bg-accent hover:bg-accent-light text-black font-bold rounded-xl transition-all shadow-glow transform hover:scale-[1.02]">
+                    Sign In
                 </button>
-                <p id="loginError" class="text-red-500 text-sm text-center hidden font-medium animate-pulse">인증 정보가 올바르지
-                    않습니다.</p>
             </form>
         </div>
     </div>
 
-    <!-- Loading Modal -->
-    <div id="loadingModal"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-md hidden">
-        <div class="text-center">
-            <div class="relative w-24 h-24 mx-auto mb-8">
-                <div class="absolute inset-0 border-4 border-slate-700/50 rounded-full"></div>
-                <div class="absolute inset-0 border-t-4 border-accent rounded-full animate-spin"></div>
-                <div class="absolute inset-0 flex items-center justify-center">
-                    <span class="material-symbols-outlined text-white text-3xl animate-pulse">smart_toy</span>
-                </div>
-            </div>
-            <h2 class="text-2xl font-serif font-bold text-white mb-2">System Initialize</h2>
-            <p class="text-slate-400 text-sm tracking-wider uppercase">Connecting to Secure Server...</p>
-        </div>
-    </div>
-
-    <script src="app.js?v=241229_4"></script>
+    <!-- Scripts -->
     <script>
-        // GSAP Animations
-        document.addEventListener('DOMContentLoaded', () => {
-            // Sidebar Entrance
-            gsap.from("#sidebar", {
-                x: -50,
-                opacity: 0,
-                duration: 1,
-                ease: "power3.out",
-                delay: 0.2
-            });
+        // Date Display
+        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', dateOptions);
 
-            // Nav Links Stagger
-            gsap.from(".nav-item", {
-                x: -20,
-                opacity: 0,
-                duration: 0.6,
-                stagger: 0.1,
-                ease: "power2.out",
-                delay: 0.5
-            });
+        // Sidebar Animations (GSAP)
+        gsap.from("#sidebar", { x: -80, opacity: 0, duration: 1, ease: "power3.out", delay: 0.2 });
+        gsap.from(".nav-link", { opacity: 0, x: -20, duration: 0.5, stagger: 0.1, delay: 0.5 });
 
-            // Header Entrance
-            gsap.from("header", {
-                y: -20,
-                opacity: 0,
-                duration: 0.8,
-                ease: "power3.out",
-                delay: 0.4
-            });
+        // Modal Logic
+        const loginBtn = document.getElementById('loginBtn');
+        const loginModal = document.getElementById('loginModal');
+        const closeModal = document.getElementById('closeModal');
+        const modalContent = loginModal.querySelector('.modal-content');
 
-            // Background Blobs
-            gsap.to(".animate-pulse-slow", {
-                opacity: 0.3,
-                duration: 4,
-                yoyo: true,
-                repeat: -1,
-                ease: "sine.inOut"
-            });
-        });
-
-        // Function called by app.js when content loads
-        window.animateContent = () => {
-            gsap.from(".animate-on-load", {
-                y: 30,
-                opacity: 0,
-                duration: 0.6,
-                stagger: 0.1,
-                ease: "power2.out"
-            });
+        const openModal = () => {
+            loginModal.classList.remove('opacity-0', 'pointer-events-none');
+            modalContent.classList.remove('scale-95');
+            modalContent.classList.add('scale-100');
         };
+
+        const hideModal = () => {
+            loginModal.classList.add('opacity-0', 'pointer-events-none');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+        };
+
+        loginBtn.addEventListener('click', openModal);
+        closeModal.addEventListener('click', hideModal);
+
+        // Close on outside click
+        loginModal.addEventListener('click', (e) => {
+            if (e.target === loginModal || e.target.classList.contains('modal-overlay')) {
+                hideModal();
+            }
+        });
     </script>
 </body>
 

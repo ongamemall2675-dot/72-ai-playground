@@ -1,279 +1,178 @@
-/* AI 공부하는 공인중개사 - Premium Styles */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap');
 
-/* Base Typography */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-    font-family: 'Playfair Display', serif;
+/* --- Gold + Dark Luxury Theme Variables --- */
+:root {
+    --color-bg-dark: #050505;
+    /* Pitch Black */
+    --color-card-dark: #121212;
+    /* Off-Black for depth */
+    --color-gold: #d4af37;
+    /* Classic Metallic Gold */
+    --color-gold-light: #f1c40f;
+    /* Brighter Luminous Gold */
+    --color-gold-dim: rgba(212, 175, 55, 0.15);
+    --color-text-white: #f8fafc;
+    --color-text-muted: #9ca3af;
+    --color-border: rgba(255, 255, 255, 0.08);
 }
 
-/* Futuristic & Premium Text Utilities */
-.text-shadow-glow {
-    text-shadow: 0 0 15px rgba(217, 119, 6, 0.5), 0 0 5px rgba(217, 119, 6, 0.3);
+body {
+    background-color: var(--color-bg-dark);
+    color: var(--color-text-white);
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
 }
 
-.text-shadow-sm {
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-}
-
-.drop-shadow-md {
-    filter: drop-shadow(0 4px 3px rgba(0, 0, 0, 0.2));
-}
-
-/* Premium Glass Panel */
-.glass-panel {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.dark .glass-panel {
-    background: rgba(11, 17, 33, 0.6);
-    /* Darker, more transparent */
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(24px);
-}
-
-/* Futuristic Active State */
-.nav-link.active {
-    background: linear-gradient(135deg, rgba(217, 119, 6, 0.1) 0%, rgba(217, 119, 6, 0.05) 100%);
-    color: #ffffff;
-    box-shadow: 0 0 20px -5px rgba(217, 119, 6, 0.3), inset 0 0 0 1px rgba(217, 119, 6, 0.2);
-    border: 1px solid rgba(217, 119, 6, 0.2);
-    position: relative;
-    overflow: hidden;
-}
-
-.dark .nav-link.active {
-    background: linear-gradient(90deg, rgba(217, 119, 6, 0.2) 0%, transparent 100%);
-    border-left: 3px solid #d97706;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    border-right: none;
-    box-shadow: 0 0 30px -10px rgba(217, 119, 6, 0.2);
-    color: #ffffff;
-}
-
-.dark .nav-link.active .material-symbols-outlined {
-    color: #fbbf24;
-    /* Lighter Gold */
-    filter: drop-shadow(0 0 5px rgba(251, 191, 36, 0.5));
-}
-
-/* Smooth Glow Animation */
-@keyframes pulse-glow-text {
-
-    0%,
-    100% {
-        text-shadow: 0 0 10px rgba(217, 119, 6, 0.3);
-    }
-
-    50% {
-        text-shadow: 0 0 20px rgba(217, 119, 6, 0.6);
-    }
-}
-
-.animate-text-glow {
-    animation: pulse-glow-text 3s infinite;
-}
-
-/* Custom Scrollbar */
+/* --- Custom Scrollbar --- */
 ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-    background: transparent;
+    background: #000;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
+    background: #333;
     border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
+    background: var(--color-gold);
 }
 
-.dark ::-webkit-scrollbar-thumb {
-    background: #334155;
+/* --- Essential Utilities --- */
+.glass-panel {
+    background: rgba(18, 18, 18, 0.85);
+    /* Darker, less transparent */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--color-border);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
 }
 
-.dark ::-webkit-scrollbar-thumb:hover {
-    background: #475569;
+.text-gold-gradient {
+    background: linear-gradient(135deg, #fceda4 0%, #d4af37 50%, #b48a1c 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.3));
 }
 
-/* Animations */
-@keyframes pulse-slow {
-
-    0%,
-    100% {
-        opacity: 0.4;
-        transform: scale(1);
-    }
-
-    50% {
-        opacity: 0.6;
-        transform: scale(1.05);
-    }
+.border-gold-glow {
+    border: 1px solid var(--color-gold);
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
 }
 
-.animate-pulse-slow {
-    animation: pulse-slow 8s infinite ease-in-out;
+/* --- Enhanced Sidebar --- */
+#sidebar {
+    background-color: #080808;
+    /* distinct from main bg */
+    border-right: 1px solid var(--color-border);
+    z-index: 50;
+    /* Ensure visibility */
 }
 
-/* App Cards - Premium Look */
-.app-card {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    padding: 2rem;
-    border-radius: 1.5rem;
-    background: white;
-    border: 1px solid rgba(226, 232, 240, 0.8);
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow: hidden;
-    cursor: pointer;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+.nav-link {
+    color: var(--color-text-muted);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-left: 3px solid transparent;
+    margin-bottom: 4px;
 }
 
-.dark .app-card {
-    background: rgba(30, 41, 59, 0.4);
-    border-color: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
+.nav-link:hover {
+    color: var(--color-text-white);
+    background: rgba(255, 255, 255, 0.03);
+    padding-left: 1.25rem;
+    /* Slight slide effect */
 }
 
-.app-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(217, 119, 6, 0.05) 0%, transparent 60%);
-    opacity: 0;
-    transition: opacity 0.5s;
+.nav-link.active {
+    background: linear-gradient(90deg, var(--color-gold-dim) 0%, transparent 100%);
+    color: var(--color-gold-light);
+    border-left: 3px solid var(--color-gold);
+    box-shadow: 0 0 20px -5px rgba(212, 175, 55, 0.1);
 }
 
-.app-card:hover::before {
-    opacity: 1;
+.nav-link.active .material-symbols-outlined {
+    color: var(--color-gold);
+    filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.6));
 }
 
-.app-card:hover {
-    transform: translateY(-5px);
-    border-color: rgba(217, 119, 6, 0.3);
-    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
-}
-
-/* Icon Containers */
-.icon-box {
-    width: 3.5rem;
-    height: 3.5rem;
-    border-radius: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    color: #64748b;
-}
-
-.dark .icon-box {
-    background: rgba(15, 23, 42, 0.5);
-    border-color: rgba(255, 255, 255, 0.1);
-    color: #94a3b8;
-}
-
-.app-card:hover .icon-box {
-    transform: scale(1.1) rotate(5deg);
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-    color: #d97706;
-    /* Gold Icon */
-    border-color: transparent;
-}
-
-.dark .app-card:hover .icon-box {
-    background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
-    color: #0f172a;
-    /* Navy Icon */
-}
-
-/* Section Headers */
-.section-header {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 2rem;
-    position: relative;
-    padding-bottom: 1rem;
-}
-
-.section-header::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 60px;
-    height: 3px;
-    background: #d97706;
-    border-radius: 2px;
-}
-
-/* Result Cards */
-.result-card {
-    background: white;
-    border: 1px solid #e2e8f0;
+/* --- Listing Cards --- */
+.card-luxury {
+    background: var(--color-card-dark);
+    border: 1px solid var(--color-border);
     border-radius: 1rem;
     overflow: hidden;
     transition: all 0.4s ease;
+    position: relative;
 }
 
-.dark .result-card {
-    background: rgba(30, 41, 59, 0.5);
-    border-color: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
+.card-luxury:hover {
+    transform: translateY(-5px);
+    border-color: rgba(212, 175, 55, 0.3);
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.8), 0 0 20px rgba(212, 175, 55, 0.05);
 }
 
-.result-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
-    border-color: rgba(217, 119, 6, 0.3);
+.card-luxury::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 1rem;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.4), transparent);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.4s ease;
 }
 
-/* Badges */
-.badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.70rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+.card-luxury:hover::after {
+    opacity: 1;
 }
 
-.badge-blue {
-    background: rgba(15, 23, 42, 0.05);
-    color: #0f172a;
-    border: 1px solid rgba(15, 23, 42, 0.1);
+/* --- Input Fields --- */
+.input-luxury {
+    background: #0f0f0f;
+    border: 1px solid var(--color-border);
+    color: white;
+    transition: all 0.3s ease;
 }
 
-.dark .badge-blue {
-    background: rgba(255, 255, 255, 0.1);
-    color: #e2e8f0;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+.input-luxury:focus {
+    border-color: var(--color-gold);
+    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+    outline: none;
 }
 
-.badge-gold {
-    background: rgba(217, 119, 6, 0.1);
-    color: #d97706;
-    border: 1px solid rgba(217, 119, 6, 0.2);
+/* --- Animations --- */
+@keyframes delicateFloat {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-3px);
+    }
 }
 
-/* Shadow Utilities */
-.shadow-glass {
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
+.animate-float-subtle {
+    animation: delicateFloat 4s ease-in-out infinite;
+}
+
+/* --- Modal Visibility Fix --- */
+.modal-overlay {
+    background: rgba(0, 0, 0, 0.85);
+    /* Darker backdrop */
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: #121212;
+    border: 1px solid var(--color-gold);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9);
 }
