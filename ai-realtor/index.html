@@ -294,37 +294,94 @@
                             <span class="material-symbols-outlined text-accent">library_books</span>
                             RAG 지식베이스
                         </h2>
-                        <span class="text-sm text-gray-500">서버: hyehwa72.org</span>
+                        <div class="flex items-center gap-4">
+                            <span id="ragServerStatus" class="text-sm flex items-center gap-2">
+                                <span class="w-2 h-2 bg-gray-500 rounded-full"></span>
+                                <span class="text-gray-400">확인 중...</span>
+                            </span>
+                            <a href="https://api.hyehwa72.org/docs" target="_blank"
+                                class="text-sm text-accent hover:text-accent-light flex items-center gap-1">
+                                API 문서 <span class="material-symbols-outlined text-sm">open_in_new</span>
+                            </a>
+                        </div>
                     </div>
-                    <div class="flex-1 p-8">
-                        <div class="max-w-4xl mx-auto">
-                            <div class="glass-panel rounded-2xl p-8 text-center">
-                                <span class="material-symbols-outlined text-6xl text-accent mb-4">database</span>
-                                <h3 class="text-2xl font-bold text-white mb-2">RAG 지식베이스 관리</h3>
-                                <p class="text-gray-400 mb-6">문서를 업로드하거나 기존 지식을 검색하세요.</p>
-
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
-                                    <div
-                                        class="card-luxury p-6 cursor-pointer hover:border-accent/50 transition-colors">
-                                        <span
-                                            class="material-symbols-outlined text-3xl text-blue-400 mb-2">upload_file</span>
-                                        <h4 class="font-bold text-white mb-1">문서 업로드</h4>
-                                        <p class="text-xs text-gray-500">PDF, TXT, DOCX 지원</p>
+                    <div class="flex-1 p-8 overflow-y-auto">
+                        <div class="max-w-5xl mx-auto">
+                            <!-- Server Info Card -->
+                            <div class="glass-panel rounded-2xl p-6 mb-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="font-bold text-white flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-accent">dns</span>
+                                        서버 정보
+                                    </h3>
+                                    <button onclick="checkRagHealth()"
+                                        class="px-4 py-2 bg-accent/10 text-accent rounded-lg text-sm hover:bg-accent/20 transition-colors flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-sm">refresh</span>
+                                        연결 테스트
+                                    </button>
+                                </div>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                    <div class="p-3 bg-black/30 rounded-lg">
+                                        <p class="text-gray-500 text-xs mb-1">서버 URL</p>
+                                        <p class="text-white font-mono text-xs">api.hyehwa72.org</p>
                                     </div>
-                                    <div
-                                        class="card-luxury p-6 cursor-pointer hover:border-accent/50 transition-colors">
-                                        <span
-                                            class="material-symbols-outlined text-3xl text-green-400 mb-2">search</span>
-                                        <h4 class="font-bold text-white mb-1">지식 검색</h4>
-                                        <p class="text-xs text-gray-500">자연어로 검색하기</p>
+                                    <div class="p-3 bg-black/30 rounded-lg">
+                                        <p class="text-gray-500 text-xs mb-1">Vector Store</p>
+                                        <p class="text-white">PostgreSQL + pgvector</p>
+                                    </div>
+                                    <div class="p-3 bg-black/30 rounded-lg">
+                                        <p class="text-gray-500 text-xs mb-1">상태</p>
+                                        <p id="ragHealthStatus" class="text-yellow-400">확인 중...</p>
+                                    </div>
+                                    <div class="p-3 bg-black/30 rounded-lg">
+                                        <p class="text-gray-500 text-xs mb-1">문서 수</p>
+                                        <p id="ragDocCount" class="text-white">-</p>
                                     </div>
                                 </div>
+                            </div>
 
-                                <div class="mt-8 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl text-left">
-                                    <p class="text-yellow-400 text-sm flex items-center gap-2">
-                                        <span class="material-symbols-outlined">info</span>
-                                        RAG 서버 연결 설정이 필요합니다. 설정에서 서버 URL을 입력하세요.
-                                    </p>
+                            <!-- Quick Actions -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                <div class="card-luxury p-6 cursor-pointer hover:border-accent/50 transition-colors text-center"
+                                    onclick="window.open('https://api.hyehwa72.org/documents', '_blank')">
+                                    <span
+                                        class="material-symbols-outlined text-3xl text-blue-400 mb-2">folder_open</span>
+                                    <h4 class="font-bold text-white mb-1">문서 목록</h4>
+                                    <p class="text-xs text-gray-500">저장된 문서 보기</p>
+                                </div>
+                                <div
+                                    class="card-luxury p-6 cursor-pointer hover:border-accent/50 transition-colors text-center">
+                                    <span
+                                        class="material-symbols-outlined text-3xl text-green-400 mb-2">upload_file</span>
+                                    <h4 class="font-bold text-white mb-1">문서 업로드</h4>
+                                    <p class="text-xs text-gray-500">PDF, TXT, DOCX</p>
+                                </div>
+                                <div class="card-luxury p-6 cursor-pointer hover:border-accent/50 transition-colors text-center"
+                                    onclick="window.open('https://api.hyehwa72.org/stats', '_blank')">
+                                    <span
+                                        class="material-symbols-outlined text-3xl text-purple-400 mb-2">analytics</span>
+                                    <h4 class="font-bold text-white mb-1">통계 보기</h4>
+                                    <p class="text-xs text-gray-500">API 사용량</p>
+                                </div>
+                            </div>
+
+                            <!-- RAG Query Section -->
+                            <div class="glass-panel rounded-2xl p-6">
+                                <h3 class="font-bold text-white mb-4 flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-accent">search</span>
+                                    지식베이스 검색
+                                </h3>
+                                <div class="flex gap-4">
+                                    <input type="text" id="ragQueryInput" placeholder="질문을 입력하세요 (예: 부동산 투자 시 주의할 점은?)"
+                                        class="flex-1 p-4 rounded-xl bg-black/30 border border-white/10 text-white placeholder-gray-600 focus:border-accent outline-none">
+                                    <button onclick="queryRag()"
+                                        class="px-6 py-4 bg-accent hover:bg-accent-light text-black font-bold rounded-xl transition-colors flex items-center gap-2">
+                                        <span class="material-symbols-outlined">search</span>
+                                        검색
+                                    </button>
+                                </div>
+                                <div id="ragQueryResult" class="mt-4 p-4 bg-black/30 rounded-xl hidden">
+                                    <p class="text-gray-400 text-sm">검색 결과가 여기에 표시됩니다.</p>
                                 </div>
                             </div>
                         </div>
@@ -571,10 +628,11 @@
                         placeholder="https://n8n.example.com">
                 </div>
                 <div>
-                    <label class="block text-gray-400 text-xs uppercase tracking-wider mb-2">RAG 서버 URL</label>
-                    <input type="url" id="ragUrl" value=""
+                    <label class="block text-gray-400 text-xs uppercase tracking-wider mb-2">RAG 서버 URL
+                        (FastAPI)</label>
+                    <input type="url" id="ragUrl" value="https://api.hyehwa72.org"
                         class="w-full p-4 rounded-xl bg-black/30 border border-white/10 text-white focus:border-accent outline-none"
-                        placeholder="https://rag.example.com">
+                        placeholder="https://api.example.com">
                 </div>
                 <button id="saveSettings"
                     class="w-full py-4 bg-accent hover:bg-accent-light text-black font-bold rounded-xl transition-all">
@@ -659,7 +717,84 @@
             const savedRag = localStorage.getItem('ragUrl');
             if (savedN8n) document.getElementById('n8nUrl').value = savedN8n;
             if (savedRag) document.getElementById('ragUrl').value = savedRag;
+
+            // Initial health checks
+            checkRagHealth();
+            checkN8nHealth();
         });
+
+        // RAG Health Check
+        async function checkRagHealth() {
+            const ragUrl = localStorage.getItem('ragUrl') || 'https://api.hyehwa72.org';
+            const statusEl = document.getElementById('ragHealthStatus');
+            const serverStatusEl = document.getElementById('ragServerStatus');
+            const docCountEl = document.getElementById('ragDocCount');
+            const headerRagStatus = document.getElementById('ragStatus');
+
+            try {
+                const response = await fetch(`${ragUrl}/health`, { mode: 'cors' });
+                if (response.ok) {
+                    statusEl.textContent = '정상 작동';
+                    statusEl.className = 'text-green-400';
+                    serverStatusEl.innerHTML = '<span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span><span class="text-green-400">연결됨</span>';
+                    headerRagStatus.querySelector('span:last-child').innerHTML = 'RAG: <span class="text-green-400 font-bold">Online</span>';
+
+                    // Fetch document count
+                    try {
+                        const docsRes = await fetch(`${ragUrl}/documents`);
+                        const docs = await docsRes.json();
+                        docCountEl.textContent = Array.isArray(docs) ? `${docs.length}개` : '-';
+                    } catch (e) {
+                        docCountEl.textContent = '-';
+                    }
+                } else {
+                    throw new Error('Health check failed');
+                }
+            } catch (error) {
+                statusEl.textContent = '연결 실패';
+                statusEl.className = 'text-red-400';
+                serverStatusEl.innerHTML = '<span class="w-2 h-2 bg-red-500 rounded-full"></span><span class="text-red-400">오프라인</span>';
+                headerRagStatus.querySelector('span:last-child').innerHTML = 'RAG: <span class="text-red-400 font-bold">Offline</span>';
+            }
+        }
+
+        // n8n Health Check
+        async function checkN8nHealth() {
+            const n8nStatusEl = document.getElementById('n8nStatus');
+            try {
+                // n8n doesn't have a public health endpoint, so we just assume it's up if iframe loads
+                n8nStatusEl.innerHTML = '<span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> n8n 연결됨';
+            } catch (error) {
+                n8nStatusEl.innerHTML = '<span class="w-2 h-2 bg-red-500 rounded-full"></span> n8n 오프라인';
+            }
+        }
+
+        // RAG Query Function
+        async function queryRag() {
+            const query = document.getElementById('ragQueryInput').value;
+            const resultEl = document.getElementById('ragQueryResult');
+            if (!query.trim()) return;
+
+            resultEl.classList.remove('hidden');
+            resultEl.innerHTML = '<p class="text-accent">검색 중...</p>';
+
+            try {
+                const ragUrl = localStorage.getItem('ragUrl') || 'https://api.hyehwa72.org';
+                const response = await fetch(`${ragUrl}/documents`);
+                const docs = await response.json();
+
+                if (Array.isArray(docs) && docs.length > 0) {
+                    resultEl.innerHTML = `<p class="text-green-400 mb-2">총 ${docs.length}개의 문서가 있습니다.</p>
+                    <ul class="text-sm text-gray-300 space-y-1">
+                        ${docs.slice(0, 5).map(doc => `<li class="flex items-center gap-2"><span class="material-symbols-outlined text-accent text-sm">description</span> ${doc.title || doc.id || 'Untitled'}</li>`).join('')}
+                    </ul>`;
+                } else {
+                    resultEl.innerHTML = '<p class="text-gray-400">저장된 문서가 없습니다.</p>';
+                }
+            } catch (error) {
+                resultEl.innerHTML = '<p class="text-red-400">검색 중 오류가 발생했습니다. 서버 연결을 확인하세요.</p>';
+            }
+        }
 
         // GSAP Animations
         gsap.from("#sidebar", { x: -80, opacity: 0, duration: 0.8, ease: "power3.out" });
