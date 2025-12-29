@@ -828,9 +828,8 @@
             }
         }
 
-        // GSAP Animations
-        gsap.from("#sidebar", { x: -80, opacity: 0, duration: 0.8, ease: "power3.out" });
-        gsap.from(".nav-link", { opacity: 0, x: -20, duration: 0.4, stagger: 0.05, delay: 0.3 });
+        // Simple fade-in for sidebar only (no nav-link animation to avoid visibility issues)
+        gsap.from("#sidebar", { x: -30, opacity: 0, duration: 0.5, ease: "power2.out" });
     </script>
 </body>
 
