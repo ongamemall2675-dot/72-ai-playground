@@ -67,10 +67,10 @@
         class="w-20 lg:w-64 flex-shrink-0 flex flex-col justify-between transition-all duration-300 transform">
         <!-- Logo -->
         <div class="h-20 flex items-center justify-center lg:justify-start lg:px-6 border-b border-border-dark">
-            <span class="material-symbols-outlined text-4xl text-accent animate-float-subtle">diamond</span>
+            <span class="material-symbols-outlined text-4xl text-accent animate-float-subtle">token</span>
             <div class="hidden lg:block ml-3">
-                <h1 class="font-serif text-xl font-bold tracking-wider text-white">AI REALTOR</h1>
-                <p class="text-[0.6rem] text-accent uppercase tracking-[0.2em]">Premium Suite</p>
+                <h1 class="font-serif text-xl font-bold tracking-wider text-white">Ai Realhun</h1>
+                <p class="text-[0.6rem] text-accent uppercase tracking-[0.2em]">AI Creative Studio</p>
             </div>
         </div>
 
@@ -79,32 +79,40 @@
             <a href="#" class="nav-link active flex items-center px-4 py-3 rounded-xl group">
                 <span
                     class="material-symbols-outlined text-2xl group-hover:text-accent transition-colors">dashboard</span>
-                <span class="hidden lg:block ml-4 font-medium">Dashboard</span>
+                <span class="hidden lg:block ml-4 font-medium">대시보드</span>
             </a>
             <a href="#" class="nav-link flex items-center px-4 py-3 rounded-xl group">
                 <span
-                    class="material-symbols-outlined text-2xl group-hover:text-accent transition-colors">real_estate_agent</span>
-                <span class="hidden lg:block ml-4 font-medium">My Listings</span>
+                    class="material-symbols-outlined text-2xl group-hover:text-accent transition-colors">account_tree</span>
+                <span class="hidden lg:block ml-4 font-medium">나의 워크플로우</span>
             </a>
             <a href="#" class="nav-link flex items-center px-4 py-3 rounded-xl group">
                 <span
-                    class="material-symbols-outlined text-2xl group-hover:text-accent transition-colors">analytics</span>
-                <span class="hidden lg:block ml-4 font-medium">Market Analytics</span>
+                    class="material-symbols-outlined text-2xl group-hover:text-accent transition-colors">library_books</span>
+                <span class="hidden lg:block ml-4 font-medium">RAG 지식베이스</span>
             </a>
             <div class="pt-4 pb-2">
                 <div class="hidden lg:block px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">AI
-                    Tools</div>
+                    창작 도구</div>
                 <div class="lg:hidden h-px bg-white/5 my-2 mx-4"></div>
             </div>
             <a href="#" class="nav-link flex items-center px-4 py-3 rounded-xl group">
                 <span
-                    class="material-symbols-outlined text-2xl group-hover:text-accent transition-colors">auto_awesome</span>
-                <span class="hidden lg:block ml-4 font-medium">Gen AI Studio</span>
+                    class="material-symbols-outlined text-2xl group-hover:text-accent transition-colors">edit_note</span>
+                <span class="hidden lg:block ml-4 font-medium">대본 생성</span>
+            </a>
+            <a href="#" class="nav-link flex items-center px-4 py-3 rounded-xl group">
+                <span class="material-symbols-outlined text-2xl group-hover:text-accent transition-colors">image</span>
+                <span class="hidden lg:block ml-4 font-medium">이미지 생성</span>
+            </a>
+            <a href="#" class="nav-link flex items-center px-4 py-3 rounded-xl group">
+                <span class="material-symbols-outlined text-2xl group-hover:text-accent transition-colors">movie</span>
+                <span class="hidden lg:block ml-4 font-medium">영상 생성</span>
             </a>
             <a href="#" class="nav-link flex items-center px-4 py-3 rounded-xl group">
                 <span
-                    class="material-symbols-outlined text-2xl group-hover:text-accent transition-colors">movie_edit</span>
-                <span class="hidden lg:block ml-4 font-medium">Video Creator</span>
+                    class="material-symbols-outlined text-2xl group-hover:text-accent transition-colors">graphic_eq</span>
+                <span class="hidden lg:block ml-4 font-medium">음성/TTS 생성</span>
             </a>
         </nav>
 
@@ -114,10 +122,10 @@
                 <img src="https://images.unsplash.com/photo-1560250097-9b93dbddb426?q=80&w=100&auto=format&fit=crop"
                     alt="User" class="w-10 h-10 rounded-full border border-accent object-cover">
                 <div class="hidden lg:block ml-3 text-left">
-                    <p class="text-sm font-bold text-white">Agent Kim</p>
-                    <p class="text-xs text-accent">Pro Member</p>
+                    <p class="text-sm font-bold text-white">Realhun</p>
+                    <p class="text-xs text-accent">Master Admin</p>
                 </div>
-                <span class="material-symbols-outlined ml-auto text-gray-500 hidden lg:block">more_vert</span>
+                <span class="material-symbols-outlined ml-auto text-gray-500 hidden lg:block">settings</span>
             </button>
         </div>
     </aside>
@@ -128,16 +136,20 @@
         <!-- Top Header (Floating, Transparent) -->
         <header class="h-20 flex items-center justify-between px-8 z-30">
             <div class="flex items-center text-text-muted">
-                <span class="material-symbols-outlined mr-2">calendar_today</span>
-                <span class="text-sm font-medium" id="currentDate">December 29, 2025</span>
+                <span class="material-symbols-outlined mr-2">dns</span>
+                <span class="text-sm font-medium text-green-400 flex items-center gap-2">
+                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    n8n Connected
+                </span>
             </div>
 
             <div class="flex items-center gap-6">
-                <!-- Search Bar (Compact) -->
-                <div class="relative hidden md:block">
-                    <input type="text" placeholder="Search properties, clients..."
-                        class="bg-primary-light/50 border border-white/10 rounded-full py-2 pl-10 pr-4 text-sm w-64 text-white focus:border-accent focus:w-80 transition-all duration-300 outline-none">
-                    <span class="material-symbols-outlined absolute left-3 top-2 text-gray-500 text-lg">search</span>
+                <!-- RAG Status -->
+                <div
+                    class="hidden md:flex items-center gap-2 px-3 py-1 bg-primary-light border border-white/10 rounded-full">
+                    <span class="material-symbols-outlined text-accent text-sm">database</span>
+                    <span class="text-xs text-gray-300">RAG Server: <span
+                            class="text-white font-bold">Online</span></span>
                 </div>
 
                 <!-- Notifications -->
@@ -146,12 +158,12 @@
                     <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-primary"></span>
                 </button>
 
-                <!-- Login / Action Box -->
+                <!-- Settings Button -->
                 <button id="loginBtn"
                     class="flex items-center px-4 py-2 bg-primary-light border border-accent/30 rounded-full hover:bg-accent/10 hover:border-accent transition-all group shadow-lg">
-                    <span class="text-sm font-bold text-accent mr-2">Login</span>
+                    <span class="text-sm font-bold text-accent mr-2">설정</span>
                     <span
-                        class="material-symbols-outlined text-accent text-lg group-hover:translate-x-1 transition-transform">login</span>
+                        class="material-symbols-outlined text-accent text-lg group-hover:rotate-90 transition-transform">settings</span>
                 </button>
             </div>
         </header>
@@ -162,11 +174,11 @@
             <!-- Hero/Welcome Section -->
             <div class="max-w-5xl mx-auto mb-12 text-center pt-8">
                 <h2 class="font-serif text-5xl font-bold mb-4 animate-float-subtle">
-                    <span class="text-white">Welcome back, </span>
-                    <span class="text-gold-gradient">Agent Kim</span>
+                    <span class="text-white">환영합니다, </span>
+                    <span class="text-gold-gradient">대표님</span>
                 </h2>
                 <p class="text-gray-400 text-lg max-w-2xl mx-auto">
-                    Your AI-powered real estate command center is ready. Market analysis is up 12% this week.
+                    AI 크리에이티브 스튜디오가 준비되었습니다. 오늘은 어떤 콘텐츠를 생성할까요?
                 </p>
 
                 <!-- Main Action Search -->
@@ -176,12 +188,12 @@
                     </div>
                     <div
                         class="relative flex items-center bg-primary-light border border-border-dark rounded-2xl p-2 shadow-2xl group-focus-within:border-accent transition-all duration-300">
-                        <span class="material-symbols-outlined text-3xl text-gray-500 ml-4">sparkles</span>
-                        <input type="text" placeholder="Ask AI to analyze a property or generate a listing..."
+                        <span class="material-symbols-outlined text-3xl text-gray-500 ml-4">auto_awesome</span>
+                        <input type="text" placeholder="생성할 콘텐츠의 주제를 입력하세요 (예: 강남 맛집 유튜브 대본)..."
                             class="w-full bg-transparent border-none text-white text-lg px-4 py-3 focus:outline-none placeholder-gray-600">
                         <button
                             class="bg-accent hover:bg-accent-light text-primary-dark font-bold py-3 px-6 rounded-xl transition-colors flex items-center">
-                            <span>Analyze</span>
+                            <span>생성 시작</span>
                         </button>
                     </div>
                 </div>
@@ -195,30 +207,30 @@
                     <div class="flex justify-between items-start mb-4">
                         <div
                             class="p-3 rounded-full bg-blue-500/10 text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-colors">
-                            <span class="material-symbols-outlined">trending_up</span>
+                            <span class="material-symbols-outlined">history_edu</span>
                         </div>
-                        <span class="text-xs font-bold text-green-400 flex items-center">+4.5% <span
+                        <span class="text-xs font-bold text-green-400 flex items-center">+12% <span
                                 class="material-symbols-outlined text-sm">arrow_upward</span></span>
                     </div>
-                    <h3 class="text-gray-400 text-sm font-medium uppercase tracking-wider">Total Revenue</h3>
-                    <p class="text-3xl font-bold text-white mt-1">₩1.2B</p>
+                    <h3 class="text-gray-400 text-sm font-medium uppercase tracking-wider">이달의 생성량</h3>
+                    <p class="text-3xl font-bold text-white mt-1">128건</p>
                     <div class="mt-4 h-1 w-full bg-gray-800 rounded-full overflow-hidden">
                         <div class="h-full bg-blue-500 w-[70%]"></div>
                     </div>
                 </div>
 
-                <!-- Active Listings Card (Gold Highlight) -->
+                <!-- Server Status Card (Gold Highlight) -->
                 <div class="card-luxury p-6 group cursor-pointer border-accent/20">
                     <div class="flex justify-between items-start mb-4">
                         <div
                             class="p-3 rounded-full bg-accent/10 text-accent group-hover:bg-accent group-hover:text-black transition-colors">
-                            <span class="material-symbols-outlined">apartment</span>
+                            <span class="material-symbols-outlined">hub</span>
                         </div>
-                        <span class="text-xs font-bold text-accent px-2 py-1 bg-accent/10 rounded-full">Active</span>
+                        <span class="text-xs font-bold text-accent px-2 py-1 bg-accent/10 rounded-full">Good</span>
                     </div>
-                    <h3 class="text-gray-400 text-sm font-medium uppercase tracking-wider">Active Listings</h3>
-                    <p class="text-3xl font-bold text-white mt-1">24</p>
-                    <p class="text-xs text-gray-500 mt-2">3 properties require attention</p>
+                    <h3 class="text-gray-400 text-sm font-medium uppercase tracking-wider">n8n 서버 상태</h3>
+                    <p class="text-3xl font-bold text-white mt-1">정상 작동</p>
+                    <p class="text-xs text-gray-500 mt-2">트리거 대기 중: 5개</p>
                 </div>
 
                 <!-- AI Tasks Card -->
@@ -226,19 +238,19 @@
                     <div class="flex justify-between items-start mb-4">
                         <div
                             class="p-3 rounded-full bg-purple-500/10 text-purple-400 group-hover:bg-purple-500 group-hover:text-white transition-colors">
-                            <span class="material-symbols-outlined">smart_toy</span>
+                            <span class="material-symbols-outlined">pending</span>
                         </div>
-                        <span class="text-xs font-bold text-purple-400">Running</span>
+                        <span class="text-xs font-bold text-purple-400">Processing</span>
                     </div>
-                    <h3 class="text-gray-400 text-sm font-medium uppercase tracking-wider">AI Tasks</h3>
+                    <h3 class="text-gray-400 text-sm font-medium uppercase tracking-wider">진행 중인 작업</h3>
                     <div class="mt-2 space-y-2">
                         <div class="flex items-center text-sm text-gray-300">
                             <span class="w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></span>
-                            Generating Gangnam Villa Listing
+                            유튜브 쇼츠 대본 생성 중...
                         </div>
                         <div class="flex items-center text-sm text-gray-300">
                             <span class="w-1.5 h-1.5 bg-yellow-500 rounded-full mr-2"></span>
-                            Video Render: Unit 201
+                            이미지 렌더링: 썸네일 #4
                         </div>
                     </div>
                 </div>
@@ -248,34 +260,34 @@
             <!-- Recent Activity Table -->
             <div class="max-w-7xl mx-auto glass-panel rounded-2xl p-6">
                 <h3 class="font-serif text-xl font-bold text-white mb-6 flex items-center">
-                    <span class="material-symbols-outlined text-accent mr-2">history</span>
-                    Recent Activity
+                    <span class="material-symbols-outlined text-accent mr-2">list_alt</span>
+                    최근 작업 기록
                 </h3>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="text-gray-500 text-sm border-b border-white/10">
-                                <th class="pb-3 pl-2 font-medium">Property</th>
-                                <th class="pb-3 font-medium">Action</th>
-                                <th class="pb-3 font-medium">Date</th>
-                                <th class="pb-3 font-medium text-right">Status</th>
+                                <th class="pb-3 pl-2 font-medium">프로젝트명</th>
+                                <th class="pb-3 font-medium">작업 유형</th>
+                                <th class="pb-3 font-medium">시간</th>
+                                <th class="pb-3 font-medium text-right">상태</th>
                             </tr>
                         </thead>
                         <tbody class="text-sm">
                             <tr class="group hover:bg-white/5 transition-colors">
-                                <td class="py-4 pl-2 font-medium text-white">Hyehwa Luxury Suite</td>
-                                <td class="py-4 text-gray-400">Video Generation</td>
-                                <td class="py-4 text-gray-400">Today, 10:23 AM</td>
+                                <td class="py-4 pl-2 font-medium text-white">SNS 마케팅 영상 3편</td>
+                                <td class="py-4 text-gray-400">영상 생성</td>
+                                <td class="py-4 text-gray-400">오늘, 10:23 AM</td>
                                 <td class="py-4 text-right"><span
-                                        class="px-3 py-1 bg-green-500/10 text-green-400 rounded-full text-xs font-bold">Completed</span>
+                                        class="px-3 py-1 bg-green-500/10 text-green-400 rounded-full text-xs font-bold">완료</span>
                                 </td>
                             </tr>
                             <tr class="group hover:bg-white/5 transition-colors">
-                                <td class="py-4 pl-2 font-medium text-white">Mapo Riverview Apt</td>
-                                <td class="py-4 text-gray-400">Listing Description</td>
-                                <td class="py-4 text-gray-400">Yesterday</td>
+                                <td class="py-4 pl-2 font-medium text-white">신규 서비스 소개자료</td>
+                                <td class="py-4 text-gray-400">이미지 생성</td>
+                                <td class="py-4 text-gray-400">어제</td>
                                 <td class="py-4 text-right"><span
-                                        class="px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full text-xs font-bold">Draft</span>
+                                        class="px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full text-xs font-bold">대기중</span>
                                 </td>
                             </tr>
                         </tbody>
