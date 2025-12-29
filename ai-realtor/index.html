@@ -107,6 +107,16 @@
                 <span class="material-symbols-outlined text-2xl">graphic_eq</span>
                 <span class="ml-4 font-medium text-inherit">음성/TTS 생성</span>
             </a>
+
+            <!-- Real Estate Apps Section -->
+            <div class="pt-4 pb-2">
+                <div class="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">부동산 관련 APP</div>
+            </div>
+
+            <a href="#" data-page="realestate-apps" class="nav-link flex items-center px-4 py-3 rounded-xl">
+                <span class="material-symbols-outlined text-2xl">apartment</span>
+                <span class="ml-4 font-medium text-inherit">부동산 앱 모음</span>
+            </a>
         </nav>
 
         <!-- User Profile (Bottom Sidebar) -->
@@ -629,6 +639,83 @@
                                 <span class="material-symbols-outlined text-5xl mb-2">volume_up</span>
                                 <p>음성 파일이 여기에 표시됩니다</p>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- === PAGE: Real Estate Apps === -->
+            <section id="page-realestate-apps" class="page-content hidden p-8">
+                <div class="max-w-5xl mx-auto">
+                    <h2 class="text-3xl font-bold text-white mb-2 flex items-center gap-3">
+                        <span class="material-symbols-outlined text-accent text-4xl">apartment</span>
+                        부동산 관련 APP
+                    </h2>
+                    <p class="text-gray-400 mb-8">Vercel에서 배포된 부동산 관련 웹앱들을 바로 사용하세요.</p>
+
+                    <!-- Apps Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                        <!-- App Card 1: 혜화72부동산 -->
+                        <a href="https://hyehwa72.org" target="_blank"
+                            class="card-luxury p-6 group cursor-pointer hover:border-accent/50 transition-all">
+                            <div class="flex items-center justify-between mb-4">
+                                <div
+                                    class="p-3 rounded-full bg-blue-500/10 text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                                    <span class="material-symbols-outlined">home</span>
+                                </div>
+                                <span class="text-xs font-bold text-green-400 flex items-center gap-1">
+                                    <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                                    운영중
+                                </span>
+                            </div>
+                            <h3 class="text-lg font-bold text-white mb-1">혜화72부동산</h3>
+                            <p class="text-sm text-gray-400 mb-3">메인 부동산 홈페이지</p>
+                            <p class="text-xs text-gray-500 flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">link</span>
+                                hyehwa72.org
+                            </p>
+                        </a>
+
+                        <!-- App Card 2: Placeholder for Vercel App -->
+                        <div class="card-luxury p-6 border-dashed cursor-pointer hover:border-accent/30 transition-all">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="p-3 rounded-full bg-gray-500/10 text-gray-400">
+                                    <span class="material-symbols-outlined">add</span>
+                                </div>
+                                <span class="text-xs font-bold text-gray-500">미연결</span>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-400 mb-1">Vercel 앱 추가</h3>
+                            <p class="text-sm text-gray-500 mb-3">새 앱을 연결하려면 클릭</p>
+                            <p class="text-xs text-gray-600">설정에서 URL 입력</p>
+                        </div>
+
+                        <!-- App Card 3: Placeholder -->
+                        <div class="card-luxury p-6 border-dashed cursor-pointer hover:border-accent/30 transition-all">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="p-3 rounded-full bg-gray-500/10 text-gray-400">
+                                    <span class="material-symbols-outlined">add</span>
+                                </div>
+                                <span class="text-xs font-bold text-gray-500">미연결</span>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-400 mb-1">Vercel 앱 추가</h3>
+                            <p class="text-sm text-gray-500 mb-3">새 앱을 연결하려면 클릭</p>
+                            <p class="text-xs text-gray-600">설정에서 URL 입력</p>
+                        </div>
+
+                    </div>
+
+                    <!-- Info Box -->
+                    <div class="mt-8 glass-panel rounded-2xl p-6">
+                        <h3 class="font-bold text-white mb-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-accent">info</span>
+                            Vercel 앱 연결 방법
+                        </h3>
+                        <div class="text-sm text-gray-400 space-y-2">
+                            <p>1. Vercel에서 앱을 배포합니다.</p>
+                            <p>2. 배포된 URL (예: your-app.vercel.app)을 복사합니다.</p>
+                            <p>3. 위의 "Vercel 앱 추가" 카드를 클릭하거나 설정에서 URL을 입력합니다.</p>
+                            <p class="text-accent mt-4">💡 Tip: Cloudflare DNS에서 서브도메인을 연결하면 더 깔끔한 URL을 사용할 수 있습니다.</p>
                         </div>
                     </div>
                 </div>
