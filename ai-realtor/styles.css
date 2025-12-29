@@ -74,29 +74,33 @@ body {
 }
 
 .nav-link {
-    color: var(--color-text-muted);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: #d1d5db;
+    /* gray-300 - visible on dark bg */
+    transition: all 0.3s ease;
     border-left: 3px solid transparent;
     margin-bottom: 4px;
+    display: flex !important;
+    opacity: 1 !important;
+}
+
+.nav-link span {
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
 .nav-link:hover {
-    color: var(--color-text-white);
-    background: rgba(255, 255, 255, 0.03);
-    padding-left: 1.25rem;
-    /* Slight slide effect */
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .nav-link.active {
     background: linear-gradient(90deg, var(--color-gold-dim) 0%, transparent 100%);
     color: var(--color-gold-light);
     border-left: 3px solid var(--color-gold);
-    box-shadow: 0 0 20px -5px rgba(212, 175, 55, 0.1);
 }
 
 .nav-link.active .material-symbols-outlined {
     color: var(--color-gold);
-    filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.6));
 }
 
 /* --- Listing Cards --- */

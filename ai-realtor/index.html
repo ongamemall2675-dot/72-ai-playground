@@ -59,55 +59,53 @@
         class="fixed bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] bg-accent/5 rounded-full blur-[120px] pointer-events-none z-0">
     </div>
 
-    <!-- Sidebar -->
+    <!-- Sidebar (Fixed Width 256px) -->
     <aside id="sidebar"
-        class="w-20 lg:w-64 flex-shrink-0 flex flex-col justify-between transition-all duration-300 transform bg-[#080808] border-r border-border-dark">
+        class="w-64 flex-shrink-0 flex flex-col justify-between bg-[#080808] border-r border-border-dark"
+        style="min-width: 256px;">
         <!-- Logo -->
-        <div class="h-20 flex items-center justify-center lg:justify-start lg:px-6 border-b border-border-dark">
+        <div class="h-20 flex items-center px-6 border-b border-border-dark">
             <span class="material-symbols-outlined text-4xl text-accent">token</span>
-            <div class="hidden lg:block ml-3">
+            <div class="ml-3">
                 <h1 class="font-serif text-xl font-bold tracking-wider text-white">Ai Realhun</h1>
                 <p class="text-[0.6rem] text-accent uppercase tracking-[0.2em]">AI Creative Studio</p>
             </div>
         </div>
 
         <!-- Navigation -->
-        <nav class="flex-1 py-8 px-3 space-y-1 overflow-y-auto">
-            <a href="#" data-page="dashboard" class="nav-link active flex items-center px-4 py-3 rounded-xl group">
-                <span
-                    class="material-symbols-outlined text-2xl group-hover:text-accent transition-colors">dashboard</span>
-                <span class="ml-4 font-medium">대시보드</span>
+        <nav class="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
+            <a href="#" data-page="dashboard" class="nav-link active flex items-center px-4 py-3 rounded-xl">
+                <span class="material-symbols-outlined text-2xl">dashboard</span>
+                <span class="ml-4 font-medium text-inherit">대시보드</span>
             </a>
-            <a href="#" data-page="workflows" class="nav-link flex items-center px-4 py-3 rounded-xl group">
-                <span
-                    class="material-symbols-outlined text-2xl group-hover:text-accent transition-colors">account_tree</span>
-                <span class="ml-4 font-medium">나의 워크플로우</span>
+            <a href="#" data-page="workflows" class="nav-link flex items-center px-4 py-3 rounded-xl">
+                <span class="material-symbols-outlined text-2xl">account_tree</span>
+                <span class="ml-4 font-medium text-inherit">나의 워크플로우</span>
             </a>
-            <a href="#" data-page="rag" class="nav-link flex items-center px-4 py-3 rounded-xl group">
-                <span
-                    class="material-symbols-outlined text-2xl group-hover:text-accent transition-colors">library_books</span>
-                <span class="ml-4 font-medium">RAG 지식베이스</span>
+            <a href="#" data-page="rag" class="nav-link flex items-center px-4 py-3 rounded-xl">
+                <span class="material-symbols-outlined text-2xl">library_books</span>
+                <span class="ml-4 font-medium text-inherit">RAG 지식베이스</span>
             </a>
+
             <div class="pt-4 pb-2">
-                <div class="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">AI 창작 도구</div>
+                <div class="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">AI 창작 도구</div>
             </div>
-            <a href="#" data-page="script" class="nav-link flex items-center px-4 py-3 rounded-xl group">
-                <span
-                    class="material-symbols-outlined text-2xl group-hover:text-accent transition-colors">edit_note</span>
-                <span class="ml-4 font-medium">대본 생성</span>
+
+            <a href="#" data-page="script" class="nav-link flex items-center px-4 py-3 rounded-xl">
+                <span class="material-symbols-outlined text-2xl">edit_note</span>
+                <span class="ml-4 font-medium text-inherit">대본 생성</span>
             </a>
-            <a href="#" data-page="image" class="nav-link flex items-center px-4 py-3 rounded-xl group">
-                <span class="material-symbols-outlined text-2xl group-hover:text-accent transition-colors">image</span>
-                <span class="ml-4 font-medium">이미지 생성</span>
+            <a href="#" data-page="image" class="nav-link flex items-center px-4 py-3 rounded-xl">
+                <span class="material-symbols-outlined text-2xl">image</span>
+                <span class="ml-4 font-medium text-inherit">이미지 생성</span>
             </a>
-            <a href="#" data-page="video" class="nav-link flex items-center px-4 py-3 rounded-xl group">
-                <span class="material-symbols-outlined text-2xl group-hover:text-accent transition-colors">movie</span>
-                <span class="ml-4 font-medium">영상 생성</span>
+            <a href="#" data-page="video" class="nav-link flex items-center px-4 py-3 rounded-xl">
+                <span class="material-symbols-outlined text-2xl">movie</span>
+                <span class="ml-4 font-medium text-inherit">영상 생성</span>
             </a>
-            <a href="#" data-page="tts" class="nav-link flex items-center px-4 py-3 rounded-xl group">
-                <span
-                    class="material-symbols-outlined text-2xl group-hover:text-accent transition-colors">graphic_eq</span>
-                <span class="ml-4 font-medium">음성/TTS 생성</span>
+            <a href="#" data-page="tts" class="nav-link flex items-center px-4 py-3 rounded-xl">
+                <span class="material-symbols-outlined text-2xl">graphic_eq</span>
+                <span class="ml-4 font-medium text-inherit">음성/TTS 생성</span>
             </a>
         </nav>
 
@@ -116,11 +114,11 @@
             <button id="settingsBtn" class="flex items-center w-full p-2 rounded-xl hover:bg-white/5 transition-colors">
                 <img src="https://images.unsplash.com/photo-1560250097-9b93dbddb426?q=80&w=100&auto=format&fit=crop"
                     alt="User" class="w-10 h-10 rounded-full border border-accent object-cover">
-                <div class="hidden lg:block ml-3 text-left">
+                <div class="ml-3 text-left">
                     <p class="text-sm font-bold text-white">Realhun</p>
                     <p class="text-xs text-accent">Master Admin</p>
                 </div>
-                <span class="material-symbols-outlined ml-auto text-gray-500 hidden lg:block">settings</span>
+                <span class="material-symbols-outlined ml-auto text-gray-500">settings</span>
             </button>
         </div>
     </aside>
