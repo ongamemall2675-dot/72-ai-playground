@@ -1,0 +1,19 @@
+[Unit]
+Description=AI Image Generator Service (Port 8004)
+After=network.target
+
+[Service]
+Type=simple
+User=realhun
+WorkingDirectory=/home/realhun/72놀이터/image-generator
+Environment="PATH=/home/realhun/72놀이터/image-generator/venv/bin"
+ExecStart=/home/realhun/72놀이터/image-generator/venv/bin/python main.py
+Restart=always
+RestartSec=10
+
+# 로그 설정
+StandardOutput=append:/home/realhun/72놀이터/image-generator/logs/app.log
+StandardError=append:/home/realhun/72놀이터/image-generator/logs/error.log
+
+[Install]
+WantedBy=multi-user.target

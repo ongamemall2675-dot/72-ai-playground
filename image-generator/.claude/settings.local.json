@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python main.py:*)",
+      "Bash(timeout:*)",
+      "Bash(curl:*)",
+      "Bash(ping:*)",
+      "Bash(python -m json.tool:*)",
+      "Bash(python:*)",
+      "Bash(taskkill /F /FI \"WINDOWTITLE eq *python*\")",
+      "Bash(taskkill:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(start:*)",
+      "Bash(dir \"c:\\\\Users\\\\ongam\\\\antigravity project\\\\홈페이지작업\\\\혜화72부동산 홈페이지\\\\72놀이터\" /b)",
+      "Bash(dir:*)"
+    ]
+  }
+}

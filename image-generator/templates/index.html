@@ -1,0 +1,3708 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🖼️ AI 이미지 생성기 v2.6</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖼️</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&family=Fira+Code&display=swap"
+        rel="stylesheet">
+    <style>
+        /* CSS 전역 변수 */
+        :root {
+            --dark-bg: #0a0a0f;
+            --dark-surface: #12121a;
+            --dark-panel: #1a1a25;
+            --dark-border: #2a2a3a;
+            --gold: #d4af37;
+            --gold-light: #f0d060;
+            --text: #e5e5e5;
+            --text-muted: #888;
+            --purple: #a855f7;
+            --success: #22c55e;
+            --error: #ef4444;
+            --info: #3b82f6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--dark-bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 헤더 */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            background: var(--dark-surface);
+            border-bottom: 1px solid var(--dark-border);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        .version-badge {
+            font-size: 0.65rem;
+            padding: 0.15rem 0.5rem;
+            background: rgba(212, 175, 55, 0.15);
+            color: var(--gold);
+            border-radius: 99px;
+            margin-left: 0.5rem;
+        }
+
+        .header-status {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .api-status {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 99px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .api-status.ok {
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--success);
+        }
+
+        .api-status.no {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--error);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-icon {
+            padding: 0.4rem 0.75rem;
+            background: var(--dark-panel);
+            border: 1px solid var(--dark-border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+
+        .btn-icon:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+
+        /* 메인 레이아웃 - 2열 구조 */
+        .main-container {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            height: calc(100vh - 52px);
+        }
+
+        /* 좌측 패널 - 장면 목록 */
+        .scenes-panel {
+            background: var(--dark-surface);
+            border-right: 1px solid var(--dark-border);
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .panel-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--gold);
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* JSON 가져오기 */
+        .import-area {
+            border: 2px dashed var(--dark-border);
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 1rem;
+            transition: all 0.2s;
+        }
+
+        .import-area:hover,
+        .import-area.dragover {
+            border-color: var(--gold);
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        .import-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .import-text {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* 장면 카드 */
+        .scene-card {
+            background: var(--dark-panel);
+            border: 1px solid var(--dark-border);
+            border-radius: 10px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .scene-card:hover,
+        .scene-card.active {
+            border-color: var(--gold);
+        }
+
+        .scene-card.active {
+            background: rgba(212, 175, 55, 0.08);
+        }
+
+        .scene-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.4rem;
+        }
+
+        .scene-id {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        /* 배치 생성 결과 아이템 */
+        .batch-result-item {
+            background: var(--dark-panel);
+            border: 1px solid var(--dark-border);
+            border-radius: 8px;
+            padding: 0.6rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .batch-result-item.success {
+            border-left: 3px solid var(--success);
+        }
+
+        .batch-result-item.error {
+            border-left: 3px solid var(--error);
+        }
+
+        .batch-result-item.pending {
+            border-left: 3px solid var(--info);
+        }
+
+        .batch-result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.35rem;
+        }
+
+        .batch-result-scene {
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        .batch-result-status {
+            font-size: 0.65rem;
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+        }
+
+        .batch-result-status.ok {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--success);
+        }
+
+        .batch-result-status.fail {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--error);
+        }
+
+        .batch-result-status.wait {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--info);
+        }
+
+        .batch-result-prompt {
+            color: var(--text-muted);
+            line-height: 1.4;
+            margin-top: 0.25rem;
+        }
+
+        .batch-result-prompt .ko {
+            color: var(--success);
+            font-size: 0.7rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .batch-result-prompt .en {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.68rem;
+        }
+
+        .scene-status {
+            font-size: 0.6rem;
+            padding: 0.1rem 0.35rem;
+            border-radius: 4px;
+        }
+
+        .scene-status.ready {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--info);
+        }
+
+        .scene-status.completed {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--success);
+        }
+
+        .scene-text {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .scene-keywords {
+            display: flex;
+            gap: 0.25rem;
+            flex-wrap: wrap;
+            margin-top: 0.4rem;
+        }
+
+        .scene-keyword {
+            font-size: 0.6rem;
+            padding: 0.1rem 0.3rem;
+            background: var(--dark-border);
+            border-radius: 3px;
+            color: var(--text-muted);
+        }
+
+        /* 결과 패널 - 오른쪽 */
+        .results-panel {
+            background: var(--dark-bg);
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--dark-border);
+        }
+
+        .results-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        .results-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* 썸네일 섹션 */
+        .thumbnail-section {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(212, 175, 55, 0.1));
+            border: 1px solid var(--purple);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .thumbnail-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .thumbnail-section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--purple);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .thumbnail-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .thumbnail-card {
+            background: var(--dark-surface);
+            border: 1px solid var(--dark-border);
+            border-radius: 10px;
+            overflow: hidden;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .thumbnail-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--purple);
+        }
+
+        .thumbnail-image-container {
+            position: relative;
+            aspect-ratio: 16/9;
+            background: var(--dark-panel);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .thumbnail-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .thumbnail-placeholder {
+            color: var(--text-muted);
+            font-size: 2rem;
+        }
+
+        .thumbnail-korean-text {
+            position: absolute;
+            bottom: 0.5rem;
+            left: 0.5rem;
+            right: 0.5rem;
+            background: rgba(0,0,0,0.7);
+            color: var(--gold);
+            padding: 0.3rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .thumbnail-info {
+            padding: 0.75rem;
+        }
+
+        .thumbnail-concept {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+            max-height: 2.8em;
+            overflow: hidden;
+        }
+
+        .thumbnail-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .thumbnail-actions select {
+            flex: 1;
+            min-width: 80px;
+            padding: 0.35rem;
+            background: var(--dark-bg);
+            border: 1px solid var(--dark-border);
+            border-radius: 4px;
+            color: var(--text);
+            font-size: 0.65rem;
+        }
+
+        .thumbnail-actions button {
+            padding: 0.35rem 0.5rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            cursor: pointer;
+            background: var(--purple);
+            color: white;
+        }
+
+        .thumbnail-actions button:hover {
+            opacity: 0.9;
+        }
+
+        .thumbnail-actions button.download {
+            background: var(--success);
+        }
+
+        .thumbnail-loading {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text);
+        }
+
+        /* 장면 결과 카드 - 3열 레이아웃 */
+        .scene-result-card {
+            display: grid;
+            grid-template-columns: minmax(150px, 1fr) minmax(300px, 2fr) 200px;
+            gap: 1rem;
+            background: var(--dark-surface);
+            border: 1px solid var(--dark-border);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .scene-result-card.generating {
+            border-color: var(--info);
+        }
+
+        .scene-result-card.completed {
+            border-color: var(--success);
+        }
+
+        /* 왼쪽: 대본 */
+        .scene-script-col {
+            border-right: 1px solid var(--dark-border);
+            padding-right: 1rem;
+        }
+
+        .scene-script-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .scene-number {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--gold);
+            background: rgba(212, 175, 55, 0.1);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .script-text {
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: var(--text);
+        }
+
+        /* 중앙: 프롬프트 */
+        .scene-prompt-col {
+            border-right: 1px solid var(--dark-border);
+            padding-right: 1rem;
+        }
+
+        .prompt-section {
+            margin-bottom: 0.75rem;
+        }
+
+        .prompt-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .prompt-ko-text {
+            font-size: 0.8rem;
+            color: var(--success);
+            line-height: 1.4;
+            padding: 0.5rem;
+            background: rgba(34, 197, 94, 0.05);
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+        }
+
+        .prompt-en-text {
+            font-size: 0.75rem;
+            font-family: 'Fira Code', monospace;
+            color: var(--text-muted);
+            line-height: 1.4;
+            padding: 0.5rem;
+            background: var(--dark-panel);
+            border-radius: 6px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        /* 오른쪽: 이미지 */
+        .scene-image-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .image-preview {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: var(--dark-panel);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 1px solid var(--dark-border);
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-placeholder {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .image-actions {
+            display: flex;
+            gap: 0.35rem;
+            width: 100%;
+        }
+
+        .btn-generate-single {
+            flex: 1;
+            padding: 0.4rem;
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            border: none;
+            border-radius: 6px;
+            color: #000;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-regenerate {
+            padding: 0.4rem 0.6rem;
+            background: var(--dark-panel);
+            border: 1px solid var(--dark-border);
+            border-radius: 6px;
+            color: var(--text);
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+
+        /* 설정 패널 - 왼쪽 */
+        .settings-panel {
+            background: var(--dark-surface);
+            border-right: 1px solid var(--dark-border);
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        /* 중앙 패널 - 에디터 (제거, settings-panel로 대체) */
+        .editor-panel {
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .section-box {
+            background: var(--dark-surface);
+            border: 1px solid var(--dark-border);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--gold);
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* 디자이너 섹션 - 탭 */
+        .designer-tabs {
+            display: flex;
+            gap: 0.35rem;
+            margin-bottom: 1rem;
+            overflow-x: auto;
+            padding-bottom: 0.25rem;
+            flex-wrap: wrap;
+        }
+
+        .designer-tab {
+            padding: 0.4rem 0.75rem;
+            font-size: 0.7rem;
+            background: var(--dark-panel);
+            border: 1px solid var(--dark-border);
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .designer-tab:hover,
+        .designer-tab.active {
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+
+        .designer-tab.active {
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        .designer-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+        }
+
+        .designer-card {
+            position: relative;
+            padding: 0.5rem;
+            background: var(--dark-panel);
+            border: 2px solid var(--dark-border);
+            border-radius: 10px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .designer-card:hover,
+        .designer-card.active {
+            border-color: var(--gold);
+        }
+
+        .designer-card.active {
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        .designer-card-inner {
+            cursor: pointer;
+            padding: 0.25rem;
+        }
+
+        .designer-icon {
+            font-size: 1.3rem;
+            margin-bottom: 0.15rem;
+        }
+
+        .designer-name {
+            font-size: 0.6rem;
+            color: var(--text);
+            line-height: 1.2;
+        }
+
+        .designer-card .category-badge {
+            font-size: 0.5rem;
+            padding: 0.1rem 0.3rem;
+            background: var(--dark-border);
+            border-radius: 3px;
+            margin-top: 0.2rem;
+            display: inline-block;
+        }
+
+        /* 즐겨찾기 버튼 */
+        .favorite-btn {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 18px;
+            height: 18px;
+            padding: 0;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 0.6rem;
+            opacity: 0.4;
+            transition: opacity 0.2s;
+        }
+
+        .designer-card:hover .favorite-btn {
+            opacity: 0.8;
+        }
+
+        .favorite-btn.active {
+            opacity: 1;
+        }
+
+        .favorite-btn:hover {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+
+        /* AI 추천 박스 */
+        .ai-recommend-box {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(212, 175, 55, 0.1));
+            border: 1px solid var(--purple);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem
+        }
+
+        .ai-recommend-input {
+            display: flex;
+            gap: 0.5rem
+        }
+
+        .ai-recommend-input input {
+            flex: 1;
+            padding: 0.6rem;
+            background: var(--dark-panel);
+            border: 1px solid var(--dark-border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.8rem
+        }
+
+        .ai-recommend-input button {
+            padding: 0.6rem 1rem;
+            background: var(--purple);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 0.75rem;
+            cursor: pointer;
+            white-space: nowrap
+        }
+
+        .ai-recommend-result {
+            margin-top: 0.75rem;
+            padding: 0.75rem;
+            background: var(--dark-panel);
+            border-radius: 8px;
+            display: none
+        }
+
+        .ai-recommend-result.show {
+            display: block
+        }
+
+        /* 프롬프트 영역 - 미드저니 스타일 */
+        .prompt-container {
+            position: relative
+        }
+
+        .prompt-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem
+        }
+
+        .prompt-sync-btn {
+            padding: 0.35rem 0.75rem;
+            background: var(--info);
+            border: none;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 0.7rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem
+        }
+
+        .prompt-sync-btn:disabled {
+            opacity: 0.5
+        }
+
+        .sync-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            display: inline-block
+        }
+
+        .sync-indicator.syncing {
+            animation: pulse 1s infinite
+        }
+
+        .sync-indicator.unsynced {
+            background: var(--error)
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: 0.3
+            }
+        }
+
+        .prompt-textarea {
+            width: 100%;
+            padding: 0.875rem;
+            background: var(--dark-panel);
+            border: 1px solid var(--dark-border);
+            border-radius: 10px;
+            color: var(--text);
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8rem;
+            resize: vertical;
+            min-height: 100px;
+            line-height: 1.5
+        }
+
+        .prompt-textarea:focus {
+            outline: none;
+            border-color: var(--gold)
+        }
+
+        .prompt-textarea.ko {
+            font-family: 'Pretendard', sans-serif
+        }
+
+        .prompt-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem
+        }
+
+        .prompt-label .lang-badge {
+            font-size: 0.6rem;
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px
+        }
+
+        .prompt-label .lang-badge.en {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--info)
+        }
+
+        .prompt-label .lang-badge.ko {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--success)
+        }
+
+        .quick-tags {
+            display: flex;
+            gap: 0.35rem;
+            flex-wrap: wrap;
+            margin-top: 0.75rem
+        }
+
+        .quick-tag {
+            font-size: 0.65rem;
+            padding: 0.25rem 0.5rem;
+            background: var(--dark-panel);
+            border: 1px solid var(--dark-border);
+            border-radius: 6px;
+            cursor: pointer;
+            color: var(--text-muted)
+        }
+
+        .quick-tag:hover {
+            border-color: var(--gold);
+            color: var(--gold)
+        }
+
+        .quick-tag.mj-param {
+            background: rgba(168, 85, 247, 0.15);
+            border-color: var(--purple);
+            color: var(--purple)
+        }
+
+        /* 설정 영역 */
+        .settings-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem
+        }
+
+        .setting-group label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            display: block;
+            margin-bottom: 0.35rem
+        }
+
+        .setting-select {
+            width: 100%;
+            padding: 0.5rem;
+            background: var(--dark-panel);
+            border: 1px solid var(--dark-border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.8rem
+        }
+
+        .setting-select:focus {
+            outline: none;
+            border-color: var(--gold)
+        }
+
+        /* 버튼 */
+        .btn-generate {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            color: #000;
+            font-weight: 700;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+            margin-top: 1rem
+        }
+
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(212, 175, 55, 0.3)
+        }
+
+        .btn-generate:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none
+        }
+
+        .btn-secondary {
+            width: 100%;
+            padding: 0.75rem;
+            background: transparent;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            font-weight: 500;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-top: 0.5rem
+        }
+
+        /* 갤러리 */
+        .gallery-panel {
+            background: var(--dark-surface);
+            border-left: 1px solid var(--dark-border);
+            padding: 1rem;
+            overflow-y: auto
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem
+        }
+
+        .gallery-item {
+            position: relative;
+            aspect-ratio: 16/9;
+            background: var(--dark-panel);
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover
+        }
+
+        .gallery-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-muted);
+            font-size: 0.7rem
+        }
+
+        .gallery-item-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s
+        }
+
+        .gallery-item:hover .gallery-item-overlay {
+            opacity: 1
+        }
+
+        .gallery-badge {
+            position: absolute;
+            top: 0.35rem;
+            left: 0.35rem;
+            font-size: 0.6rem;
+            padding: 0.15rem 0.35rem;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 4px
+        }
+
+        /* 이미지 확대 모달 */
+        .image-lightbox {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+            padding: 2rem;
+        }
+        .image-lightbox.show {
+            display: flex;
+        }
+        .lightbox-content {
+            position: relative;
+            max-width: 95vw;
+            max-height: 90vh;
+        }
+        .lightbox-content img {
+            max-width: 100%;
+            max-height: 85vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        .lightbox-close {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        .lightbox-close:hover {
+            opacity: 1;
+        }
+        .lightbox-info {
+            position: absolute;
+            bottom: -50px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+        .lightbox-btn {
+            padding: 0.5rem 1rem;
+            background: var(--gold);
+            color: #000;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+        .lightbox-btn:hover {
+            background: var(--gold-light);
+        }
+        .lightbox-btn.secondary {
+            background: var(--dark-panel);
+            color: var(--text);
+            border: 1px solid var(--dark-border);
+        }
+        .lightbox-btn.secondary:hover {
+            background: var(--dark-surface);
+        }
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            font-size: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .lightbox-nav:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .lightbox-nav.prev { left: -70px; }
+        .lightbox-nav.next { right: -70px; }
+
+        /* 이미지 액션 버튼 개선 */
+        .image-actions {
+            display: flex;
+            gap: 0.35rem;
+            margin-top: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .image-actions button {
+            flex: 1;
+            min-width: 45px;
+            padding: 0.4rem 0.5rem;
+            font-size: 0.7rem;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-generate-single {
+            background: var(--gold);
+            color: #000;
+        }
+        .btn-generate-single:hover:not(:disabled) {
+            background: var(--gold-light);
+        }
+        .btn-generate-single:disabled {
+            background: var(--dark-border);
+            color: var(--text-muted);
+            cursor: not-allowed;
+        }
+        .btn-regenerate {
+            background: var(--info);
+            color: white;
+        }
+        .btn-regenerate:hover:not(:disabled) {
+            background: #5b9bf6;
+        }
+        .btn-regenerate:disabled {
+            background: var(--dark-border);
+            color: var(--text-muted);
+            cursor: not-allowed;
+        }
+        .btn-download-single {
+            background: var(--success);
+            color: white;
+        }
+        .btn-download-single:hover:not(:disabled) {
+            background: #3dd66e;
+        }
+        .btn-download-single:disabled {
+            background: var(--dark-border);
+            color: var(--text-muted);
+            cursor: not-allowed;
+        }
+        .btn-zoom {
+            background: var(--purple);
+            color: white;
+        }
+        .btn-zoom:hover:not(:disabled) {
+            background: #b875f7;
+        }
+        .btn-zoom:disabled {
+            background: var(--dark-border);
+            color: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        /* 이미지 프리뷰 클릭 가능 */
+        .image-preview {
+            cursor: pointer;
+            position: relative;
+        }
+        .image-preview:hover::after {
+            content: '🔍 클릭하여 확대';
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.75rem;
+            border-radius: 6px;
+        }
+        .image-preview.no-image:hover::after {
+            display: none;
+        }
+
+        /* 모달 */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 1rem
+        }
+
+        .modal-overlay.show {
+            display: flex
+        }
+
+        .modal {
+            background: var(--dark-surface);
+            border: 1px solid var(--dark-border);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column
+        }
+
+        .modal-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--dark-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center
+        }
+
+        .modal-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--gold)
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer
+        }
+
+        .modal-body {
+            padding: 1.25rem;
+            overflow-y: auto;
+            flex: 1
+        }
+
+        .modal-footer {
+            padding: 1rem 1.25rem;
+            border-top: 1px solid var(--dark-border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem
+        }
+
+        /* 탭 */
+        .tabs {
+            display: flex;
+            gap: 0;
+            border-bottom: 1px solid var(--dark-border);
+            margin-bottom: 1rem
+        }
+
+        .tab {
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 2px solid transparent
+        }
+
+        .tab:hover {
+            color: var(--text)
+        }
+
+        .tab.active {
+            color: var(--gold);
+            border-bottom-color: var(--gold)
+        }
+
+        .tab-content {
+            display: none
+        }
+
+        .tab-content.active {
+            display: block
+        }
+
+        /* API 키 설정 */
+        .api-key-item {
+            background: var(--dark-panel);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 0.75rem
+        }
+
+        .api-key-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem
+        }
+
+        .api-key-name {
+            font-weight: 600;
+            font-size: 0.85rem
+        }
+
+        .api-key-status {
+            font-size: 0.65rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 99px
+        }
+
+        .api-key-status.ok {
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--success)
+        }
+
+        .api-key-status.no {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--error)
+        }
+
+        .api-key-row {
+            display: flex;
+            gap: 0.5rem
+        }
+
+        .api-key-input {
+            flex: 1;
+            padding: 0.5rem;
+            background: var(--dark-bg);
+            border: 1px solid var(--dark-border);
+            border-radius: 6px;
+            color: var(--text);
+            font-family: monospace;
+            font-size: 0.75rem
+        }
+
+        .api-key-btn {
+            padding: 0.5rem 0.75rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            font-weight: 600
+        }
+
+        .api-key-btn.test {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--info)
+        }
+
+        .api-key-btn.save {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--success)
+        }
+
+        /* 폼 */
+        .form-group {
+            margin-bottom: 1rem
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.6rem;
+            background: var(--dark-panel);
+            border: 1px solid var(--dark-border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.85rem
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--gold)
+        }
+
+        /* 유틸리티 */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            background: var(--dark-surface);
+            border: 1px solid var(--dark-border);
+            border-radius: 12px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 3000
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--dark-border);
+            border-radius: 3px;
+            margin-top: 0.75rem;
+            overflow: hidden
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--gold), var(--gold-light));
+            transition: width 0.3s
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--dark-border);
+            border-top-color: var(--gold);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: inline-block
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div>
+            <span class="logo">🖼️ AI 이미지 생성기</span>
+            <span class="version-badge">v2.5</span>
+        </div>
+        <div class="header-status">
+            <div class="api-status no" id="apiStatusBadge">
+                <span>⚡</span>
+                <span id="apiStatusText">API 미설정</span>
+            </div>
+            <div class="header-actions">
+                <button class="btn-icon" onclick="openDesignerModal()">👤 디자이너</button>
+                <button class="btn-icon" onclick="openSettingsModal()">⚙️ 설정</button>
+                <a href="/docs" class="btn-icon" style="text-decoration:none">📖 API</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- 좌측: 설정 패널 -->
+        <div class="settings-panel">
+            <!-- JSON 가져오기 -->
+            <div class="section-box">
+                <div class="section-title">
+                    <span>📁 대본 가져오기</span>
+                </div>
+                <div class="import-area" id="importArea" ondrop="handleDrop(event)" ondragover="handleDragOver(event)"
+                    ondragleave="handleDragLeave(event)">
+                    <div class="import-icon">📁</div>
+                    <div class="import-text">M-06 JSON 파일을<br>드래그하거나 클릭</div>
+                    <input type="file" id="fileInput" accept=".json" style="display:none"
+                        onchange="handleFileSelect(event)">
+                </div>
+            </div>
+
+            <!-- AI 디자이너 추천 -->
+            <div class="section-box">
+                <div class="section-title">
+                    <span>✨ AI 디자이너 추천</span>
+                </div>
+                <div class="ai-recommend-box">
+                    <div class="ai-recommend-input">
+                        <input type="text" id="recommendInput" placeholder="예: 부동산 매물 소개 영상">
+                        <button onclick="getAIRecommendation()">🎯 추천</button>
+                    </div>
+                    <div class="ai-recommend-result" id="recommendResult">
+                        <div style="font-size:0.8rem;font-weight:600;color:var(--gold);margin-bottom:0.5rem">추천 디자이너
+                        </div>
+                        <div id="recommendedDesigner" style="font-size:0.85rem"></div>
+                        <div id="recommendReason" style="font-size:0.75rem;color:var(--text-muted);margin-top:0.35rem">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 디자이너 선택 -->
+            <div class="section-box">
+                <div class="section-title">
+                    <span>🎨 디자이너 선택</span>
+                    <button class="btn-icon" onclick="openDesignerModal()"
+                        style="padding:0.25rem 0.5rem;font-size:0.65rem">관리</button>
+                </div>
+                <div class="designer-tabs"></div>
+                <div class="designer-grid" id="designerGrid"></div>
+            </div>
+
+            <!-- 생성 설정 -->
+            <div class="section-box">
+                <div class="section-title">
+                    <span>⚙️ 생성 설정</span>
+                </div>
+                <div class="settings-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem">
+                    <div class="setting-group">
+                        <label>프롬프트 AI</label>
+                        <select class="setting-select" id="promptAI">
+                            <option value="gpt4o_mini" selected>GPT-4o Mini</option>
+                            <option value="gemini">Gemini 2.0</option>
+                            <option value="openai">GPT-4o</option>
+                            <option value="claude">Claude</option>
+                        </select>
+                    </div>
+                    <div class="setting-group">
+                        <label>이미지 생성 API</label>
+                        <select class="setting-select" id="imageAPI">
+                            <option value="vertex" selected>Vertex AI Imagen (자동)</option>
+                            <option value="vertex-nano-banana">Nano Banana (Vertex)</option>
+                            <option value="vertex-nano-banana-pro">Nano Banana Pro (Vertex)</option>
+                            <option value="dalle3">DALL-E 3 (OpenAI)</option>
+                            <option value="replicate">Replicate Flux</option>
+                            <option value="replicate-seedream">SeeDream-4 (ByteDance)</option>
+                            <option value="replicate-nano-banana">Nano Banana (Replicate)</option>
+                            <option value="replicate-nano-banana-pro">Nano Banana Pro (Replicate)</option>
+                        </select>
+                    </div>
+                    <div class="setting-group">
+                        <label>비율</label>
+                        <select class="setting-select" id="imageSize">
+                            <option value="1792x1024">16:9 가로</option>
+                            <option value="1024x1792">9:16 세로</option>
+                            <option value="1024x1024">1:1 정사각형</option>
+                        </select>
+                    </div>
+                    <div class="setting-group">
+                        <label>해상도</label>
+                        <select class="setting-select" id="imageResolution">
+                            <option value="1k">1K (1024px)</option>
+                            <option value="2k" selected>2K (2048px)</option>
+                            <option value="4k">4K (4096px)</option>
+                            <option value="8k">8K (8192px)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 프롬프트 배치 생성 버튼 -->
+                <button class="btn-generate" id="generatePromptsBtn" onclick="generateAllPrompts()"
+                    style="margin-top:1rem">
+                    📝 전체 프롬프트 생성
+                </button>
+
+                <div class="progress-bar" id="progressBar" style="display:none">
+                    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+                </div>
+                <div id="progressText"
+                    style="font-size:0.75rem;color:var(--text-muted);text-align:center;margin-top:0.5rem"></div>
+            </div>
+        </div>
+
+        <!-- 우측: 결과 패널 -->
+        <div class="results-panel">
+            <!-- 썸네일 섹션 (최상단) -->
+            <div class="thumbnail-section" id="thumbnailSection" style="display:none">
+                <div class="thumbnail-section-header">
+                    <div class="thumbnail-section-title">
+                        🎬 썸네일 (<span id="thumbnailCount">3</span>개)
+                    </div>
+                    <div style="display:flex;gap:0.5rem;align-items:center;">
+                        <select id="thumbnailAI" style="padding:0.3rem;background:var(--dark-bg);border:1px solid var(--dark-border);border-radius:4px;color:var(--text);font-size:0.7rem;">
+                            <option value="gemini">Gemini 2.0</option>
+                            <option value="openai">GPT-4o</option>
+                            <option value="gpt4o_mini">GPT-4o mini</option>
+                            <option value="claude">Claude</option>
+                        </select>
+                        <button class="btn-icon" onclick="generateThumbnailPrompts()" id="genThumbnailBtn" style="font-size:0.7rem;">
+                            📝 썸네일 프롬프트 생성
+                        </button>
+                        <button class="btn-icon" onclick="generateAllThumbnailImages()" id="genAllThumbnailImagesBtn" style="font-size:0.7rem;" disabled>
+                            🖼️ 전체 생성
+                        </button>
+                    </div>
+                </div>
+                <div class="thumbnail-grid" id="thumbnailGrid">
+                    <!-- 초기 안내 메시지 -->
+                    <div class="thumbnail-empty-state" style="text-align:center;padding:2rem;color:var(--text-muted);">
+                        <div style="font-size:2rem;margin-bottom:0.5rem;">🎬</div>
+                        <div>대본을 가져오고 "썸네일 프롬프트 생성" 버튼을 클릭하세요</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-header">
+                <div class="results-title">📋 장면 결과 (<span id="scenesCount">0</span>개)</div>
+                <div class="results-actions">
+                    <button class="btn-icon" onclick="generateAllImages()" id="batchImageBtn" disabled>
+                        🖼️ 전체 이미지 생성
+                    </button>
+                    <button class="btn-icon" onclick="downloadAll()">📥 전체 다운로드</button>
+                </div>
+            </div>
+
+            <!-- 장면 결과 목록 -->
+            <div id="sceneResultsList">
+                <div style="text-align:center;padding:3rem;color:var(--text-muted)">
+                    <div style="font-size:3rem;margin-bottom:1rem">📁</div>
+                    <div>M-06 JSON 파일을 가져와서 시작하세요</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 이미지 확대 모달 (Lightbox) -->
+    <div class="image-lightbox" id="imageLightbox" onclick="closeLightbox(event)">
+        <div class="lightbox-content" onclick="event.stopPropagation()">
+            <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+            <button class="lightbox-nav prev" onclick="navigateLightbox(-1)">❮</button>
+            <img id="lightboxImage" src="" alt="확대 이미지">
+            <button class="lightbox-nav next" onclick="navigateLightbox(1)">❯</button>
+            <div class="lightbox-info">
+                <span id="lightboxLabel" style="color:white;font-size:0.9rem;"></span>
+            </div>
+            <div style="display:flex;justify-content:center;gap:0.75rem;margin-top:1rem;">
+                <button class="lightbox-btn" onclick="downloadCurrentImage()">📥 다운로드</button>
+                <button class="lightbox-btn secondary" onclick="regenerateCurrentImage()">🔄 재생성</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 설정 모달 -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal" style="max-width:600px">
+            <div class="modal-header">
+                <div class="modal-title">⚙️ API 설정</div>
+                <button class="modal-close" onclick="closeSettingsModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:1rem">이미지 생성 및 프롬프트 변환에 사용할 API 키를
+                    설정하세요.</p>
+
+                <!-- OpenAI -->
+                <div class="api-key-item">
+                    <div class="api-key-header">
+                        <span class="api-key-name">🔑 OpenAI (DALL-E 3, GPT-4o)</span>
+                        <span class="api-key-status no" id="openaiStatus">미연결</span>
+                    </div>
+                    <div class="api-key-row">
+                        <input type="password" class="api-key-input" id="openaiKey" placeholder="sk-...">
+                        <button class="api-key-btn test" onclick="testApiKey('openai')">테스트</button>
+                    </div>
+                </div>
+
+                <!-- Gemini -->
+                <div class="api-key-item">
+                    <div class="api-key-header">
+                        <span class="api-key-name">🔑 Google Gemini</span>
+                        <span class="api-key-status no" id="geminiStatus">미연결</span>
+                    </div>
+                    <div class="api-key-row">
+                        <input type="password" class="api-key-input" id="geminiKey" placeholder="AIzaSy...">
+                        <button class="api-key-btn test" onclick="testApiKey('gemini')">테스트</button>
+                    </div>
+                </div>
+
+                <!-- Vertex AI -->
+                <div class="api-key-item">
+                    <div class="api-key-header">
+                        <span class="api-key-name">🔑 Vertex AI (Imagen)</span>
+                        <span class="api-key-status no" id="vertexStatus">미연결</span>
+                    </div>
+                    <div class="api-key-row">
+                        <input type="password" class="api-key-input" id="vertexKey" placeholder="Google Cloud API Key">
+                        <button class="api-key-btn test" onclick="testApiKey('vertex')">테스트</button>
+                    </div>
+                    <div style="font-size:0.65rem;color:var(--text-muted);margin-top:0.35rem">* Gemini 키와 동일하거나 별도
+                        Vertex AI 키 사용</div>
+                </div>
+
+                <!-- Replicate -->
+                <div class="api-key-item">
+                    <div class="api-key-header">
+                        <span class="api-key-name">🔑 Replicate (Flux)</span>
+                        <span class="api-key-status no" id="replicateStatus">미연결</span>
+                    </div>
+                    <div class="api-key-row">
+                        <input type="password" class="api-key-input" id="replicateKey" placeholder="r8_...">
+                        <button class="api-key-btn test" onclick="testApiKey('replicate')">테스트</button>
+                    </div>
+                </div>
+
+                <!-- Claude -->
+                <div class="api-key-item">
+                    <div class="api-key-header">
+                        <span class="api-key-name">🔑 Claude (프롬프트 생성용)</span>
+                        <span class="api-key-status no" id="claudeStatus">미연결</span>
+                    </div>
+                    <div class="api-key-row">
+                        <input type="password" class="api-key-input" id="claudeKey" placeholder="sk-ant-...">
+                        <button class="api-key-btn test" onclick="testApiKey('claude')">테스트</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" style="width:auto;margin:0" onclick="closeSettingsModal()">취소</button>
+                <button class="btn-generate" style="width:auto;margin:0;padding:0.6rem 1.5rem"
+                    onclick="saveApiKeys()">💾 저장</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 디자이너 관리 모달 -->
+    <div class="modal-overlay" id="designerModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">👤 디자이너 관리</div>
+                <button class="modal-close" onclick="closeDesignerModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="tabs">
+                    <div class="tab active" onclick="showDesignerTab('list')">디자이너 목록</div>
+                    <div class="tab" onclick="showDesignerTab('create')">새 디자이너</div>
+                </div>
+
+                <!-- 목록 탭 -->
+                <div class="tab-content active" id="designerListTab">
+                    <div style="margin-bottom:1rem">
+                        <input type="text" class="form-input" id="designerSearch" placeholder="디자이너 검색..."
+                            oninput="filterDesigners()">
+                    </div>
+                    <div id="designerListContent"></div>
+                </div>
+
+                <!-- 생성 탭 -->
+                <div class="tab-content" id="designerCreateTab">
+                    <div class="form-group">
+                        <label class="form-label">디자이너 이름</label>
+                        <input type="text" class="form-input" id="newDesignerName" placeholder="예: 내 브랜드 스타일">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">설명</label>
+                        <input type="text" class="form-input" id="newDesignerDesc" placeholder="이 디자이너의 특징">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">프롬프트 앞에 추가 (prefix)</label>
+                        <textarea class="prompt-textarea" id="newDesignerPrefix" style="min-height:60px"
+                            placeholder="[cinematic lighting, warm atmosphere]"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">프롬프트 뒤에 추가 (suffix)</label>
+                        <textarea class="prompt-textarea" id="newDesignerSuffix" style="min-height:60px"
+                            placeholder="--style cinematic --quality 4K"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">네거티브 프롬프트</label>
+                        <textarea class="prompt-textarea" id="newDesignerNegative" style="min-height:60px"
+                            placeholder="low quality, blurry..."></textarea>
+                    </div>
+                    <button class="btn-generate" onclick="createDesigner()">✨ 디자이너 생성</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 이미지 확대 모달 -->
+    <div class="modal-overlay" id="imageModal" onclick="closeImageModal()">
+        <div class="modal" style="max-width:900px" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title" id="imageModalTitle">이미지 상세</div>
+                <button class="modal-close" onclick="closeImageModal()">×</button>
+            </div>
+            <div class="modal-body" style="text-align:center">
+                <img id="modalImage" style="max-width:100%;border-radius:8px">
+                <div id="modalPrompt"
+                    style="margin-top:1rem;font-size:0.75rem;color:var(--text-muted);text-align:left;background:var(--dark-panel);padding:1rem;border-radius:8px">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" style="width:auto;margin:0" onclick="regenerateImage()">🔄 재생성</button>
+                <button class="btn-generate" style="width:auto;margin:0;padding:0.6rem 1.5rem"
+                    onclick="downloadImage()">📥 다운로드</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 토스트 -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ============================================
+        // 전역 상태
+        // ============================================
+        let scenes = [];
+        let designers = {};
+        let selectedSceneId = null;
+        let selectedDesignerId = 'bright_cheerful';
+        let generatedImages = [];
+        let currentCategory = 'all';
+        let isSynced = true;
+        let categoryGroups = {};  // 카테고리 그룹 정보
+        let favorites = [];  // 즐겨찾기 목록
+        let thumbnails = [];  // 썸네일 데이터
+        let fullScript = '';  // 전체 대본
+        let projectTitle = '';  // 프로젝트 제목
+
+        // ============================================
+        // 초기화
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function () {
+            loadDesigners();
+            loadApiStatus();
+            setupImportArea();
+        });
+
+        async function loadDesigners() {
+            try {
+                const res = await fetch('/api/designers');
+                const data = await res.json();
+                designers = { ...data.presets, ...data.custom };
+                categoryGroups = data.category_groups || {};
+                favorites = data.favorites || [];
+
+                // 카테고리 탭 동적 생성
+                renderCategoryTabs();
+                renderDesignerGrid();
+                renderDesignerList();
+            } catch (e) {
+                console.error('디자이너 로드 실패:', e);
+            }
+        }
+
+        // 카테고리 탭 동적 생성
+        function renderCategoryTabs() {
+            const tabsContainer = document.querySelector('.designer-tabs');
+            if (!tabsContainer) return;
+
+            let html = '<button class="designer-tab active" onclick="showDesignerCategory(\'all\')">전체</button>';
+
+            // 카테고리 그룹별 탭
+            const groupOrder = ['video', 'photo', 'art', 'cartoon', 'design', 'special'];
+            for (const groupId of groupOrder) {
+                const group = categoryGroups[groupId];
+                if (group) {
+                    html += '<button class="designer-tab" onclick="showDesignerCategory(\'' + groupId + '\')">' + group.name + '</button>';
+                }
+            }
+
+            // 즐겨찾기 탭
+            html += '<button class="designer-tab" onclick="showDesignerCategory(\'favorites\')">⭐ 즐겨찾기</button>';
+            // 커스텀 탭
+            html += '<button class="designer-tab" onclick="showDesignerCategory(\'custom\')">🎨 내 디자이너</button>';
+
+            tabsContainer.innerHTML = html;
+        }
+
+        async function loadApiStatus() {
+            try {
+                const res = await fetch('/api/settings');
+                const data = await res.json();
+                let connectedCount = 0;
+
+                for (const [provider, info] of Object.entries(data.api_keys)) {
+                    const statusEl = document.getElementById(provider + 'Status');
+                    if (statusEl && info.configured) {
+                        statusEl.textContent = '연결됨';
+                        statusEl.className = 'api-key-status ok';
+                        connectedCount++;
+                    }
+                }
+
+                const badge = document.getElementById('apiStatusBadge');
+                const text = document.getElementById('apiStatusText');
+                if (connectedCount > 0) {
+                    badge.className = 'api-status ok';
+                    text.textContent = connectedCount + '개 연결됨';
+                }
+            } catch (e) {
+                console.error('API 상태 로드 실패:', e);
+            }
+        }
+
+        // ============================================
+        // 디자이너 그리드
+        // ============================================
+        function renderDesignerGrid() {
+            const grid = document.getElementById('designerGrid');
+            let html = '';
+            let count = 0;
+
+            for (const id in designers) {
+                const d = designers[id];
+                const designerCategory = d.category || 'video';
+
+                // 카테고리 필터링
+                let show = false;
+                if (currentCategory === 'all') {
+                    show = true;
+                } else if (currentCategory === 'favorites') {
+                    show = favorites.includes(id) || d.is_favorite;
+                } else if (currentCategory === 'custom') {
+                    show = !d.is_preset;
+                } else {
+                    // 카테고리 그룹 필터링
+                    const group = categoryGroups[currentCategory];
+                    if (group && group.categories) {
+                        show = group.categories.includes(designerCategory);
+                    }
+                }
+
+                if (!show) continue;
+                count++;
+
+                const isActive = id === selectedDesignerId ? 'active' : '';
+                const isFavorite = favorites.includes(id) || d.is_favorite;
+                const icon = d.name.split(' ')[0];
+                const name = d.name.replace(/^[^\s]+\s/, '');
+
+                html += '<div class="designer-card ' + isActive + '">' +
+                    '<div class="designer-card-inner" onclick="selectDesigner(\'' + id + '\')">' +
+                    '<div class="designer-icon">' + icon + '</div>' +
+                    '<div class="designer-name">' + name + '</div>' +
+                    '<span class="category-badge">' + (designerCategory) + '</span>' +
+                    '</div>' +
+                    '<button class="favorite-btn ' + (isFavorite ? 'active' : '') + '" onclick="event.stopPropagation();toggleFavorite(\'' + id + '\')" title="즐겨찾기">' +
+                    (isFavorite ? '⭐' : '☆') +
+                    '</button>' +
+                    '</div>';
+            }
+
+            grid.innerHTML = html || '<div style="color:var(--text-muted);font-size:0.75rem;grid-column:1/-1;text-align:center;padding:2rem">해당 카테고리에 디자이너가 없습니다</div>';
+        }
+
+        function showDesignerCategory(category) {
+            currentCategory = category;
+
+            // 탭 활성화
+            document.querySelectorAll('.designer-tab').forEach(tab => tab.classList.remove('active'));
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
+
+            renderDesignerGrid();
+        }
+
+        // 즐겨찾기 토글
+        async function toggleFavorite(designerId) {
+            try {
+                const res = await fetch('/api/designers/' + designerId + '/favorite', {
+                    method: 'POST'
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    // 즐겨찾기 목록 업데이트
+                    if (data.is_favorite) {
+                        if (!favorites.includes(designerId)) favorites.push(designerId);
+                    } else {
+                        favorites = favorites.filter(f => f !== designerId);
+                    }
+
+                    // 디자이너 객체 업데이트
+                    if (designers[designerId]) {
+                        designers[designerId].is_favorite = data.is_favorite;
+                    }
+
+                    renderDesignerGrid();
+                    showToast(data.message);
+                }
+            } catch (e) {
+                showToast('즐겨찾기 처리 실패', 'error');
+            }
+        }
+
+        function selectDesigner(id) {
+            selectedDesignerId = id;
+            renderDesignerGrid();
+
+            const d = designers[id];
+            if (d) {
+                // 프롬프트에 디자이너 스타일 적용 (기본 템플릿)
+                const currentEn = document.getElementById('promptEn').value;
+                if (!currentEn || currentEn.includes('description') || currentEn.includes('your scene')) {
+                    // 구조화된 태그 형식 템플릿
+                    const styleTag = '[' + (d.name.replace(/^[^\s]+\s/, '')) + ' Style]';
+                    document.getElementById('promptEn').value = styleTag + ' [Context: ] ' + d.prompt_prefix.trim() + ' your scene description here ' + d.prompt_suffix;
+                }
+                document.getElementById('promptNegative').value = d.negative_prompt || '';
+                showToast(d.name + ' 선택됨');
+            }
+        }
+
+        // ============================================
+        // AI 디자이너 추천
+        // ============================================
+        async function getAIRecommendation() {
+            const input = document.getElementById('recommendInput').value.trim();
+
+            // 장면이 로드되어 있으면 대본 분석 모드
+            const hasScenes = scenes.length > 0;
+
+            if (!input && !hasScenes) {
+                showToast('설명을 입력하거나 장면을 먼저 로드하세요', 'error');
+                return;
+            }
+
+            const resultBox = document.getElementById('recommendResult');
+            resultBox.classList.add('show');
+
+            const modeText = hasScenes ? '대본 분석 중...' : '분석 중...';
+            document.getElementById('recommendedDesigner').innerHTML = '<span class="spinner"></span> ' + modeText;
+            document.getElementById('recommendReason').textContent = '';
+
+            try {
+                // 장면 데이터 포함하여 요청
+                const requestBody = {
+                    description: input || (hasScenes ? '대본 기반 추천' : ''),
+                    scenes: hasScenes ? scenes : null,
+                    ai_provider: document.getElementById('promptAI').value
+                };
+
+                const res = await fetch('/api/designers/recommend', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
+                const data = await res.json();
+
+                if (data.success && data.recommended) {
+                    const designer = designers[data.recommended];
+                    const name = designer ? designer.name : data.recommended;
+
+                    // 대본 분석 결과 표시
+                    let analysisHtml = '';
+                    if (data.script_analyzed && data.analysis) {
+                        analysisHtml = '<div style="margin-bottom:0.5rem;padding:0.5rem;background:var(--dark-panel);border-radius:6px;font-size:0.7rem">' +
+                            '<span style="color:var(--purple)">📊 대본 분석:</span> ' + escapeHtml(data.analysis) +
+                            '</div>';
+                    }
+
+                    document.getElementById('recommendedDesigner').innerHTML =
+                        analysisHtml +
+                        '<span style="font-size:1.25rem">' + name + '</span>' +
+                        '<button class="btn-icon" style="margin-left:0.5rem;padding:0.25rem 0.5rem;font-size:0.7rem" onclick="selectDesigner(\'' + data.recommended + '\')">적용</button>';
+
+                    // 한글 추천 이유 우선
+                    const reason = data.reason_ko || data.reason || '';
+                    document.getElementById('recommendReason').innerHTML = escapeHtml(reason);
+
+                    // 대안도 표시
+                    if (data.alternatives && data.alternatives.length > 0) {
+                        let altHtml = '<div style="margin-top:0.5rem;font-size:0.7rem;color:var(--text-muted)">대안: ';
+                        data.alternatives.forEach(alt => {
+                            const altD = designers[alt];
+                            if (altD) {
+                                altHtml += '<span style="cursor:pointer;text-decoration:underline" onclick="selectDesigner(\'' + alt + '\')">' + altD.name.split(' ')[0] + '</span> ';
+                            }
+                        });
+                        altHtml += '</div>';
+                        document.getElementById('recommendReason').innerHTML += altHtml;
+                    }
+
+                    // 대본 분석 성공 시 안내
+                    if (data.script_analyzed) {
+                        showToast('대본 분석 완료! 추천: ' + name);
+                    }
+                } else {
+                    document.getElementById('recommendedDesigner').textContent = '추천 실패';
+                    document.getElementById('recommendReason').textContent = data.error || '다시 시도해주세요';
+                }
+            } catch (e) {
+                document.getElementById('recommendedDesigner').textContent = '오류 발생';
+                document.getElementById('recommendReason').textContent = e.message;
+            }
+        }
+
+        // ============================================
+        // 한글-영문 동기화
+        // ============================================
+        let syncTimeout = null;
+
+        function markAsUnsynced() {
+            isSynced = false;
+            document.getElementById('syncIndicator').className = 'sync-indicator unsynced';
+            document.getElementById('syncStatus').textContent = '동기화 필요';
+        }
+
+        async function syncKoToEn() {
+            const koText = document.getElementById('promptKo').value.trim();
+            if (!koText) {
+                showToast('한글 설명을 입력하세요', 'error');
+                return;
+            }
+
+            const syncBtn = document.getElementById('syncBtn');
+            const spinner = document.getElementById('syncSpinner');
+            const indicator = document.getElementById('syncIndicator');
+
+            syncBtn.disabled = true;
+            spinner.style.display = 'inline-block';
+            indicator.className = 'sync-indicator syncing';
+            document.getElementById('syncStatus').textContent = '변환 중...';
+
+            try {
+                const promptAI = document.getElementById('promptAI').value;
+                const res = await fetch('/api/prompts/sync-ko-to-en', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        korean_text: koText,
+                        designer_id: selectedDesignerId,
+                        ai_provider: promptAI
+                    })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    document.getElementById('promptEn').value = data.prompt_en;
+                    if (data.negative_prompt) {
+                        document.getElementById('promptNegative').value = data.negative_prompt;
+                    }
+                    isSynced = true;
+                    indicator.className = 'sync-indicator';
+                    document.getElementById('syncStatus').textContent = '동기화됨';
+                    showToast('영문 변환 완료!');
+                } else {
+                    throw new Error(data.error || '변환 실패');
+                }
+            } catch (e) {
+                indicator.className = 'sync-indicator unsynced';
+                document.getElementById('syncStatus').textContent = '변환 실패';
+                showToast('변환 실패: ' + e.message, 'error');
+            } finally {
+                syncBtn.disabled = false;
+                spinner.style.display = 'none';
+            }
+        }
+
+        function addTag(tag) {
+            const textarea = document.getElementById('promptEn');
+            const cursorPos = textarea.selectionStart;
+            const before = textarea.value.substring(0, cursorPos);
+            const after = textarea.value.substring(cursorPos);
+            textarea.value = before + tag + after;
+            textarea.focus();
+            textarea.setSelectionRange(cursorPos + tag.length, cursorPos + tag.length);
+        }
+
+        // ============================================
+        // 장면 관리
+        // ============================================
+        function setupImportArea() {
+            const area = document.getElementById('importArea');
+            area.onclick = () => document.getElementById('fileInput').click();
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            document.getElementById('importArea').classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            document.getElementById('importArea').classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            document.getElementById('importArea').classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.name.endsWith('.json')) {
+                processFile(file);
+            } else {
+                showToast('JSON 파일만 가능합니다', 'error');
+            }
+        }
+
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) processFile(file);
+        }
+
+        async function processFile(file) {
+            try {
+                const text = await file.text();
+                const data = JSON.parse(text);
+
+                if (data.scenes && Array.isArray(data.scenes)) {
+                    scenes = data.scenes.map((s, i) => ({
+                        ...s,
+                        scene_id: s.scene_id || i + 1,
+                        prompt_ko: '',
+                        prompt_en: '',
+                        image_url: null,
+                        status: 'pending'  // pending, prompt_ready, generating, completed
+                    }));
+
+                    // 전체 대본 저장 (썸네일 생성용)
+                    fullScript = scenes.map(s => s.script_text || '').join('\n');
+                    projectTitle = data.title || file.name.replace('.json', '');
+
+                    // 장면 수 업데이트
+                    document.getElementById('scenesCount').textContent = scenes.length;
+
+                    // 썸네일 섹션 표시
+                    document.getElementById('thumbnailSection').style.display = 'block';
+
+                    // 새로운 결과 목록 렌더링
+                    renderSceneResults();
+
+                    showToast(scenes.length + '개 장면 로드됨 - 프롬프트 생성 버튼을 클릭하세요');
+                } else {
+                    showToast('올바른 M-06 JSON 형식이 아닙니다', 'error');
+                }
+            } catch (e) {
+                showToast('파일 파싱 실패: ' + e.message, 'error');
+            }
+        }
+
+        // ============================================
+        // 장면 결과 렌더링 (새로운 레이아웃)
+        // ============================================
+        function renderSceneResults() {
+            const container = document.getElementById('sceneResultsList');
+            if (!container) return;
+
+            if (scenes.length === 0) {
+                container.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--text-muted)">' +
+                    '<div style="font-size:3rem;margin-bottom:1rem">📁</div>' +
+                    '<div>M-06 JSON 파일을 가져와서 시작하세요</div>' +
+                    '</div>';
+                return;
+            }
+
+            let html = '';
+            let allPromptsReady = true;
+
+            scenes.forEach((scene, index) => {
+                const statusClass = scene.status === 'completed' ? 'completed' :
+                    scene.status === 'generating' ? 'generating' : '';
+
+                if (scene.status === 'pending') allPromptsReady = false;
+
+                html += '<div class="scene-result-card ' + statusClass + '" data-scene-id="' + scene.scene_id + '">';
+
+                // 왼쪽: 대본
+                html += '<div class="scene-script-col">' +
+                    '<div class="scene-script-header">' +
+                    '<span class="scene-number">장면 ' + scene.scene_id + '</span>' +
+                    '</div>' +
+                    '<div class="script-text">' + escapeHtml(scene.script_text || '') + '</div>' +
+                    '</div>';
+
+                // 중앙: 프롬프트
+                html += '<div class="scene-prompt-col">';
+                if (scene.prompt_ko || scene.prompt_en) {
+                    // 한글 설명 (이미지 프롬프트 설명) - 편집 가능
+                    html += '<div class="prompt-section">' +
+                        '<div class="prompt-label">' +
+                        '🇰🇷 이미지 한글 설명 ' +
+                        '<span style="font-size:0.55rem;color:var(--info);">(편집하면 영문 프롬프트 자동 동기화)</span>' +
+                        '</div>' +
+                        '<textarea class="prompt-ko-edit" data-scene-index="' + index + '" ' +
+                        'onblur="syncSceneKoToEn(' + index + ')" ' +
+                        'style="width:100%;min-height:60px;padding:0.5rem;background:rgba(34,197,94,0.05);' +
+                        'border:1px solid var(--dark-border);border-radius:6px;color:var(--success);' +
+                        'font-size:0.8rem;resize:vertical;font-family:inherit;line-height:1.4;"' +
+                        '>' + escapeHtml(scene.prompt_ko || '(이미지 설명을 입력하세요)') + '</textarea>' +
+                        '</div>' +
+                        '<div class="prompt-section">' +
+                        '<div class="prompt-label">🌐 이미지 생성용 영문 프롬프트</div>' +
+                        '<div class="prompt-en-text">' + escapeHtml(scene.prompt_en || '') + '</div>' +
+                        '</div>';
+                } else {
+                    html += '<div style="color:var(--text-muted);font-size:0.8rem;padding:1rem;text-align:center">' +
+                        '📝 프롬프트 생성 대기 중...' +
+                        '</div>';
+                }
+                html += '</div>';
+
+                // 오른쪽: 이미지
+                const hasImage = !!scene.image_url;
+                html += '<div class="scene-image-col">' +
+                    '<div class="image-preview ' + (hasImage ? '' : 'no-image') + '" ' +
+                    (hasImage ? 'onclick="openLightbox(' + index + ')"' : '') + '>';
+                if (hasImage) {
+                    html += '<img src="' + scene.image_url + '" alt="장면 ' + scene.scene_id + '">';
+                } else {
+                    html += '<div class="image-placeholder">이미지 없음</div>';
+                }
+                html += '</div>' +
+                    '<div class="image-actions">' +
+                    '<button class="btn-generate-single" onclick="event.stopPropagation();generateSingleImage(' + index + ')" ' +
+                    (scene.prompt_en ? '' : 'disabled') + ' title="이미지 생성">🖼️</button>' +
+                    '<button class="btn-regenerate" onclick="event.stopPropagation();regenerateImage(' + index + ')" ' +
+                    (hasImage ? '' : 'disabled') + ' title="재생성">🔄</button>' +
+                    '<button class="btn-zoom" onclick="event.stopPropagation();openLightbox(' + index + ')" ' +
+                    (hasImage ? '' : 'disabled') + ' title="확대">🔍</button>' +
+                    '<button class="btn-download-single" onclick="event.stopPropagation();downloadSingleImage(' + index + ')" ' +
+                    (hasImage ? '' : 'disabled') + ' title="다운로드">📥</button>' +
+                    '</div>' +
+                    '</div>';
+
+                html += '</div>';
+            });
+
+            container.innerHTML = html;
+
+            // 모든 프롬프트가 준비되면 전체 이미지 생성 버튼 활성화
+            const batchImageBtn = document.getElementById('batchImageBtn');
+            if (batchImageBtn) {
+                batchImageBtn.disabled = !allPromptsReady || scenes.every(s => s.status === 'pending');
+            }
+        }
+
+        // 한글 설명 편집 시 영문 프롬프트 동기화
+        async function syncSceneKoToEn(index) {
+            const scene = scenes[index];
+            if (!scene) return;
+
+            const textarea = document.querySelector('.prompt-ko-edit[data-scene-index="' + index + '"]');
+            if (!textarea) return;
+
+            const newKoText = textarea.value.trim();
+
+            // 변경 없으면 무시
+            if (newKoText === scene.prompt_ko) return;
+
+            // 빈 값이면 무시
+            if (!newKoText || newKoText === '(이미지 설명을 입력하세요)') return;
+
+            // 한글 설명 업데이트
+            scenes[index].prompt_ko = newKoText;
+
+            // 로딩 표시
+            const promptEnDiv = textarea.closest('.scene-prompt-col').querySelector('.prompt-en-text');
+            if (promptEnDiv) {
+                promptEnDiv.innerHTML = '<span class="spinner" style="width:14px;height:14px;"></span> 영문 프롬프트 동기화 중...';
+            }
+
+            try {
+                const provider = document.getElementById('promptAI').value;
+                const res = await fetch('/api/prompts/sync-ko-to-en', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        korean_text: newKoText,
+                        designer_id: selectedDesignerId,
+                        ai_provider: provider
+                    })
+                });
+                const data = await res.json();
+
+                if (data.success && data.prompt_en) {
+                    scenes[index].prompt_en = data.prompt_en;
+                    if (promptEnDiv) {
+                        promptEnDiv.textContent = data.prompt_en;
+                    }
+                    showToast('장면 ' + scene.scene_id + ' 영문 프롬프트 동기화 완료');
+                } else {
+                    if (promptEnDiv) {
+                        promptEnDiv.textContent = scene.prompt_en || '동기화 실패';
+                    }
+                    showToast('동기화 실패: ' + (data.error || 'Unknown'), 'error');
+                }
+            } catch (e) {
+                if (promptEnDiv) {
+                    promptEnDiv.textContent = scene.prompt_en || '동기화 오류';
+                }
+                showToast('동기화 오류: ' + e.message, 'error');
+            }
+        }
+
+        // ============================================
+        // 전체 프롬프트 생성 (이미지 생성 없이)
+        // ============================================
+        async function generateAllPrompts() {
+            if (scenes.length === 0) {
+                showToast('장면을 먼저 로드하세요', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('generatePromptsBtn');
+            const progressBar = document.getElementById('progressBar');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> 프롬프트 생성 중...';
+            progressBar.style.display = 'block';
+
+            const provider = document.getElementById('promptAI').value;
+            const designer = designers[selectedDesignerId] || designers['bright_cheerful'];
+
+            let completed = 0;
+            const total = scenes.length;
+
+            for (let i = 0; i < scenes.length; i++) {
+                const scene = scenes[i];
+
+                try {
+                    progressText.textContent = '장면 ' + scene.scene_id + ' 프롬프트 생성 중... (' + (i + 1) + '/' + total + ')';
+
+                    // 프롬프트 생성 API 호출
+                    const res = await fetch('/api/prompts/sync-ko-to-en', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            korean_text: scene.script_text,
+                            designer_id: selectedDesignerId,
+                            ai_provider: provider
+                        })
+                    });
+                    const data = await res.json();
+
+                    if (data.success) {
+                        scenes[i].prompt_ko = data.prompt_ko || scene.script_text;
+                        scenes[i].prompt_en = data.prompt_en;
+                        scenes[i].negative_prompt = data.negative_prompt;
+                        scenes[i].status = 'prompt_ready';
+                    } else {
+                        scenes[i].prompt_ko = scene.script_text;
+                        scenes[i].prompt_en = 'Error: ' + (data.error || 'Unknown');
+                        scenes[i].status = 'error';
+                    }
+                } catch (e) {
+                    scenes[i].prompt_ko = scene.script_text;
+                    scenes[i].prompt_en = 'Error: ' + e.message;
+                    scenes[i].status = 'error';
+                }
+
+                completed++;
+                const progress = (completed / total) * 100;
+                progressFill.style.width = progress + '%';
+
+                // 실시간 UI 업데이트
+                renderSceneResults();
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '📝 전체 프롬프트 생성';
+            progressBar.style.display = 'none';
+            progressText.textContent = '';
+
+            // 전체 이미지 생성 버튼 활성화
+            document.getElementById('batchImageBtn').disabled = false;
+
+            showToast('프롬프트 생성 완료! 이제 이미지를 생성할 수 있습니다.');
+        }
+
+        // ============================================
+        // 전체 이미지 생성 (프롬프트가 준비된 후)
+        // ============================================
+        async function generateAllImages() {
+            const readyScenes = scenes.filter(s => s.prompt_en && s.status !== 'completed');
+
+            if (readyScenes.length === 0) {
+                showToast('생성할 이미지가 없습니다', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('batchImageBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> 이미지 생성 중...';
+
+            const provider = document.getElementById('imageAPI').value;
+            const size = document.getElementById('imageSize').value;
+            const resolution = document.getElementById('imageResolution').value;
+
+            let completed = 0;
+
+            for (let i = 0; i < scenes.length; i++) {
+                const scene = scenes[i];
+                if (!scene.prompt_en || scene.status === 'completed') continue;
+
+                scenes[i].status = 'generating';
+                renderSceneResults();
+
+                try {
+                    const res = await fetch('/api/images/generate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            prompt: scene.prompt_en,
+                            negative_prompt: scene.negative_prompt || '',
+                            provider: provider,
+                            size: size,
+                            resolution: resolution
+                        })
+                    });
+                    const data = await res.json();
+
+                    if (data.success && data.image_url) {
+                        scenes[i].image_url = data.image_url;
+                        scenes[i].status = 'completed';
+                    } else {
+                        scenes[i].status = 'error';
+                        showToast('장면 ' + scene.scene_id + ' 이미지 생성 실패', 'error');
+                    }
+                } catch (e) {
+                    scenes[i].status = 'error';
+                    showToast('장면 ' + scene.scene_id + ' 오류: ' + e.message, 'error');
+                }
+
+                completed++;
+                renderSceneResults();
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '🖼️ 전체 이미지 생성';
+
+            showToast('이미지 생성 완료!');
+        }
+
+        // 개별 이미지 생성
+        async function generateSingleImage(index) {
+            const scene = scenes[index];
+            if (!scene || !scene.prompt_en) {
+                showToast('프롬프트를 먼저 생성하세요', 'error');
+                return;
+            }
+
+            scenes[index].status = 'generating';
+            renderSceneResults();
+
+            const provider = document.getElementById('imageAPI').value;
+            const size = document.getElementById('imageSize').value;
+            const resolution = document.getElementById('imageResolution').value;
+
+            try {
+                const res = await fetch('/api/images/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prompt: scene.prompt_en,
+                        negative_prompt: scene.negative_prompt || '',
+                        provider: provider,
+                        size: size,
+                        resolution: resolution
+                    })
+                });
+                const data = await res.json();
+
+                if (data.success && data.image_url) {
+                    scenes[index].image_url = data.image_url;
+                    scenes[index].status = 'completed';
+                    showToast('장면 ' + scene.scene_id + ' 이미지 생성 완료');
+                } else {
+                    scenes[index].status = 'prompt_ready';
+                    showToast('이미지 생성 실패: ' + (data.error || 'Unknown'), 'error');
+                }
+            } catch (e) {
+                scenes[index].status = 'prompt_ready';
+                showToast('오류: ' + e.message, 'error');
+            }
+
+            renderSceneResults();
+        }
+
+        // 이미지 재생성
+        async function regenerateImage(index) {
+            await generateSingleImage(index);
+        }
+
+        function renderScenesList() {
+            const container = document.getElementById('scenesList');
+            let html = '';
+
+            scenes.forEach((scene, index) => {
+                const isActive = scene.scene_id === selectedSceneId ? 'active' : '';
+                const status = scene.image_url ? 'completed' : 'ready';
+                const statusText = scene.image_url ? '완료' : '대기';
+
+                html += '<div class="scene-card ' + isActive + '" onclick="selectScene(' + scene.scene_id + ')">' +
+                    '<div class="scene-header">' +
+                    '<span class="scene-id">장면 ' + scene.scene_id + '</span>' +
+                    '<span class="scene-status ' + status + '">' + statusText + '</span>' +
+                    '</div>' +
+                    '<div class="scene-text">' + escapeHtml(scene.script_text || '') + '</div>' +
+                    '<div class="scene-keywords">';
+
+                if (scene.keywords && scene.keywords.length > 0) {
+                    scene.keywords.slice(0, 3).forEach(kw => {
+                        html += '<span class="scene-keyword">' + escapeHtml(kw) + '</span>';
+                    });
+                }
+
+                html += '</div></div>';
+            });
+
+            container.innerHTML = html || '<div style="color:var(--text-muted);font-size:0.75rem;text-align:center;padding:2rem">장면이 없습니다</div>';
+        }
+
+        function selectScene(sceneId) {
+            selectedSceneId = sceneId;
+            renderScenesList();
+
+            const scene = scenes.find(s => s.scene_id === sceneId);
+            if (scene) {
+                // 한글 설명에 대본 텍스트 넣기
+                document.getElementById('promptKo').value = scene.script_text || '';
+                markAsUnsynced();
+            }
+        }
+
+        function addManualScene() {
+            const newId = scenes.length > 0 ? Math.max(...scenes.map(s => s.scene_id)) + 1 : 1;
+            scenes.push({
+                scene_id: newId,
+                script_text: '새 장면 설명',
+                keywords: [],
+                emotion: 'neutral'
+            });
+            renderScenesList();
+            selectScene(newId);
+            showToast('장면 추가됨');
+        }
+
+        // ============================================
+        // 이미지 생성
+        // ============================================
+        async function generateImages() {
+            const promptEn = document.getElementById('promptEn').value.trim();
+            if (!promptEn) {
+                showToast('영문 프롬프트를 입력하세요', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('generateBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> 생성 중...';
+
+            const progressBar = document.getElementById('progressBar');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            progressBar.style.display = 'block';
+            progressFill.style.width = '0%';
+            progressText.textContent = '이미지 생성 중...';
+
+            try {
+                const provider = document.getElementById('imageAPI').value;
+                const size = document.getElementById('imageSize').value;
+                const negativePrompt = document.getElementById('promptNegative').value;
+
+                const res = await fetch('/api/images/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prompt_en: promptEn,
+                        negative_prompt: negativePrompt,
+                        provider: provider,
+                        size: size
+                    })
+                });
+
+                const data = await res.json();
+                progressFill.style.width = '100%';
+
+                if (data.success && data.image_url) {
+                    generatedImages.push({
+                        scene_id: selectedSceneId,
+                        image_url: data.image_url,
+                        prompt: promptEn
+                    });
+                    renderGallery();
+                    progressText.textContent = '✅ 생성 완료!';
+                    showToast('이미지 생성 완료!');
+
+                    // 장면에 이미지 URL 저장
+                    if (selectedSceneId) {
+                        const scene = scenes.find(s => s.scene_id === selectedSceneId);
+                        if (scene) {
+                            scene.image_url = data.image_url;
+                            renderScenesList();
+                        }
+                    }
+                } else {
+                    throw new Error(data.error || '생성 실패');
+                }
+            } catch (e) {
+                progressText.textContent = '❌ ' + e.message;
+                showToast('생성 실패: ' + e.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '🎨 이미지 생성';
+                setTimeout(() => { progressBar.style.display = 'none'; }, 3000);
+            }
+        }
+
+        async function generateBatch() {
+            if (scenes.length === 0) {
+                showToast('장면을 먼저 로드하세요', 'error');
+                return;
+            }
+
+            const btn = document.querySelector('.btn-secondary');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> 배치 생성 중...';
+
+            const progressBar = document.getElementById('progressBar');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            progressBar.style.display = 'block';
+
+            // 배치 결과 컨테이너 초기화 및 표시
+            const batchContainer = document.getElementById('batchResultsContainer');
+            const batchList = document.getElementById('batchResultsList');
+            batchContainer.style.display = 'block';
+            batchList.innerHTML = '';
+
+            // 배치 결과 저장 배열
+            let batchResults = [];
+
+            let completed = 0;
+            const total = scenes.length;
+
+            for (const scene of scenes) {
+                // 이미 이미지가 있는 장면은 건너뛰되 결과에는 표시
+                if (scene.image_url) {
+                    batchResults.push({
+                        scene_id: scene.scene_id,
+                        script_text: scene.script_text,
+                        prompt_ko: scene.script_text,
+                        prompt_en: '(기존 이미지 있음)',
+                        status: 'skip',
+                        image_url: scene.image_url
+                    });
+                    completed++;
+                    renderBatchResults(batchResults);
+                    continue;
+                }
+
+                progressFill.style.width = ((completed / total) * 100) + '%';
+                progressText.textContent = '프롬프트 생성 중: ' + (completed + 1) + '/' + total;
+
+                // 현재 처리 중인 항목 표시
+                const pendingItem = {
+                    scene_id: scene.scene_id,
+                    script_text: scene.script_text,
+                    prompt_ko: scene.script_text,
+                    prompt_en: '생성 중...',
+                    status: 'pending'
+                };
+                batchResults.push(pendingItem);
+                renderBatchResults(batchResults);
+
+                try {
+                    // 프롬프트 생성 (AI 사용)
+                    const promptRes = await fetch('/api/prompts/generate-ai', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            scenes: [scene],
+                            designer_id: selectedDesignerId,
+                            ai_provider: document.getElementById('promptAI').value
+                        })
+                    });
+                    const promptData = await promptRes.json();
+
+                    if (promptData.success && promptData.prompts && promptData.prompts[0]) {
+                        const prompt = promptData.prompts[0];
+
+                        // 결과 업데이트 (프롬프트 생성 성공)
+                        const resultIndex = batchResults.length - 1;
+                        batchResults[resultIndex] = {
+                            scene_id: scene.scene_id,
+                            script_text: scene.script_text,
+                            prompt_ko: prompt.prompt_ko || scene.script_text,
+                            prompt_en: prompt.prompt_en,
+                            negative_prompt: prompt.negative_prompt,
+                            status: 'prompt_ready'
+                        };
+                        renderBatchResults(batchResults);
+
+                        // 한글 프롬프트도 장면에 저장
+                        scene.prompt_ko = prompt.prompt_ko;
+                        scene.prompt_en = prompt.prompt_en;
+
+                        progressText.textContent = '이미지 생성 중: ' + (completed + 1) + '/' + total;
+
+                        // 이미지 생성
+                        const imageRes = await fetch('/api/images/generate', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                prompt_en: prompt.prompt_en,
+                                negative_prompt: prompt.negative_prompt || '',
+                                provider: document.getElementById('imageAPI').value,
+                                size: document.getElementById('imageSize').value
+                            })
+                        });
+                        const imageData = await imageRes.json();
+
+                        if (imageData.success) {
+                            scene.image_url = imageData.image_url;
+                            generatedImages.push({
+                                scene_id: scene.scene_id,
+                                image_url: imageData.image_url,
+                                prompt: prompt.prompt_en,
+                                prompt_ko: prompt.prompt_ko
+                            });
+
+                            // 결과 업데이트 (이미지 생성 성공)
+                            batchResults[resultIndex].status = 'success';
+                            batchResults[resultIndex].image_url = imageData.image_url;
+                        } else {
+                            batchResults[resultIndex].status = 'image_fail';
+                            batchResults[resultIndex].error = imageData.error || '이미지 생성 실패';
+                        }
+                    } else {
+                        // 프롬프트 생성 실패
+                        const resultIndex = batchResults.length - 1;
+                        batchResults[resultIndex].status = 'error';
+                        batchResults[resultIndex].error = promptData.error || '프롬프트 생성 실패';
+                    }
+                } catch (e) {
+                    console.error('Scene ' + scene.scene_id + ' 생성 실패:', e);
+                    const resultIndex = batchResults.length - 1;
+                    batchResults[resultIndex].status = 'error';
+                    batchResults[resultIndex].error = e.message;
+                }
+
+                completed++;
+                renderBatchResults(batchResults);
+                renderGallery();
+                renderScenesList();
+            }
+
+            progressFill.style.width = '100%';
+            const successCount = batchResults.filter(r => r.status === 'success').length;
+            progressText.textContent = '✅ 배치 생성 완료! (성공: ' + successCount + '/' + total + '개)';
+
+            btn.disabled = false;
+            btn.innerHTML = '📦 전체 배치 생성';
+            showToast('배치 생성 완료! ' + successCount + '개 이미지 생성됨');
+        }
+
+        // 배치 결과 렌더링 함수
+        function renderBatchResults(results) {
+            const batchList = document.getElementById('batchResultsList');
+            let html = '';
+
+            results.forEach(result => {
+                let statusClass = 'pending';
+                let statusText = '대기 중';
+
+                switch (result.status) {
+                    case 'pending':
+                        statusClass = 'wait';
+                        statusText = '⏳ 처리 중';
+                        break;
+                    case 'prompt_ready':
+                        statusClass = 'wait';
+                        statusText = '📝 프롬프트 생성됨';
+                        break;
+                    case 'success':
+                        statusClass = 'ok';
+                        statusText = '✅ 완료';
+                        break;
+                    case 'skip':
+                        statusClass = 'ok';
+                        statusText = '⏭️ 건너뜀';
+                        break;
+                    case 'image_fail':
+                        statusClass = 'fail';
+                        statusText = '⚠️ 이미지 실패';
+                        break;
+                    case 'error':
+                        statusClass = 'fail';
+                        statusText = '❌ 오류';
+                        break;
+                }
+
+                const itemClass = result.status === 'success' || result.status === 'skip' ? 'success' :
+                    result.status === 'error' || result.status === 'image_fail' ? 'error' : 'pending';
+
+                html += '<div class="batch-result-item ' + itemClass + '">' +
+                    '<div class="batch-result-header">' +
+                    '<span class="batch-result-scene">장면 ' + result.scene_id + '</span>' +
+                    '<span class="batch-result-status ' + statusClass + '">' + statusText + '</span>' +
+                    '</div>' +
+                    '<div class="batch-result-prompt">' +
+                    '<div class="ko">🇰🇷 ' + escapeHtml(result.prompt_ko || result.script_text || '') + '</div>' +
+                    '<div class="en">🇺🇸 ' + escapeHtml(result.prompt_en || '') + '</div>' +
+                    '</div>';
+
+                if (result.error) {
+                    html += '<div style="color:var(--error);font-size:0.65rem;margin-top:0.25rem">⚠️ ' + escapeHtml(result.error) + '</div>';
+                }
+
+                html += '</div>';
+            });
+
+            batchList.innerHTML = html;
+            // 스크롤을 맨 아래로
+            batchList.scrollTop = batchList.scrollHeight;
+        }
+
+        // 배치 결과 닫기
+        function clearBatchResults() {
+            document.getElementById('batchResultsContainer').style.display = 'none';
+        }
+
+        // ============================================
+        // 갤러리
+        // ============================================
+        function renderGallery() {
+            const grid = document.getElementById('galleryGrid');
+
+            if (generatedImages.length === 0) {
+                grid.innerHTML = '<div class="gallery-item"><div class="gallery-placeholder">이미지 생성 대기중</div></div>';
+                return;
+            }
+
+            let html = '';
+            generatedImages.forEach((img, index) => {
+                html += '<div class="gallery-item" onclick="openImageModal(' + index + ')">' +
+                    '<img src="' + img.image_url + '" alt="Scene ' + (img.scene_id || index + 1) + '">' +
+                    '<span class="gallery-badge">장면 ' + (img.scene_id || index + 1) + '</span>' +
+                    '<div class="gallery-item-overlay">' +
+                    '<button class="btn-icon" style="margin-right:0.25rem">🔍</button>' +
+                    '<button class="btn-icon" onclick="event.stopPropagation();downloadSingleImage(' + index + ')">📥</button>' +
+                    '</div>' +
+                    '</div>';
+            });
+
+            grid.innerHTML = html;
+        }
+
+        function openImageModal(index) {
+            const img = generatedImages[index];
+            if (!img) return;
+
+            document.getElementById('modalImage').src = img.image_url;
+            document.getElementById('imageModalTitle').textContent = '장면 ' + (img.scene_id || index + 1);
+            document.getElementById('modalPrompt').innerHTML = '<strong>프롬프트:</strong><br>' + escapeHtml(img.prompt || '');
+            document.getElementById('imageModal').classList.add('show');
+
+            document.getElementById('imageModal').dataset.currentIndex = index;
+        }
+
+        function closeImageModal() {
+            document.getElementById('imageModal').classList.remove('show');
+        }
+
+        function downloadImage() {
+            const index = document.getElementById('imageModal').dataset.currentIndex;
+            downloadSingleImage(index);
+        }
+
+        function downloadSingleImage(index) {
+            // scenes 배열에서 이미지 가져오기
+            const scene = scenes[index];
+            if (!scene || !scene.image_url) {
+                showToast('다운로드할 이미지가 없습니다', 'error');
+                return;
+            }
+
+            downloadImageFromUrl(scene.image_url, 'scene_' + scene.scene_id + '.png');
+            showToast('장면 ' + scene.scene_id + ' 이미지 다운로드');
+        }
+
+        function downloadImageFromUrl(url, filename) {
+            // Base64 데이터 또는 URL 처리
+            if (url.startsWith('data:')) {
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            } else {
+                // 외부 URL인 경우 fetch로 다운로드
+                fetch(url)
+                    .then(res => res.blob())
+                    .then(blob => {
+                        const blobUrl = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = blobUrl;
+                        a.download = filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(blobUrl);
+                    })
+                    .catch(err => {
+                        // 폴백: 새 탭에서 열기
+                        window.open(url, '_blank');
+                    });
+            }
+        }
+
+        function downloadAll() {
+            const imagesWithUrl = scenes.filter(s => s.image_url);
+            if (imagesWithUrl.length === 0) {
+                showToast('다운로드할 이미지가 없습니다', 'error');
+                return;
+            }
+
+            imagesWithUrl.forEach((scene, i) => {
+                setTimeout(() => {
+                    downloadImageFromUrl(scene.image_url, 'scene_' + scene.scene_id + '.png');
+                }, i * 500);
+            });
+
+            showToast(imagesWithUrl.length + '개 이미지 다운로드 시작');
+        }
+
+        // ============================================
+        // 이미지 확대 모달 (Lightbox) 기능
+        // ============================================
+        let currentLightboxIndex = -1;
+
+        function openLightbox(index) {
+            const scene = scenes[index];
+            if (!scene || !scene.image_url) return;
+
+            currentLightboxIndex = index;
+            currentThumbnailIndex = -1;  // 장면 라이트박스임을 표시
+            const lightbox = document.getElementById('imageLightbox');
+            const img = document.getElementById('lightboxImage');
+            const label = document.getElementById('lightboxLabel');
+
+            img.src = scene.image_url;
+            label.textContent = '장면 ' + scene.scene_id;
+            lightbox.style.display = 'flex';  // 인라인 스타일로 명시적 설정
+            lightbox.classList.add('show');
+
+            // ESC 키로 닫기
+            document.addEventListener('keydown', handleLightboxKeydown);
+        }
+
+        function closeLightbox(event) {
+            if (event && event.target && event.target !== event.currentTarget) return;
+            const lightbox = document.getElementById('imageLightbox');
+            lightbox.style.display = 'none';
+            lightbox.classList.remove('show');
+            currentLightboxIndex = -1;
+            currentThumbnailIndex = -1;
+            document.removeEventListener('keydown', handleLightboxKeydown);
+        }
+
+        function handleLightboxKeydown(e) {
+            if (e.key === 'Escape') {
+                closeLightbox();
+            } else if (e.key === 'ArrowLeft') {
+                navigateLightbox(-1);
+            } else if (e.key === 'ArrowRight') {
+                navigateLightbox(1);
+            }
+        }
+
+        function navigateLightbox(direction) {
+            if (currentLightboxIndex < 0) return;
+
+            // 이미지가 있는 장면만 찾기
+            const scenesWithImages = scenes.map((s, i) => ({ ...s, originalIndex: i })).filter(s => s.image_url);
+            if (scenesWithImages.length === 0) return;
+
+            // 현재 위치 찾기
+            const currentPos = scenesWithImages.findIndex(s => s.originalIndex === currentLightboxIndex);
+            if (currentPos < 0) return;
+
+            // 다음/이전 위치 계산
+            let newPos = currentPos + direction;
+            if (newPos < 0) newPos = scenesWithImages.length - 1;
+            if (newPos >= scenesWithImages.length) newPos = 0;
+
+            openLightbox(scenesWithImages[newPos].originalIndex);
+        }
+
+        function downloadCurrentImage() {
+            if (currentLightboxIndex >= 0) {
+                downloadSingleImage(currentLightboxIndex);
+            }
+        }
+
+        async function regenerateCurrentImage() {
+            if (currentLightboxIndex >= 0) {
+                closeLightbox();
+                await regenerateImage(currentLightboxIndex);
+            }
+        }
+
+        function regenerateImageOld() {
+            closeImageModal();
+            generateImages();
+        }
+
+        // ============================================
+        // API 설정 모달
+        // ============================================
+        function openSettingsModal() {
+            document.getElementById('settingsModal').classList.add('show');
+            loadApiStatus();
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settingsModal').classList.remove('show');
+        }
+
+        async function testApiKey(provider) {
+            const inputId = provider + 'Key';
+            const statusId = provider + 'Status';
+            const key = document.getElementById(inputId).value.trim();
+
+            if (!key) {
+                showToast('API 키를 입력하세요', 'error');
+                return;
+            }
+
+            const statusEl = document.getElementById(statusId);
+            statusEl.textContent = '테스트 중...';
+            statusEl.className = 'api-key-status';
+
+            try {
+                const res = await fetch('/api/settings/test-api-key', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ provider: provider, api_key: key })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    statusEl.textContent = '연결됨';
+                    statusEl.className = 'api-key-status ok';
+                    showToast(provider + ' 연결 성공!');
+                } else {
+                    statusEl.textContent = '실패';
+                    statusEl.className = 'api-key-status no';
+                    showToast(data.error || '연결 실패', 'error');
+                }
+            } catch (e) {
+                statusEl.textContent = '오류';
+                statusEl.className = 'api-key-status no';
+                showToast('테스트 실패: ' + e.message, 'error');
+            }
+        }
+
+        async function saveApiKeys() {
+            const keys = {
+                openai: document.getElementById('openaiKey').value.trim(),
+                gemini: document.getElementById('geminiKey').value.trim(),
+                vertex: document.getElementById('vertexKey').value.trim(),
+                replicate: document.getElementById('replicateKey').value.trim(),
+                claude: document.getElementById('claudeKey').value.trim()
+            };
+
+            try {
+                const res = await fetch('/api/settings/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(keys)
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    showToast('API 키 저장 완료!');
+                    closeSettingsModal();
+                    loadApiStatus();
+                } else {
+                    showToast('저장 실패', 'error');
+                }
+            } catch (e) {
+                showToast('저장 실패: ' + e.message, 'error');
+            }
+        }
+
+        // ============================================
+        // 디자이너 모달
+        // ============================================
+        function openDesignerModal() {
+            document.getElementById('designerModal').classList.add('show');
+            renderDesignerList();
+        }
+
+        function closeDesignerModal() {
+            document.getElementById('designerModal').classList.remove('show');
+        }
+
+        function showDesignerTab(tabName) {
+            const tabs = document.querySelectorAll('#designerModal .tab');
+            const contents = document.querySelectorAll('#designerModal .tab-content');
+
+            tabs.forEach(tab => tab.classList.remove('active'));
+            contents.forEach(content => content.classList.remove('active'));
+
+            if (tabName === 'list') {
+                tabs[0].classList.add('active');
+                document.getElementById('designerListTab').classList.add('active');
+            } else {
+                tabs[1].classList.add('active');
+                document.getElementById('designerCreateTab').classList.add('active');
+            }
+        }
+
+        function filterDesigners() {
+            const query = document.getElementById('designerSearch').value.toLowerCase();
+            const items = document.querySelectorAll('#designerListContent > div > div');
+
+            items.forEach(item => {
+                const name = item.querySelector('div')?.textContent?.toLowerCase() || '';
+                item.style.display = name.includes(query) ? '' : 'none';
+            });
+        }
+
+        function renderDesignerList() {
+            const content = document.getElementById('designerListContent');
+            let html = '<div style="display:grid;gap:0.5rem">';
+
+            // 카테고리별 그룹
+            const categories = { video: '영상', art: '아트', cartoon: '만화', photo: '사진', special: '특수', custom: '커스텀' };
+
+            for (const [catId, catName] of Object.entries(categories)) {
+                const catDesigners = Object.entries(designers).filter(([id, d]) => {
+                    if (catId === 'custom') return !d.is_preset;
+                    return d.category === catId && d.is_preset;
+                });
+
+                if (catDesigners.length === 0) continue;
+
+                html += '<div style="font-size:0.7rem;color:var(--gold);margin-top:0.5rem">' + catName + ' (' + catDesigners.length + ')</div>';
+
+                catDesigners.forEach(([id, d]) => {
+                    html += '<div style="background:var(--dark-panel);padding:0.6rem;border-radius:8px;display:flex;justify-content:space-between;align-items:center">' +
+                        '<div style="display:flex;align-items:center;gap:0.5rem">' +
+                        '<span style="font-size:1.2rem">' + d.name.split(' ')[0] + '</span>' +
+                        '<div>' +
+                        '<div style="font-weight:500;font-size:0.8rem">' + d.name.replace(/^[^\s]+\s/, '') + '</div>' +
+                        '<div style="font-size:0.65rem;color:var(--text-muted)">' + (d.description || '') + '</div>' +
+                        '</div>' +
+                        '</div>' +
+                        '<div style="display:flex;gap:0.25rem">' +
+                        '<button class="btn-icon" style="padding:0.2rem 0.5rem;font-size:0.65rem" onclick="selectDesigner(\'' + id + '\');closeDesignerModal()">적용</button>' +
+                        (d.is_preset ? '' : '<button class="btn-icon" style="padding:0.2rem 0.4rem;font-size:0.65rem" onclick="deleteDesigner(\'' + id + '\')">🗑️</button>') +
+                        '</div>' +
+                        '</div>';
+                });
+            }
+
+            html += '</div>';
+            content.innerHTML = html;
+        }
+
+        async function createDesigner() {
+            const name = document.getElementById('newDesignerName').value.trim();
+            const desc = document.getElementById('newDesignerDesc').value.trim();
+            const prefix = document.getElementById('newDesignerPrefix').value.trim();
+            const suffix = document.getElementById('newDesignerSuffix').value.trim();
+            const negative = document.getElementById('newDesignerNegative').value.trim();
+
+            if (!name) {
+                showToast('이름을 입력하세요', 'error');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/designers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: name,
+                        description: desc,
+                        prompt_prefix: prefix,
+                        prompt_suffix: suffix,
+                        negative_prompt: negative,
+                        category: 'custom',
+                        best_for: []
+                    })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    showToast('디자이너 생성 완료!');
+
+                    // 폼 초기화
+                    document.getElementById('newDesignerName').value = '';
+                    document.getElementById('newDesignerDesc').value = '';
+                    document.getElementById('newDesignerPrefix').value = '';
+                    document.getElementById('newDesignerSuffix').value = '';
+                    document.getElementById('newDesignerNegative').value = '';
+
+                    loadDesigners();
+                    showDesignerTab('list');
+                } else {
+                    showToast('생성 실패: ' + (data.detail || ''), 'error');
+                }
+            } catch (e) {
+                showToast('생성 실패: ' + e.message, 'error');
+            }
+        }
+
+        async function deleteDesigner(id) {
+            if (!confirm('이 디자이너를 삭제하시겠습니까?')) return;
+
+            try {
+                const res = await fetch('/api/designers/' + id, { method: 'DELETE' });
+                const data = await res.json();
+
+                if (data.success) {
+                    showToast('삭제 완료');
+                    loadDesigners();
+                }
+            } catch (e) {
+                showToast('삭제 실패: ' + e.message, 'error');
+            }
+        }
+
+        // ============================================
+        // 유틸리티
+        // ============================================
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        function showToast(msg, type) {
+            type = type || 'success';
+            const toast = document.getElementById('toast');
+            toast.textContent = (type === 'success' ? '✅ ' : '❌ ') + msg;
+            toast.className = 'toast show';
+            setTimeout(function () { toast.classList.remove('show'); }, 3000);
+        }
+
+        // ============================================
+        // 썸네일 기능
+        // ============================================
+        async function generateThumbnailPrompts() {
+            if (!fullScript) {
+                showToast('먼저 대본 파일을 가져오세요', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('genThumbnailBtn');
+            btn.disabled = true;
+            btn.innerHTML = '⏳ 생성 중...';
+
+            const aiProvider = document.getElementById('thumbnailAI').value;
+
+            try {
+                const res = await fetch('/api/thumbnails/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        full_script: fullScript,
+                        title: projectTitle,
+                        ai_provider: aiProvider
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.success && data.thumbnails) {
+                    thumbnails = data.thumbnails;
+                    renderThumbnails();
+                    document.getElementById('genAllThumbnailImagesBtn').disabled = false;
+                    showToast('썸네일 프롬프트 3개 생성 완료!');
+                } else {
+                    showToast('썸네일 생성 실패: ' + (data.error || 'Unknown'), 'error');
+                }
+            } catch (e) {
+                showToast('썸네일 생성 오류: ' + e.message, 'error');
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '📝 썸네일 프롬프트 생성';
+        }
+
+        function renderThumbnails() {
+            const grid = document.getElementById('thumbnailGrid');
+            if (!grid) return;
+
+            const imageProviders = [
+                { id: 'vertex', name: 'Vertex AI' },
+                { id: 'vertex-nano-banana', name: 'Nano Banana (Vertex)' },
+                { id: 'vertex-nano-banana-pro', name: 'Nano Banana Pro (Vertex)' },
+                { id: 'dalle3', name: 'DALL-E 3' },
+                { id: 'replicate', name: 'Flux' },
+                { id: 'replicate-seedream', name: 'SeeDream-4' },
+                { id: 'replicate-nano-banana', name: 'Nano Banana' },
+                { id: 'replicate-nano-banana-pro', name: 'Nano Banana Pro' }
+            ];
+
+            let html = '';
+            thumbnails.forEach((thumb, idx) => {
+                const hasImage = thumb.image_url || thumb.image_data;
+                const imageSrc = thumb.image_data ? thumb.image_data : (thumb.image_url || '');
+
+                html += '<div class="thumbnail-card" data-thumb-idx="' + idx + '" style="display:flex;flex-direction:row;gap:0.75rem;padding:0.75rem;">';
+
+                // 왼쪽: 이미지 영역
+                html += '<div class="thumbnail-image-container" onclick="openThumbnailLightbox(' + idx + ')" style="flex-shrink:0;width:200px;height:120px;">';
+                if (hasImage) {
+                    html += '<img src="' + imageSrc + '" alt="썸네일 ' + (idx + 1) + '" style="width:100%;height:100%;object-fit:cover;">';
+                } else {
+                    html += '<div class="thumbnail-placeholder" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2rem;background:var(--dark-bg);border-radius:8px;">🖼️</div>';
+                }
+                if (thumb.generating) {
+                    html += '<div class="thumbnail-loading">⏳ 생성 중...</div>';
+                }
+                html += '</div>';
+
+                // 오른쪽: 정보 영역 (한글 설명 + 영문 프롬프트)
+                html += '<div class="thumbnail-info" style="flex:1;display:flex;flex-direction:column;gap:0.5rem;">';
+
+                // 썸네일 번호 및 한글 텍스트 오버레이
+                html += '<div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.25rem;">';
+                html += '<span style="font-weight:600;color:var(--primary);font-size:0.85rem;">썸네일 ' + (idx + 1) + '</span>';
+                html += '<input type="text" class="thumb-korean-text" data-thumb-idx="' + idx + '" ' +
+                    'value="' + escapeHtml(thumb.korean_text || '') + '" ' +
+                    'placeholder="한글 텍스트 오버레이" ' +
+                    'onchange="updateThumbnailKoreanText(' + idx + ', this.value)" ' +
+                    'style="flex:1;padding:0.3rem 0.5rem;background:rgba(245,158,11,0.1);border:1px solid var(--warning);' +
+                    'border-radius:4px;color:var(--warning);font-size:0.75rem;font-weight:500;">';
+                html += '</div>';
+
+                // 한글 설명 (이미지 프롬프트 설명) - 편집 가능
+                html += '<div style="margin-bottom:0.25rem;">';
+                html += '<div style="font-size:0.65rem;color:var(--text-muted);margin-bottom:0.2rem;">' +
+                    '🇰🇷 이미지 한글 설명 <span style="color:var(--info);">(편집하면 영문 프롬프트 자동 동기화)</span></div>';
+                html += '<textarea class="thumb-prompt-ko" data-thumb-idx="' + idx + '" ' +
+                    'onblur="syncThumbnailKoToEn(' + idx + ')" ' +
+                    'style="width:100%;min-height:40px;padding:0.4rem;background:rgba(34,197,94,0.05);' +
+                    'border:1px solid var(--dark-border);border-radius:6px;color:var(--success);' +
+                    'font-size:0.75rem;resize:vertical;font-family:inherit;line-height:1.3;"' +
+                    '>' + escapeHtml(thumb.prompt_ko || '(이미지 설명을 입력하세요)') + '</textarea>';
+                html += '</div>';
+
+                // 영문 프롬프트 표시 (확장됨)
+                html += '<div>';
+                html += '<div style="font-size:0.65rem;color:var(--text-muted);margin-bottom:0.2rem;">🌐 이미지 생성용 영문 프롬프트</div>';
+                html += '<div class="thumb-prompt-en" data-thumb-idx="' + idx + '" ' +
+                    'style="width:100%;min-height:60px;max-height:120px;overflow-y:auto;padding:0.4rem;' +
+                    'background:rgba(59,130,246,0.05);border:1px solid var(--dark-border);border-radius:6px;' +
+                    'color:var(--text);font-size:0.7rem;line-height:1.4;word-break:break-word;">' +
+                    escapeHtml(thumb.prompt_en || '(프롬프트 생성 대기 중)') + '</div>';
+                html += '</div>';
+
+                // 액션 버튼
+                html += '<div class="thumbnail-actions" style="display:flex;gap:0.5rem;align-items:center;margin-top:auto;">';
+                html += '<select id="thumbModel' + idx + '" style="flex:1;padding:0.3rem;background:var(--dark-bg);border:1px solid var(--dark-border);border-radius:4px;color:var(--text);font-size:0.7rem;">';
+                imageProviders.forEach(p => {
+                    html += '<option value="' + p.id + '">' + p.name + '</option>';
+                });
+                html += '</select>';
+                html += '<button onclick="generateThumbnailImage(' + idx + ')" style="padding:0.3rem 0.75rem;font-size:0.7rem;">🖼️ 생성</button>';
+                if (hasImage) {
+                    html += '<button class="download" onclick="downloadThumbnail(' + idx + ')" style="padding:0.3rem 0.5rem;font-size:0.7rem;">📥</button>';
+                }
+                html += '</div>';
+                html += '</div>';
+
+                html += '</div>';
+            });
+
+            grid.innerHTML = html;
+        }
+
+        async function generateThumbnailImage(idx) {
+            const thumb = thumbnails[idx];
+            if (!thumb || !thumb.prompt_en) {
+                showToast('먼저 썸네일 프롬프트를 생성하세요', 'error');
+                return;
+            }
+
+            const modelSelect = document.getElementById('thumbModel' + idx);
+            const provider = modelSelect ? modelSelect.value : 'vertex';
+
+            thumbnails[idx].generating = true;
+            renderThumbnails();
+
+            try {
+                const res = await fetch('/api/thumbnails/generate-image', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prompt_en: thumb.prompt_en,
+                        korean_text: thumb.korean_text || '',
+                        provider: provider,
+                        size: '1792x1024'
+                    })
+                });
+
+                const data = await res.json();
+
+                thumbnails[idx].generating = false;
+
+                if (data.success) {
+                    thumbnails[idx].image_url = data.image_url || null;
+                    thumbnails[idx].image_data = data.image_data || null;
+                    showToast('썸네일 ' + (idx + 1) + ' 생성 완료!');
+                } else {
+                    showToast('썸네일 생성 실패: ' + (data.error || 'Unknown'), 'error');
+                }
+            } catch (e) {
+                thumbnails[idx].generating = false;
+                showToast('썸네일 생성 오류: ' + e.message, 'error');
+            }
+
+            renderThumbnails();
+        }
+
+        async function generateAllThumbnailImages() {
+            const btn = document.getElementById('genAllThumbnailImagesBtn');
+            btn.disabled = true;
+            btn.innerHTML = '⏳ 생성 중...';
+
+            for (let i = 0; i < thumbnails.length; i++) {
+                if (!thumbnails[i].image_url && !thumbnails[i].image_data) {
+                    await generateThumbnailImage(i);
+                }
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '🖼️ 전체 생성';
+            showToast('모든 썸네일 이미지 생성 완료!');
+        }
+
+        function downloadThumbnail(idx) {
+            const thumb = thumbnails[idx];
+            if (!thumb) return;
+
+            const imageSrc = thumb.image_data || thumb.image_url;
+            if (!imageSrc) {
+                showToast('다운로드할 이미지가 없습니다', 'error');
+                return;
+            }
+
+            const filename = 'thumbnail_' + (idx + 1) + '_' + (thumb.korean_text || 'image').replace(/[^가-힣a-zA-Z0-9]/g, '_') + '.png';
+
+            if (imageSrc.startsWith('data:')) {
+                // Base64 이미지
+                const link = document.createElement('a');
+                link.href = imageSrc;
+                link.download = filename;
+                link.click();
+            } else {
+                // URL 이미지
+                downloadImageFromUrl(imageSrc, filename);
+            }
+        }
+
+        // 썸네일 한글 텍스트 오버레이 업데이트
+        function updateThumbnailKoreanText(idx, value) {
+            if (thumbnails[idx]) {
+                thumbnails[idx].korean_text = value;
+            }
+        }
+
+        // 썸네일 한글 설명 -> 영문 프롬프트 동기화
+        async function syncThumbnailKoToEn(idx) {
+            const thumb = thumbnails[idx];
+            if (!thumb) return;
+
+            const textarea = document.querySelector('.thumb-prompt-ko[data-thumb-idx="' + idx + '"]');
+            if (!textarea) return;
+
+            const newKoText = textarea.value.trim();
+
+            // 변경 없거나 빈 값이면 무시
+            if (!newKoText || newKoText === '(이미지 설명을 입력하세요)') return;
+            if (newKoText === thumb.visual_concept || newKoText === thumb.prompt_ko) return;
+
+            // 한글 설명 업데이트
+            thumbnails[idx].visual_concept = newKoText;
+            thumbnails[idx].prompt_ko = newKoText;
+
+            // 로딩 표시
+            const promptEnDiv = document.querySelector('.thumb-prompt-en[data-thumb-idx="' + idx + '"]');
+            if (promptEnDiv) {
+                promptEnDiv.innerHTML = '<span class="spinner" style="width:14px;height:14px;"></span> 영문 프롬프트 동기화 중...';
+            }
+
+            try {
+                const provider = document.getElementById('thumbnailAI').value;
+                const res = await fetch('/api/prompts/sync-ko-to-en', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        korean_text: newKoText,
+                        ai_provider: provider,
+                        context: 'thumbnail'
+                    })
+                });
+                const data = await res.json();
+
+                if (data.success && data.prompt_en) {
+                    thumbnails[idx].prompt_en = data.prompt_en;
+                    if (promptEnDiv) {
+                        promptEnDiv.textContent = data.prompt_en;
+                    }
+                    showToast('썸네일 ' + (idx + 1) + ' 프롬프트 동기화 완료!');
+                } else {
+                    if (promptEnDiv) {
+                        promptEnDiv.textContent = thumb.prompt_en || '(동기화 실패)';
+                    }
+                    showToast('프롬프트 동기화 실패: ' + (data.error || 'Unknown'), 'error');
+                }
+            } catch (e) {
+                if (promptEnDiv) {
+                    promptEnDiv.textContent = thumb.prompt_en || '(동기화 오류)';
+                }
+                showToast('프롬프트 동기화 오류: ' + e.message, 'error');
+            }
+        }
+
+        function openThumbnailLightbox(idx) {
+            const thumb = thumbnails[idx];
+            if (!thumb) return;
+
+            const imageSrc = thumb.image_data || thumb.image_url;
+            if (!imageSrc) return;
+
+            const lightbox = document.getElementById('imageLightbox');
+            const img = document.getElementById('lightboxImage');
+            const label = document.getElementById('lightboxLabel');
+
+            img.src = imageSrc;
+            label.textContent = '썸네일 ' + (idx + 1) + ': ' + (thumb.korean_text || '');
+            lightbox.style.display = 'flex';
+
+            currentLightboxIndex = -1;  // 썸네일은 별도 처리
+            currentThumbnailIndex = idx;
+        }
+
+        let currentThumbnailIndex = -1;
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,14 @@
+# 이 파일들은 Git에 올리지 마세요
+api_secrets.json
+*.pyc
+__pycache__/
+venv/
+.env
+*.log
+logs/
+data/favorites.json
+data/designers.json
+.DS_Store
+*.swp
+*.swo
+nul

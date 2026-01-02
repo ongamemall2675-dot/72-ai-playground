@@ -1,0 +1,10 @@
+# AI 이미지 생성기 - 의존성
+fastapi>=0.104.0
+uvicorn>=0.24.0
+pydantic>=2.0.0
+replicate>=0.20.0
+google-generativeai>=0.3.0
+google-genai>=0.2.0
+httpx>=0.25.0
+python-multipart>=0.0.6
+pillow>=10.0.0
