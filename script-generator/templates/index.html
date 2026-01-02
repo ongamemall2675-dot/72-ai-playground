@@ -1,0 +1,1541 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 대본 생성기 v2.0 | M-06</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root{--gold:#D4AF37;--dark-bg:#0a0a0a;--dark-surface:#141414;--dark-elevated:#1e1e1e;--dark-border:#2a2a2a;--text:#fff;--text-muted:rgba(255,255,255,0.5);--success:#22c55e;--error:#ef4444;--warning:#f59e0b;}
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Inter',sans-serif;background:var(--dark-bg);color:var(--text);min-height:100vh;}
+        .header{background:var(--dark-surface);padding:1rem 2rem;border-bottom:1px solid var(--dark-border);display:flex;justify-content:space-between;align-items:center;}
+        .logo{font-size:1.25rem;font-weight:600;background:linear-gradient(135deg,#D4AF37,#FFD700);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .header-btns{display:flex;gap:0.5rem;align-items:center;}
+        .container{display:grid;grid-template-columns:400px 1fr 380px;gap:1rem;padding:1rem;height:calc(100vh - 60px);}
+        @media(max-width:1400px){.container{grid-template-columns:1fr;}}
+        .panel{background:var(--dark-surface);border:1px solid var(--dark-border);border-radius:12px;display:flex;flex-direction:column;overflow:hidden;}
+        .panel-header{padding:1rem;border-bottom:1px solid var(--dark-border);font-weight:600;color:var(--gold);display:flex;justify-content:space-between;align-items:center;}
+        .panel-body{padding:1rem;overflow-y:auto;flex:1;}
+        .form-group{margin-bottom:1rem;}
+        .form-label{display:block;font-size:0.75rem;color:var(--text-muted);margin-bottom:0.375rem;text-transform:uppercase;letter-spacing:0.5px;}
+        .form-input,.form-select,.form-textarea{width:100%;padding:0.625rem;background:var(--dark-elevated);border:1px solid var(--dark-border);border-radius:8px;color:var(--text);font-family:inherit;font-size:0.875rem;}
+        .form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--gold);}
+        .form-textarea{resize:vertical;min-height:80px;}
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;}
+        .form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;}
+        .btn{padding:0.625rem 1rem;font-family:inherit;font-weight:600;border-radius:8px;cursor:pointer;border:none;transition:all 0.2s;font-size:0.875rem;}
+        .btn-primary{background:linear-gradient(135deg,#D4AF37,#B8860B);color:#000;}
+        .btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 15px rgba(212,175,55,0.3);}
+        .btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+        .btn-secondary{background:var(--dark-elevated);border:1px solid var(--dark-border);color:var(--text-muted);}
+        .btn-secondary:hover{border-color:var(--gold);color:var(--text);}
+        .btn-success{background:rgba(34,197,94,0.2);border:1px solid var(--success);color:var(--success);}
+        .btn-danger{background:rgba(239,68,68,0.2);border:1px solid var(--error);color:var(--error);}
+        .btn-sm{padding:0.375rem 0.75rem;font-size:0.75rem;}
+        .btn-full{width:100%;}
+        .ai-selector{display:flex;gap:0.5rem;margin-bottom:1rem;}
+        .ai-option{flex:1;padding:0.75rem 0.5rem;background:var(--dark-elevated);border:2px solid var(--dark-border);border-radius:8px;cursor:pointer;text-align:center;transition:all 0.2s;}
+        .ai-option:hover,.ai-option.selected{border-color:var(--gold);}
+        .ai-option.selected{background:rgba(212,175,55,0.1);}
+        .ai-option.disabled{opacity:0.4;cursor:not-allowed;}
+        .ai-icon{font-size:1.25rem;}
+        .ai-name{font-size:0.8rem;font-weight:600;}
+        .ai-desc{font-size:0.65rem;color:var(--text-muted);}
+        .ai-status{font-size:0.6rem;margin-top:0.25rem;}
+        .ai-status.ok{color:var(--success);}
+        .ai-status.no{color:var(--error);}
+        .script-editor{background:var(--dark-elevated);border-radius:8px;padding:1rem;min-height:400px;line-height:1.8;white-space:pre-wrap;overflow-y:auto;font-size:0.9rem;}
+        .script-editor:focus{outline:2px solid var(--gold);}
+        .placeholder{text-align:center;padding:3rem;color:var(--text-muted);}
+        .scene-card{background:var(--dark-elevated);border-radius:8px;padding:0.75rem;margin-bottom:0.75rem;border:1px solid var(--dark-border);}
+        .scene-header{display:flex;justify-content:space-between;margin-bottom:0.5rem;}
+        .scene-id{font-weight:600;color:var(--gold);}
+        .scene-meta{font-size:0.7rem;color:var(--text-muted);}
+        .scene-text{font-size:0.8rem;color:var(--text-muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+        .collapsible{background:var(--dark-elevated);border-radius:8px;margin-bottom:0.75rem;border:1px solid var(--dark-border);}
+        .collapsible-header{padding:0.75rem;cursor:pointer;display:flex;justify-content:space-between;font-size:0.875rem;}
+        .collapsible-body{padding:0 0.75rem 0.75rem;display:none;}
+        .collapsible.open .collapsible-body{display:block;}
+        .collapsible.open .collapse-icon{transform:rotate(180deg);}
+        .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:none;justify-content:center;align-items:center;z-index:1000;padding:1rem;}
+        .modal-overlay.show{display:flex;}
+        .modal{background:var(--dark-surface);border:1px solid var(--dark-border);border-radius:12px;width:100%;max-width:700px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;}
+        .modal-lg{max-width:900px;}
+        .modal-header{padding:1rem 1.25rem;border-bottom:1px solid var(--dark-border);display:flex;justify-content:space-between;align-items:center;}
+        .modal-title{font-weight:600;color:var(--gold);font-size:1.1rem;}
+        .modal-close{background:none;border:none;color:var(--text-muted);font-size:1.5rem;cursor:pointer;line-height:1;}
+        .modal-body{padding:1.25rem;overflow-y:auto;flex:1;}
+        .modal-footer{padding:1rem 1.25rem;border-top:1px solid var(--dark-border);display:flex;justify-content:flex-end;gap:0.5rem;}
+        .tabs{display:flex;gap:0.25rem;margin-bottom:1rem;border-bottom:1px solid var(--dark-border);padding-bottom:0.5rem;}
+        .tab{padding:0.5rem 1rem;background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:0.875rem;border-radius:6px 6px 0 0;}
+        .tab:hover{color:var(--text);}
+        .tab.active{background:var(--dark-elevated);color:var(--gold);font-weight:600;}
+        .tab-content{display:none;}
+        .tab-content.active{display:block;}
+        .api-card{background:var(--dark-elevated);border:1px solid var(--dark-border);border-radius:8px;padding:1rem;margin-bottom:0.75rem;}
+        .api-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;}
+        .api-card-title{font-weight:600;display:flex;align-items:center;gap:0.5rem;}
+        .api-status{font-size:0.75rem;padding:0.25rem 0.5rem;border-radius:4px;}
+        .api-status.connected{background:rgba(34,197,94,0.2);color:var(--success);}
+        .api-status.disconnected{background:rgba(239,68,68,0.2);color:var(--error);}
+        .writer-card{background:var(--dark-elevated);border:1px solid var(--dark-border);border-radius:8px;padding:1rem;margin-bottom:0.75rem;cursor:pointer;transition:all 0.2s;}
+        .writer-card:hover{border-color:var(--gold);}
+        .writer-card.selected{border-color:var(--gold);background:rgba(212,175,55,0.1);}
+        .writer-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem;}
+        .writer-name{font-weight:600;font-size:1rem;}
+        .writer-category{font-size:0.7rem;background:var(--dark-border);padding:0.2rem 0.5rem;border-radius:4px;color:var(--text-muted);}
+        .writer-desc{font-size:0.8rem;color:var(--text-muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+        .writer-form-section{background:var(--dark-elevated);border-radius:8px;padding:1rem;margin-bottom:1rem;border:1px solid var(--dark-border);}
+        .writer-form-section-title{font-weight:600;color:var(--gold);margin-bottom:0.75rem;font-size:0.9rem;display:flex;align-items:center;gap:0.5rem;}
+        .tag-input{display:flex;flex-wrap:wrap;gap:0.25rem;padding:0.5rem;background:var(--dark-elevated);border:1px solid var(--dark-border);border-radius:8px;min-height:42px;}
+        .tag{background:var(--gold);color:#000;padding:0.2rem 0.5rem;border-radius:4px;font-size:0.75rem;display:flex;align-items:center;gap:0.25rem;}
+        .tag-remove{cursor:pointer;font-weight:bold;}
+        .tag-input input{flex:1;min-width:100px;background:transparent;border:none;color:var(--text);outline:none;}
+        .toast{position:fixed;bottom:1rem;right:1rem;padding:0.75rem 1rem;background:var(--dark-surface);border:1px solid var(--dark-border);border-radius:8px;transform:translateY(100px);opacity:0;transition:all 0.3s;z-index:2000;max-width:300px;}
+        .toast.show{transform:translateY(0);opacity:1;}
+        .spinner{width:16px;height:16px;border:2px solid transparent;border-top-color:currentColor;border-radius:50%;animation:spin 0.8s linear infinite;display:inline-block;}
+        @keyframes spin{to{transform:rotate(360deg);}}
+        .status-indicator{display:flex;align-items:center;gap:0.5rem;font-size:0.75rem;}
+        .status-dot{width:8px;height:8px;border-radius:50%;}
+        .status-dot.ok{background:var(--success);}
+        .status-dot.error{background:var(--error);}
+        .status-dot.warning{background:var(--warning);}
+        .help-text{font-size:0.7rem;color:var(--text-muted);margin-top:0.25rem;}
+        .divider{height:1px;background:var(--dark-border);margin:1rem 0;}
+        .badge{font-size:0.65rem;padding:0.15rem 0.4rem;border-radius:3px;background:var(--dark-border);color:var(--text-muted);}
+        .preview-box{background:#000;border-radius:8px;padding:0.5rem;margin-top:0.5rem;font-size:0.8rem;color:var(--text-muted);max-height:100px;overflow-y:auto;}
+    </style>
+</head>
+<body>
+    <header class="header">
+        <span class="logo">✨ AI 대본 생성기 v2.0</span>
+        <div class="header-btns">
+            <button class="btn btn-secondary btn-sm" onclick="openSettingsModal()">⚙️ 설정</button>
+            <button class="btn btn-secondary btn-sm" onclick="openWriterModal()">👤 작가 관리</button>
+            <div class="status-indicator" id="apiStatus">
+                <span class="status-dot warning"></span>
+                <span>API 미설정</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Left Panel: Settings -->
+        <div class="panel">
+            <div class="panel-header">⚙️ 대본 설정</div>
+            <div class="panel-body">
+                <!-- AI Model Selection -->
+                <div class="form-label">AI 모델 선택</div>
+                <div class="ai-selector">
+                    <div class="ai-option" data-ai="gemini" onclick="selectAI(this)">
+                        <div class="ai-icon">⚡</div>
+                        <div class="ai-name">Gemini</div>
+                        <div class="ai-desc">빠름/저렴</div>
+                        <div class="ai-status no" id="gemini-status">미연결</div>
+                    </div>
+                    <div class="ai-option" data-ai="claude" onclick="selectAI(this)">
+                        <div class="ai-icon">🎨</div>
+                        <div class="ai-name">Claude</div>
+                        <div class="ai-desc">고품질</div>
+                        <div class="ai-status no" id="claude-status">미연결</div>
+                    </div>
+                    <div class="ai-option" data-ai="openai" onclick="selectAI(this)">
+                        <div class="ai-icon">🤖</div>
+                        <div class="ai-name">GPT-4o</div>
+                        <div class="ai-desc">균형</div>
+                        <div class="ai-status no" id="openai-status">미연결</div>
+                    </div>
+                </div>
+
+                <!-- Writer Selection -->
+                <div class="form-group">
+                    <label class="form-label">작가 페르소나</label>
+                    <div style="display:flex;gap:0.5rem;">
+                        <select class="form-select" id="writerSelect" style="flex:1;">
+                            <option value="">기본 (작가 없음)</option>
+                        </select>
+                        <button class="btn btn-secondary btn-sm" onclick="openWriterModal()">관리</button>
+                    </div>
+                    <div id="writerPreview" class="preview-box" style="display:none;"></div>
+                </div>
+
+                <!-- Topic -->
+                <div class="form-group">
+                    <label class="form-label">주제 *</label>
+                    <input class="form-input" id="topic" placeholder="예: 2025년 부동산 전망, 직장인 재테크 비법..." />
+                </div>
+
+                <!-- Category & Duration -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">카테고리</label>
+                        <select class="form-select" id="category">
+                            <option value="real_estate">🏠 부동산</option>
+                            <option value="finance">💰 재테크</option>
+                            <option value="education" selected>📚 교육</option>
+                            <option value="entertainment">🎬 엔터테인먼트</option>
+                            <option value="health">💪 건강</option>
+                            <option value="tech">💻 기술</option>
+                            <option value="vlog">📹 브이로그</option>
+                            <option value="other">📌 기타</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">분량</label>
+                        <select class="form-select" id="duration">
+                            <option value="30sec">30초 (숏폼)</option>
+                            <option value="1min">1분</option>
+                            <option value="5min" selected>5분</option>
+                            <option value="10min">10분</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Tone & Structure -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">톤앤매너</label>
+                        <select class="form-select" id="tone">
+                            <option value="friendly" selected>😊 친근한</option>
+                            <option value="professional">👔 전문적</option>
+                            <option value="humorous">😂 유머러스</option>
+                            <option value="dramatic">🎭 드라마틱</option>
+                            <option value="calm">😌 차분한</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">구조</label>
+                        <select class="form-select" id="structure">
+                            <option value="hook_develop_resolve" selected>후킹→전개→해소</option>
+                            <option value="four_act">기→승→전→결</option>
+                            <option value="problem_solution">문제→해결</option>
+                            <option value="listicle">리스티클 (N가지)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Collapsible: Audience -->
+                <div class="collapsible">
+                    <div class="collapsible-header" onclick="this.parentElement.classList.toggle('open')">
+                        <span>👥 타겟 청중</span>
+                        <span class="collapse-icon">▼</span>
+                    </div>
+                    <div class="collapsible-body">
+                        <div class="form-row-3">
+                            <div class="form-group">
+                                <label class="form-label">연령</label>
+                                <select class="form-select" id="audienceAge">
+                                    <option value="all" selected>전체</option>
+                                    <option value="teen">10대</option>
+                                    <option value="20s">20대</option>
+                                    <option value="30s">30대</option>
+                                    <option value="40s">40대</option>
+                                    <option value="50s">50대+</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">성별</label>
+                                <select class="form-select" id="audienceGender">
+                                    <option value="all" selected>전체</option>
+                                    <option value="male">남성</option>
+                                    <option value="female">여성</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">페르소나</label>
+                                <select class="form-select" id="audiencePersona">
+                                    <option value="general" selected>일반</option>
+                                    <option value="investor">투자자</option>
+                                    <option value="first_buyer">내집마련</option>
+                                    <option value="beginner">초보자</option>
+                                    <option value="expert">전문가</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Collapsible: Hook & CTA -->
+                <div class="collapsible">
+                    <div class="collapsible-header" onclick="this.parentElement.classList.toggle('open')">
+                        <span>🎯 후킹 & CTA</span>
+                        <span class="collapse-icon">▼</span>
+                    </div>
+                    <div class="collapsible-body">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">후킹 스타일</label>
+                                <select class="form-select" id="hookStyle">
+                                    <option value="question" selected>❓ 질문형</option>
+                                    <option value="shock">😱 충격형</option>
+                                    <option value="empathy">🤝 공감형</option>
+                                    <option value="number">📊 숫자/통계형</option>
+                                    <option value="story">📖 스토리형</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">CTA</label>
+                                <select class="form-select" id="ctaType">
+                                    <option value="subscribe" selected>🔔 구독유도</option>
+                                    <option value="comment">💬 댓글유도</option>
+                                    <option value="like">👍 좋아요유도</option>
+                                    <option value="share">📤 공유유도</option>
+                                    <option value="none">없음</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Custom Instructions -->
+                <div class="form-group">
+                    <label class="form-label">추가 지침 (선택)</label>
+                    <textarea class="form-textarea" id="customInstructions" rows="3" placeholder="예: 30대 직장인에게 말하듯이, ~요 체 사용, 전문용어는 쉽게 풀어서..."></textarea>
+                    <button class="btn btn-secondary btn-sm btn-full" style="margin-top:0.5rem;" onclick="generateInstructions()">✨ AI가 지침 생성</button>
+                </div>
+
+                <!-- Auto Split -->
+                <div style="margin-bottom:1rem;">
+                    <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
+                        <input type="checkbox" id="autoSplit" style="accent-color:var(--gold);width:16px;height:16px;" />
+                        <span style="font-size:0.875rem;">🎬 생성 후 자동 장면분할</span>
+                    </label>
+                </div>
+
+                <!-- Generate Button -->
+                <button class="btn btn-primary btn-full" id="generateBtn" onclick="generateScript()">
+                    <span id="genText">✨ 대본 생성</span>
+                    <span id="genSpinner" class="spinner" style="display:none;"></span>
+                </button>
+            </div>
+        </div>
+
+
+        <!-- Center Panel: Editor -->
+        <div class="panel">
+            <div class="panel-header">
+                <span>📝 대본 편집기</span>
+                <div style="display:flex;gap:0.5rem;">
+                    <button class="btn btn-secondary btn-sm" onclick="editScript()">✏️ AI수정</button>
+                    <button class="btn btn-secondary btn-sm" onclick="copyScript()">📋 복사</button>
+                </div>
+            </div>
+            <div class="panel-body" style="padding:0;">
+                <div class="script-editor" id="editor" contenteditable="true">
+                    <div class="placeholder">
+                        <div style="font-size:3rem;margin-bottom:0.5rem;">📝</div>
+                        <div>주제를 입력하고 생성 버튼을 클릭하세요</div>
+                        <div style="font-size:0.8rem;margin-top:0.5rem;">또는 직접 대본을 작성해도 됩니다</div>
+                    </div>
+                </div>
+            </div>
+            <div style="padding:1rem;border-top:1px solid var(--dark-border);display:flex;gap:0.5rem;flex-wrap:wrap;">
+                <button class="btn btn-success btn-sm" onclick="approveScript()">✅ 검수완료</button>
+                <button class="btn btn-secondary btn-sm" onclick="splitScenes('auto')">🎬 자동분할</button>
+                <button class="btn btn-secondary btn-sm" onclick="openSplitModal()">✂️ 수동분할</button>
+                <div style="flex:1;"></div>
+                <span id="charCount" style="font-size:0.75rem;color:var(--text-muted);align-self:center;">0자</span>
+            </div>
+        </div>
+
+        <!-- Right Panel: Scenes -->
+        <div class="panel">
+            <div class="panel-header">
+                <span>🎬 장면 목록</span>
+                <span id="sceneCount" style="font-size:0.75rem;color:var(--text-muted);">0개</span>
+            </div>
+            <div class="panel-body" id="scenesContainer">
+                <div class="placeholder">
+                    <div style="font-size:2rem;margin-bottom:0.5rem;">🎬</div>
+                    <div>대본 검수 후 장면분할</div>
+                </div>
+            </div>
+            <div style="padding:1rem;border-top:1px solid var(--dark-border);">
+                <button class="btn btn-primary btn-sm btn-full" onclick="exportScenes()" id="exportBtn" disabled>📤 JSON 내보내기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal modal-lg">
+            <div class="modal-header">
+                <span class="modal-title">⚙️ API 설정</span>
+                <button class="modal-close" onclick="closeSettingsModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="tabs">
+                    <button class="tab active" onclick="showSettingsTab('api')">🔑 API 키</button>
+                    <button class="tab" onclick="showSettingsTab('advanced')">🔧 고급 설정</button>
+                </div>
+
+                <!-- API Keys Tab -->
+                <div class="tab-content active" id="tab-api">
+                    <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1rem;">
+                        각 AI 서비스의 API 키를 입력하세요. 키는 로컬에 암호화되어 저장됩니다.
+                    </p>
+
+                    <!-- Gemini -->
+                    <div class="api-card">
+                        <div class="api-card-header">
+                            <div class="api-card-title">⚡ Google Gemini</div>
+                            <span class="api-status disconnected" id="gemini-api-status">미연결</span>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0.5rem;">
+                            <input class="form-input" type="password" id="geminiApiKey" placeholder="AIzaSy..." />
+                        </div>
+                        <div style="display:flex;gap:0.5rem;">
+                            <button class="btn btn-secondary btn-sm" onclick="testApiKey('gemini')">연결 테스트</button>
+                            <a href="https://aistudio.google.com/apikey" target="_blank" class="btn btn-secondary btn-sm">키 발급 →</a>
+                        </div>
+                    </div>
+
+                    <!-- Claude -->
+                    <div class="api-card">
+                        <div class="api-card-header">
+                            <div class="api-card-title">🎨 Anthropic Claude</div>
+                            <span class="api-status disconnected" id="claude-api-status">미연결</span>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0.5rem;">
+                            <input class="form-input" type="password" id="claudeApiKey" placeholder="sk-ant-..." />
+                        </div>
+                        <div style="display:flex;gap:0.5rem;">
+                            <button class="btn btn-secondary btn-sm" onclick="testApiKey('claude')">연결 테스트</button>
+                            <a href="https://console.anthropic.com/settings/keys" target="_blank" class="btn btn-secondary btn-sm">키 발급 →</a>
+                        </div>
+                    </div>
+
+                    <!-- OpenAI -->
+                    <div class="api-card">
+                        <div class="api-card-header">
+                            <div class="api-card-title">🤖 OpenAI GPT-4o</div>
+                            <span class="api-status disconnected" id="openai-api-status">미연결</span>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0.5rem;">
+                            <input class="form-input" type="password" id="openaiApiKey" placeholder="sk-..." />
+                        </div>
+                        <div style="display:flex;gap:0.5rem;">
+                            <button class="btn btn-secondary btn-sm" onclick="testApiKey('openai')">연결 테스트</button>
+                            <a href="https://platform.openai.com/api-keys" target="_blank" class="btn btn-secondary btn-sm">키 발급 →</a>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <!-- RAG Server -->
+                    <div class="api-card">
+                        <div class="api-card-header">
+                            <div class="api-card-title">🗄️ RAG 서버 (작가 저장용)</div>
+                            <span class="api-status disconnected" id="rag-api-status">미연결</span>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0.5rem;">
+                            <input class="form-input" id="ragServerUrl" placeholder="http://152.42.210.15:8000" />
+                            <div class="help-text">작가 데이터를 저장할 서버 주소 (선택사항, 없으면 로컬 저장)</div>
+                        </div>
+                        <button class="btn btn-secondary btn-sm" onclick="testRagServer()">연결 테스트</button>
+                    </div>
+                </div>
+
+                <!-- Advanced Tab -->
+                <div class="tab-content" id="tab-advanced">
+                    <div class="form-group">
+                        <label class="form-label">기본 AI 모델</label>
+                        <select class="form-select" id="defaultAI">
+                            <option value="gemini">Gemini (권장)</option>
+                            <option value="claude">Claude</option>
+                            <option value="openai">GPT-4o</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">생성 온도 (창의성)</label>
+                        <input class="form-input" type="range" id="temperature" min="0" max="1" step="0.1" value="0.7" />
+                        <div class="help-text">낮을수록 일관성, 높을수록 창의성</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="exportSettings()">📤 설정 내보내기</button>
+                <button class="btn btn-secondary" onclick="importSettings()">📥 설정 불러오기</button>
+                <button class="btn btn-primary" onclick="saveSettings()">💾 저장</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Writer Management Modal -->
+    <div class="modal-overlay" id="writerModal">
+        <div class="modal modal-lg">
+            <div class="modal-header">
+                <span class="modal-title">👤 작가 페르소나 관리</span>
+                <button class="modal-close" onclick="closeWriterModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="tabs">
+                    <button class="tab active" onclick="showWriterTab('list')">📋 작가 목록</button>
+                    <button class="tab" onclick="showWriterTab('create')">✨ 새 작가 만들기</button>
+                </div>
+
+                <!-- Writer List -->
+                <div class="tab-content active" id="tab-list">
+                    <div id="writerListContainer">
+                        <div class="placeholder">저장된 작가가 없습니다</div>
+                    </div>
+                </div>
+
+                <!-- Writer Create/Edit Form -->
+                <div class="tab-content" id="tab-create">
+                    <input type="hidden" id="editingWriterId" value="" />
+
+                    <!-- Basic Info -->
+                    <div class="writer-form-section">
+                        <div class="writer-form-section-title">📌 기본 정보</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">작가 이름 *</label>
+                                <input class="form-input" id="wName" placeholder="예: 부동산 전문가, 친근한 선배..." />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">전문 분야</label>
+                                <select class="form-select" id="wCategory">
+                                    <option value="general">일반</option>
+                                    <option value="real_estate">부동산</option>
+                                    <option value="finance">재테크</option>
+                                    <option value="education">교육</option>
+                                    <option value="entertainment">엔터테인먼트</option>
+                                    <option value="health">건강</option>
+                                    <option value="tech">기술</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">한줄 설명</label>
+                            <input class="form-input" id="wDescription" placeholder="이 작가의 특징을 한줄로 설명" />
+                        </div>
+                    </div>
+
+                    <!-- Persona -->
+                    <div class="writer-form-section">
+                        <div class="writer-form-section-title">🎭 페르소나 (캐릭터)</div>
+                        <div class="form-group">
+                            <label class="form-label">작가 캐릭터 설정</label>
+                            <textarea class="form-textarea" id="wPersona" rows="4" placeholder="예: 20년 경력의 공인중개사로, 강남 재건축 전문가입니다. 복잡한 부동산 정책을 쉽게 풀어서 설명하는 것이 특기입니다. 항상 시청자의 이익을 먼저 생각합니다..."></textarea>
+                            <div class="help-text">작가가 어떤 사람인지, 어떤 전문성을 가졌는지 상세히 기술</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">작가의 목표/가치관</label>
+                            <textarea class="form-textarea" id="wGoals" rows="2" placeholder="예: 시청자들이 부동산 사기를 당하지 않도록 정확한 정보를 전달하고자 합니다..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Speech Style -->
+                    <div class="writer-form-section">
+                        <div class="writer-form-section-title">💬 말투 & 어투</div>
+                        <div class="form-group">
+                            <label class="form-label">말투 스타일</label>
+                            <textarea class="form-textarea" id="wSpeechStyle" rows="4" placeholder="예: 
+- '~입니다' 체 대신 '~해요' 체 사용
+- 전문용어는 반드시 쉬운 말로 풀어서 설명
+- 중요한 부분은 '자, 여기서 중요한 건요~' 식으로 강조
+- 문장은 짧게, 호흡은 자연스럽게
+- 감탄사: '와~', '아~' 자주 사용"></textarea>
+                            <div class="help-text">구체적인 말투 예시와 패턴을 기술</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">톤/분위기</label>
+                            <select class="form-select" id="wTone">
+                                <option value="friendly">😊 친근하고 편안한</option>
+                                <option value="professional">👔 전문적이고 신뢰감 있는</option>
+                                <option value="energetic">⚡ 에너지 넘치는</option>
+                                <option value="calm">😌 차분하고 안정적인</option>
+                                <option value="humorous">😂 유머러스한</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Environment -->
+                    <div class="writer-form-section">
+                        <div class="writer-form-section-title">🎬 상황 설정</div>
+                        <div class="form-group">
+                            <label class="form-label">말하는 상황/환경</label>
+                            <textarea class="form-textarea" id="wEnvironment" rows="3" placeholder="예: 카페에서 친한 동생에게 부동산 팁을 알려주는 상황. 주변 소음이 있어서 핵심만 간결하게 전달해야 함. 동생이 완전 초보라서 기초부터 설명..."></textarea>
+                            <div class="help-text">어떤 상황에서 말하는 것처럼 대본을 쓸지 설정</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">가상의 청취자</label>
+                            <input class="form-input" id="wListener" placeholder="예: 부동산에 관심 있는 30대 직장인 동생" />
+                        </div>
+                    </div>
+
+                    <!-- Keywords & Forbidden -->
+                    <div class="writer-form-section">
+                        <div class="writer-form-section-title">🏷️ 키워드 관리</div>
+                        <div class="form-group">
+                            <label class="form-label">필수 포함 키워드</label>
+                            <div class="tag-input" id="requiredKeywordsInput">
+                                <input type="text" placeholder="입력 후 Enter" onkeydown="addTag(event, 'required')" />
+                            </div>
+                            <div class="help-text">대본에 꼭 포함되어야 할 단어들</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">금지어</label>
+                            <div class="tag-input" id="forbiddenWordsInput">
+                                <input type="text" placeholder="입력 후 Enter" onkeydown="addTag(event, 'forbidden')" />
+                            </div>
+                            <div class="help-text">대본에 사용하면 안 되는 단어들</div>
+                        </div>
+                    </div>
+
+                    <!-- Output Format -->
+                    <div class="writer-form-section">
+                        <div class="writer-form-section-title">📄 출력 형식</div>
+                        <div class="form-group">
+                            <label class="form-label">특별 출력 요구사항</label>
+                            <textarea class="form-textarea" id="wOutputFormat" rows="2" placeholder="예: 각 문단 앞에 [강조], [팁], [주의] 태그 붙이기, 숫자는 한글로 표기..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Custom Instructions -->
+                    <div class="writer-form-section">
+                        <div class="writer-form-section-title">📝 추가 지침</div>
+                        <div class="form-group">
+                            <label class="form-label">기타 상세 지침</label>
+                            <textarea class="form-textarea" id="wCustomInstructions" rows="4" placeholder="위 항목에서 다루지 못한 추가적인 지침이 있다면 자유롭게 작성..."></textarea>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary btn-full" onclick="saveWriter()">💾 작가 저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Script Modal -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title">✏️ AI 대본 수정</span>
+                <button class="modal-close" onclick="closeEditModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">수정 요청사항</label>
+                    <textarea class="form-textarea" id="editFeedback" rows="5" placeholder="예: 
+- 서론 부분을 더 임팩트 있게
+- 전문용어 쉽게 풀어서
+- 마지막에 구독 유도 추가"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeEditModal()">취소</button>
+                <button class="btn btn-primary" onclick="applyEdit()">✨ AI 수정 적용</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manual Split Modal -->
+    <div class="modal-overlay" id="splitModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title">✂️ 수동 장면 분할</span>
+                <button class="modal-close" onclick="closeSplitModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">분할할 장면 수</label>
+                    <input class="form-input" type="number" id="sceneCountInput" value="10" min="2" max="50" />
+                    <div class="help-text">2~50개 사이로 입력</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeSplitModal()">취소</button>
+                <button class="btn btn-primary" onclick="applyManualSplit()">✂️ 분할하기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden file input for import -->
+    <input type="file" id="settingsFileInput" accept=".json" style="display:none" onchange="handleSettingsImport(event)" />
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+
+    <script>
+        // ============================================
+        // State
+        // ============================================
+        let selectedAI = 'gemini';
+        let currentScript = '';
+        let scenes = [];
+        let writers = [];
+        let approved = false;
+        let apiKeys = { gemini: '', claude: '', openai: '' };
+        let apiStatus = { gemini: false, claude: false, openai: false };
+        let ragServerUrl = '';
+        let requiredKeywords = [];
+        let forbiddenWords = [];
+
+        // ============================================
+        // API Error Handler (HTTP 상태 코드별 처리)
+        // ============================================
+        function handleApiError(status, action = 'API 요청') {
+            switch (status) {
+                case 429:
+                    toast(`[${action}] 요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요. (Rate Limit)`, 'error');
+                    break;
+                case 401:
+                    toast(`[${action}] API 키 또는 인증 정보를 확인해주세요.`, 'error');
+                    openSettingsModal();
+                    break;
+                case 403:
+                    toast(`[${action}] 접근이 거부되었습니다. API 키 권한을 확인하세요.`, 'error');
+                    break;
+                case 500:
+                    toast(`[${action}] 서버 오류가 발생했습니다. API 키 설정을 확인하세요.`, 'error');
+                    break;
+                case 503:
+                    toast(`[${action}] 서비스를 일시적으로 사용할 수 없습니다. 잠시 후 다시 시도하세요.`, 'error');
+                    break;
+                default:
+                    toast(`[${action}] 알 수 없는 오류가 발생했습니다. (${status})`, 'error');
+            }
+        }
+
+        // ============================================
+        // Initialization
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSettings();
+            loadWriters();
+            setupEditorEvents();
+            updateApiStatusIndicator();
+        });
+
+        function setupEditorEvents() {
+            const editor = document.getElementById('editor');
+            editor.addEventListener('input', () => {
+                const text = editor.innerText;
+                document.getElementById('charCount').textContent = text.length + '자';
+                if (text.trim() && !text.includes('주제를 입력')) {
+                    approved = false;
+                }
+            });
+            editor.addEventListener('focus', () => {
+                if (editor.querySelector('.placeholder')) {
+                    editor.innerHTML = '';
+                }
+            });
+        }
+
+        // ============================================
+        // AI Selection
+        // ============================================
+        function selectAI(el) {
+            const ai = el.dataset.ai;
+            if (!apiStatus[ai]) {
+                toast('API 키가 설정되지 않았습니다. 설정에서 API 키를 입력하세요.', 'error');
+                return;
+            }
+            document.querySelectorAll('.ai-option').forEach(o => o.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedAI = ai;
+        }
+
+        function updateAISelectors() {
+            document.querySelectorAll('.ai-option').forEach(el => {
+                const ai = el.dataset.ai;
+                const statusEl = el.querySelector('.ai-status');
+                if (apiStatus[ai]) {
+                    statusEl.textContent = '연결됨';
+                    statusEl.className = 'ai-status ok';
+                    el.classList.remove('disabled');
+                } else {
+                    statusEl.textContent = '미연결';
+                    statusEl.className = 'ai-status no';
+                    if (selectedAI === ai) {
+                        el.classList.remove('selected');
+                    }
+                }
+            });
+            // Auto-select first available
+            if (!apiStatus[selectedAI]) {
+                for (const ai of ['gemini', 'claude', 'openai']) {
+                    if (apiStatus[ai]) {
+                        selectedAI = ai;
+                        document.querySelector(`.ai-option[data-ai="${ai}"]`).classList.add('selected');
+                        break;
+                    }
+                }
+            }
+        }
+
+        // ============================================
+        // Settings Modal
+        // ============================================
+        function openSettingsModal() {
+            document.getElementById('settingsModal').classList.add('show');
+            // Load saved keys (masked)
+            document.getElementById('geminiApiKey').value = apiKeys.gemini;
+            document.getElementById('claudeApiKey').value = apiKeys.claude;
+            document.getElementById('openaiApiKey').value = apiKeys.openai;
+            document.getElementById('ragServerUrl').value = ragServerUrl;
+            updateSettingsStatus();
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settingsModal').classList.remove('show');
+        }
+
+        function showSettingsTab(tab) {
+            document.querySelectorAll('#settingsModal .tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('#settingsModal .tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelector(`#settingsModal .tab:nth-child(${tab === 'api' ? 1 : 2})`).classList.add('active');
+            document.getElementById(`tab-${tab}`).classList.add('active');
+        }
+
+        function updateSettingsStatus() {
+            ['gemini', 'claude', 'openai'].forEach(ai => {
+                const statusEl = document.getElementById(`${ai}-api-status`);
+                if (apiStatus[ai]) {
+                    statusEl.textContent = '연결됨';
+                    statusEl.className = 'api-status connected';
+                } else {
+                    statusEl.textContent = '미연결';
+                    statusEl.className = 'api-status disconnected';
+                }
+            });
+        }
+
+        async function testApiKey(provider) {
+            const keyInput = document.getElementById(`${provider}ApiKey`);
+            const key = keyInput.value.trim();
+            if (!key) {
+                toast('API 키를 입력하세요', 'error');
+                return;
+            }
+
+            toast('연결 테스트 중...');
+            try {
+                const res = await fetch('/api/test-api-key', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ provider, api_key: key })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    apiStatus[provider] = true;
+                    apiKeys[provider] = key;
+                    toast(`${provider} 연결 성공!`);
+                } else {
+                    apiStatus[provider] = false;
+                    toast(data.error || '연결 실패', 'error');
+                }
+            } catch (e) {
+                apiStatus[provider] = false;
+                toast('연결 테스트 실패: ' + e.message, 'error');
+            }
+            updateSettingsStatus();
+            updateAISelectors();
+            updateApiStatusIndicator();
+        }
+
+        async function testRagServer() {
+            const url = document.getElementById('ragServerUrl').value.trim();
+            if (!url) {
+                toast('서버 URL을 입력하세요', 'error');
+                return;
+            }
+            toast('연결 테스트 중...');
+            try {
+                const res = await fetch(url + '/health');
+                if (res.ok) {
+                    ragServerUrl = url;
+                    document.getElementById('rag-api-status').textContent = '연결됨';
+                    document.getElementById('rag-api-status').className = 'api-status connected';
+                    toast('RAG 서버 연결 성공!');
+                } else {
+                    throw new Error('서버 응답 오류');
+                }
+            } catch (e) {
+                document.getElementById('rag-api-status').textContent = '미연결';
+                document.getElementById('rag-api-status').className = 'api-status disconnected';
+                toast('RAG 서버 연결 실패', 'error');
+            }
+        }
+
+        function saveSettings() {
+            apiKeys.gemini = document.getElementById('geminiApiKey').value.trim();
+            apiKeys.claude = document.getElementById('claudeApiKey').value.trim();
+            apiKeys.openai = document.getElementById('openaiApiKey').value.trim();
+            ragServerUrl = document.getElementById('ragServerUrl').value.trim();
+
+            const settings = {
+                apiKeys: apiKeys,
+                ragServerUrl: ragServerUrl,
+                defaultAI: document.getElementById('defaultAI').value,
+                temperature: document.getElementById('temperature').value
+            };
+            localStorage.setItem('m06_settings', btoa(JSON.stringify(settings)));
+
+            // Send to server
+            fetch('/api/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ api_keys: apiKeys, rag_server_url: ragServerUrl })
+            });
+
+            toast('설정이 저장되었습니다!');
+            closeSettingsModal();
+            updateAISelectors();
+            updateApiStatusIndicator();
+        }
+
+        function loadSettings() {
+            const saved = localStorage.getItem('m06_settings');
+            if (saved) {
+                try {
+                    const settings = JSON.parse(atob(saved));
+                    apiKeys = settings.apiKeys || { gemini: '', claude: '', openai: '' };
+                    ragServerUrl = settings.ragServerUrl || '';
+                    if (settings.defaultAI) {
+                        document.getElementById('defaultAI').value = settings.defaultAI;
+                        selectedAI = settings.defaultAI;
+                    }
+                    if (settings.temperature) {
+                        document.getElementById('temperature').value = settings.temperature;
+                    }
+                    // Check which APIs are configured
+                    apiStatus.gemini = !!apiKeys.gemini;
+                    apiStatus.claude = !!apiKeys.claude;
+                    apiStatus.openai = !!apiKeys.openai;
+                    updateAISelectors();
+                } catch (e) {
+                    console.error('Failed to load settings', e);
+                }
+            }
+        }
+
+        function updateApiStatusIndicator() {
+            const indicator = document.getElementById('apiStatus');
+            const connectedCount = Object.values(apiStatus).filter(Boolean).length;
+            if (connectedCount === 0) {
+                indicator.innerHTML = '<span class="status-dot warning"></span><span>API 미설정</span>';
+            } else {
+                indicator.innerHTML = `<span class="status-dot ok"></span><span>${connectedCount}개 연결됨</span>`;
+            }
+        }
+
+        function exportSettings() {
+            const settings = {
+                apiKeys: apiKeys,
+                ragServerUrl: ragServerUrl,
+                writers: writers,
+                exportedAt: new Date().toISOString()
+            };
+            const blob = new Blob([JSON.stringify(settings, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `m06_settings_${Date.now()}.json`;
+            a.click();
+            toast('설정 내보내기 완료!');
+        }
+
+        function importSettings() {
+            document.getElementById('settingsFileInput').click();
+        }
+
+        function handleSettingsImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const settings = JSON.parse(e.target.result);
+                    if (settings.apiKeys) {
+                        apiKeys = settings.apiKeys;
+                        document.getElementById('geminiApiKey').value = apiKeys.gemini || '';
+                        document.getElementById('claudeApiKey').value = apiKeys.claude || '';
+                        document.getElementById('openaiApiKey').value = apiKeys.openai || '';
+                    }
+                    if (settings.ragServerUrl) {
+                        ragServerUrl = settings.ragServerUrl;
+                        document.getElementById('ragServerUrl').value = ragServerUrl;
+                    }
+                    if (settings.writers) {
+                        writers = settings.writers;
+                        renderWriterList();
+                        updateWriterSelect();
+                    }
+                    toast('설정 불러오기 완료!');
+                } catch (err) {
+                    toast('잘못된 파일 형식입니다', 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+
+        // ============================================
+        // Writer Management
+        // ============================================
+        function openWriterModal() {
+            document.getElementById('writerModal').classList.add('show');
+            loadWriters();
+        }
+
+        function closeWriterModal() {
+            document.getElementById('writerModal').classList.remove('show');
+            resetWriterForm();
+        }
+
+        function showWriterTab(tab) {
+            document.querySelectorAll('#writerModal .tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('#writerModal .tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelector(`#writerModal .tab:nth-child(${tab === 'list' ? 1 : 2})`).classList.add('active');
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            if (tab === 'create') {
+                resetWriterForm();
+            }
+        }
+
+        function resetWriterForm() {
+            document.getElementById('editingWriterId').value = '';
+            ['wName', 'wCategory', 'wDescription', 'wPersona', 'wGoals', 'wSpeechStyle', 'wTone', 'wEnvironment', 'wListener', 'wOutputFormat', 'wCustomInstructions'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el.tagName === 'SELECT') el.selectedIndex = 0;
+                else el.value = '';
+            });
+            requiredKeywords = [];
+            forbiddenWords = [];
+            renderTags();
+        }
+
+        async function loadWriters() {
+            try {
+                const res = await fetch('/api/writers');
+                const data = await res.json();
+                writers = data.writers || [];
+            } catch (e) {
+                writers = [];
+            }
+            renderWriterList();
+            updateWriterSelect();
+        }
+
+        function renderWriterList() {
+            const container = document.getElementById('writerListContainer');
+            if (!writers.length) {
+                container.innerHTML = '<div class="placeholder">저장된 작가가 없습니다<br><small>새 작가 만들기 탭에서 작가를 생성하세요</small></div>';
+                return;
+            }
+            container.innerHTML = writers.map(w => `
+                <div class="writer-card" onclick="selectWriterFromList('${w.id}')">
+                    <div class="writer-header">
+                        <div class="writer-name">${w.name}</div>
+                        <span class="writer-category">${getCategoryLabel(w.category)}</span>
+                    </div>
+                    <div class="writer-desc">${w.description || w.persona?.substring(0, 100) || '설명 없음'}</div>
+                    <div style="margin-top:0.5rem;display:flex;gap:0.5rem;">
+                        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();editWriter('${w.id}')">✏️ 수정</button>
+                        <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteWriter('${w.id}')">🗑️ 삭제</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getCategoryLabel(cat) {
+            const labels = {
+                general: '일반', real_estate: '부동산', finance: '재테크',
+                education: '교육', entertainment: '엔터', health: '건강', tech: '기술'
+            };
+            return labels[cat] || cat || '일반';
+        }
+
+        function updateWriterSelect() {
+            const select = document.getElementById('writerSelect');
+            select.innerHTML = '<option value="">기본 (작가 없음)</option>' +
+                writers.map(w => `<option value="${w.id}">${w.name} (${getCategoryLabel(w.category)})</option>`).join('');
+        }
+
+        function selectWriterFromList(id) {
+            document.getElementById('writerSelect').value = id;
+            closeWriterModal();
+            showWriterPreview(id);
+            toast('작가가 선택되었습니다');
+        }
+
+        function showWriterPreview(id) {
+            const preview = document.getElementById('writerPreview');
+            const writer = writers.find(w => w.id === id);
+            if (writer) {
+                preview.style.display = 'block';
+                preview.innerHTML = `<strong>${writer.name}</strong><br>${writer.persona?.substring(0, 150) || ''}...`;
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+
+        document.getElementById('writerSelect').addEventListener('change', function() {
+            showWriterPreview(this.value);
+        });
+
+        function editWriter(id) {
+            const writer = writers.find(w => w.id === id);
+            if (!writer) return;
+
+            document.getElementById('editingWriterId').value = writer.id;
+            document.getElementById('wName').value = writer.name || '';
+            document.getElementById('wCategory').value = writer.category || 'general';
+            document.getElementById('wDescription').value = writer.description || '';
+            document.getElementById('wPersona').value = writer.persona || '';
+            document.getElementById('wGoals').value = writer.goals || '';
+            document.getElementById('wSpeechStyle').value = writer.speech_style || '';
+            document.getElementById('wTone').value = writer.tone || 'friendly';
+            document.getElementById('wEnvironment').value = writer.environment || '';
+            document.getElementById('wListener').value = writer.listener || '';
+            document.getElementById('wOutputFormat').value = writer.output_format || '';
+            document.getElementById('wCustomInstructions').value = writer.custom_instructions || '';
+
+            requiredKeywords = writer.required_keywords || [];
+            forbiddenWords = writer.forbidden_words || [];
+            renderTags();
+
+            showWriterTab('create');
+        }
+
+        async function saveWriter() {
+            const name = document.getElementById('wName').value.trim();
+            if (!name) {
+                toast('작가 이름을 입력하세요', 'error');
+                return;
+            }
+
+            const editingId = document.getElementById('editingWriterId').value;
+            const writer = {
+                id: editingId || `writer_${Date.now()}`,
+                name: name,
+                category: document.getElementById('wCategory').value,
+                description: document.getElementById('wDescription').value,
+                persona: document.getElementById('wPersona').value,
+                goals: document.getElementById('wGoals').value,
+                speech_style: document.getElementById('wSpeechStyle').value,
+                tone: document.getElementById('wTone').value,
+                environment: document.getElementById('wEnvironment').value,
+                listener: document.getElementById('wListener').value,
+                output_format: document.getElementById('wOutputFormat').value,
+                custom_instructions: document.getElementById('wCustomInstructions').value,
+                required_keywords: requiredKeywords,
+                forbidden_words: forbiddenWords,
+                updated_at: new Date().toISOString()
+            };
+
+            try {
+                const res = await fetch('/api/writers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(writer)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    toast('작가가 저장되었습니다!');
+                    loadWriters();
+                    showWriterTab('list');
+                } else {
+                    toast(data.error || '저장 실패', 'error');
+                }
+            } catch (e) {
+                toast('저장 실패: ' + e.message, 'error');
+            }
+        }
+
+        async function deleteWriter(id) {
+            if (!confirm('이 작가를 삭제하시겠습니까?')) return;
+            try {
+                await fetch(`/api/writers/${id}`, { method: 'DELETE' });
+                toast('작가가 삭제되었습니다');
+                loadWriters();
+            } catch (e) {
+                toast('삭제 실패', 'error');
+            }
+        }
+
+        // Tag Input
+        function addTag(event, type) {
+            if (event.key !== 'Enter') return;
+            event.preventDefault();
+            const input = event.target;
+            const value = input.value.trim();
+            if (!value) return;
+
+            if (type === 'required') {
+                if (!requiredKeywords.includes(value)) requiredKeywords.push(value);
+            } else {
+                if (!forbiddenWords.includes(value)) forbiddenWords.push(value);
+            }
+            input.value = '';
+            renderTags();
+        }
+
+        function removeTag(type, index) {
+            if (type === 'required') {
+                requiredKeywords.splice(index, 1);
+            } else {
+                forbiddenWords.splice(index, 1);
+            }
+            renderTags();
+        }
+
+        function renderTags() {
+            const reqContainer = document.getElementById('requiredKeywordsInput');
+            const forbContainer = document.getElementById('forbiddenWordsInput');
+            
+            reqContainer.innerHTML = requiredKeywords.map((k, i) => 
+                `<span class="tag">${k}<span class="tag-remove" onclick="removeTag('required',${i})">×</span></span>`
+            ).join('') + '<input type="text" placeholder="입력 후 Enter" onkeydown="addTag(event,\'required\')" />';
+            
+            forbContainer.innerHTML = forbiddenWords.map((k, i) => 
+                `<span class="tag" style="background:var(--error);">${k}<span class="tag-remove" onclick="removeTag('forbidden',${i})">×</span></span>`
+            ).join('') + '<input type="text" placeholder="입력 후 Enter" onkeydown="addTag(event,\'forbidden\')" />';
+        }
+
+
+        // ============================================
+        // Script Generation
+        // ============================================
+        async function generateScript() {
+            const topic = document.getElementById('topic').value.trim();
+            if (!topic) {
+                toast('주제를 입력하세요', 'error');
+                return;
+            }
+
+            if (!Object.values(apiStatus).some(Boolean)) {
+                toast('API 키를 먼저 설정하세요. 설정 버튼을 클릭하세요.', 'error');
+                openSettingsModal();
+                return;
+            }
+
+            setLoading(true);
+            try {
+                const res = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        topic: topic,
+                        ai_provider: selectedAI,
+                        category: document.getElementById('category').value,
+                        duration: document.getElementById('duration').value,
+                        tone: document.getElementById('tone').value,
+                        structure: document.getElementById('structure').value,
+                        audience_age: document.getElementById('audienceAge').value,
+                        audience_gender: document.getElementById('audienceGender').value,
+                        audience_persona: document.getElementById('audiencePersona').value,
+                        hook_style: document.getElementById('hookStyle').value,
+                        cta_type: document.getElementById('ctaType').value,
+                        custom_instructions: document.getElementById('customInstructions').value,
+                        writer_id: document.getElementById('writerSelect').value || null,
+                        auto_split_scenes: document.getElementById('autoSplit').checked
+                    })
+                });
+                
+                // HTTP 상태 코드별 에러 처리
+                if (!res.ok) {
+                    handleApiError(res.status, '대본 생성');
+                    setLoading(false);
+                    return;
+                }
+                
+                const data = await res.json();
+                if (data.success) {
+                    currentScript = data.script;
+                    document.getElementById('editor').innerText = data.script;
+                    document.getElementById('charCount').textContent = data.script.length + '자';
+                    approved = false;
+                    if (data.scenes && data.scenes.length) {
+                        scenes = data.scenes;
+                        renderScenes();
+                    }
+                    toast('대본 생성 완료!');
+                } else {
+                    // 서버 응답 에러 메시지에서 상태 코드 추출 시도
+                    const errorMsg = data.error || '';
+                    if (errorMsg.includes('429') || errorMsg.toLowerCase().includes('rate') || errorMsg.toLowerCase().includes('quota')) {
+                        handleApiError(429, '대본 생성');
+                    } else if (errorMsg.includes('401') || errorMsg.toLowerCase().includes('auth') || errorMsg.toLowerCase().includes('key')) {
+                        handleApiError(401, '대본 생성');
+                    } else {
+                        toast(data.error || '생성 실패', 'error');
+                    }
+                }
+            } catch (e) {
+                toast('네트워크 오류: ' + e.message, 'error');
+            }
+            setLoading(false);
+        }
+
+        function setLoading(loading) {
+            document.getElementById('generateBtn').disabled = loading;
+            document.getElementById('genText').style.display = loading ? 'none' : 'inline';
+            document.getElementById('genSpinner').style.display = loading ? 'inline-block' : 'none';
+        }
+
+        // ============================================
+        // Script Editing
+        // ============================================
+        function approveScript() {
+            const text = document.getElementById('editor').innerText;
+            if (!text || text.includes('주제를 입력')) {
+                toast('대본이 없습니다', 'error');
+                return;
+            }
+            currentScript = text;
+            approved = true;
+            toast('검수 완료! 이제 장면분할을 할 수 있습니다.');
+        }
+
+        function copyScript() {
+            const text = document.getElementById('editor').innerText;
+            navigator.clipboard.writeText(text);
+            toast('클립보드에 복사되었습니다!');
+        }
+
+        function openEditModal() {
+            document.getElementById('editModal').classList.add('show');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('show');
+        }
+
+        function editScript() {
+            const text = document.getElementById('editor').innerText;
+            if (!text || text.includes('주제를 입력')) {
+                toast('수정할 대본이 없습니다', 'error');
+                return;
+            }
+            openEditModal();
+        }
+
+        async function applyEdit() {
+            const feedback = document.getElementById('editFeedback').value.trim();
+            if (!feedback) {
+                toast('수정 요청사항을 입력하세요', 'error');
+                return;
+            }
+
+            toast('AI 수정 중...');
+            try {
+                const res = await fetch('/api/edit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        script: document.getElementById('editor').innerText,
+                        feedback: feedback,
+                        ai_provider: selectedAI
+                    })
+                });
+                
+                // HTTP 상태 코드별 에러 처리
+                if (!res.ok) {
+                    handleApiError(res.status, 'AI 수정');
+                    return;
+                }
+                
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('editor').innerText = data.script;
+                    currentScript = data.script;
+                    document.getElementById('charCount').textContent = data.script.length + '자';
+                    approved = false;
+                    closeEditModal();
+                    document.getElementById('editFeedback').value = '';
+                    toast('대본이 수정되었습니다!');
+                } else {
+                    // 서버 응답 에러 메시지에서 상태 코드 추출 시도
+                    const errorMsg = data.error || '';
+                    if (errorMsg.includes('429') || errorMsg.toLowerCase().includes('rate') || errorMsg.toLowerCase().includes('quota')) {
+                        handleApiError(429, 'AI 수정');
+                    } else if (errorMsg.includes('401') || errorMsg.toLowerCase().includes('auth') || errorMsg.toLowerCase().includes('key')) {
+                        handleApiError(401, 'AI 수정');
+                    } else {
+                        toast(data.error || '수정 실패', 'error');
+                    }
+                }
+            } catch (e) {
+                toast('네트워크 오류: ' + e.message, 'error');
+            }
+        }
+
+        // ============================================
+        // Scene Splitting
+        // ============================================
+        function openSplitModal() {
+            if (!approved) {
+                toast('먼저 검수완료를 눌러주세요', 'error');
+                return;
+            }
+            document.getElementById('splitModal').classList.add('show');
+        }
+
+        function closeSplitModal() {
+            document.getElementById('splitModal').classList.remove('show');
+        }
+
+        async function splitScenes(mode, count = null) {
+            if (!approved) {
+                toast('먼저 검수완료를 눌러주세요', 'error');
+                return;
+            }
+
+            toast('장면 분할 중...');
+            try {
+                const res = await fetch('/api/split-scenes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        script: currentScript,
+                        mode: mode,
+                        ai_provider: selectedAI,
+                        scene_count: count
+                    })
+                });
+                
+                // HTTP 상태 코드별 에러 처리
+                if (!res.ok) {
+                    handleApiError(res.status, '장면 분할');
+                    return;
+                }
+                
+                const data = await res.json();
+                if (data.success) {
+                    scenes = data.scenes;
+                    renderScenes();
+                    toast(`${data.count}개 장면으로 분할되었습니다!`);
+                } else {
+                    // 서버 응답 에러 메시지에서 상태 코드 추출 시도
+                    const errorMsg = data.error || '';
+                    if (errorMsg.includes('429') || errorMsg.toLowerCase().includes('rate') || errorMsg.toLowerCase().includes('quota')) {
+                        handleApiError(429, '장면 분할');
+                    } else if (errorMsg.includes('401') || errorMsg.toLowerCase().includes('auth') || errorMsg.toLowerCase().includes('key')) {
+                        handleApiError(401, '장면 분할');
+                    } else {
+                        toast(data.error || '분할 실패', 'error');
+                    }
+                }
+            } catch (e) {
+                toast('네트워크 오류: ' + e.message, 'error');
+            }
+        }
+
+        function applyManualSplit() {
+            const count = parseInt(document.getElementById('sceneCountInput').value);
+            if (count < 2 || count > 50) {
+                toast('2~50 사이의 숫자를 입력하세요', 'error');
+                return;
+            }
+            closeSplitModal();
+            splitScenes('manual', count);
+        }
+
+        function renderScenes() {
+            const container = document.getElementById('scenesContainer');
+            document.getElementById('sceneCount').textContent = scenes.length + '개';
+            document.getElementById('exportBtn').disabled = scenes.length === 0;
+
+            if (!scenes.length) {
+                container.innerHTML = '<div class="placeholder"><div style="font-size:2rem;">🎬</div>대본 검수 후 장면분할</div>';
+                return;
+            }
+
+            container.innerHTML = scenes.map(s => `
+                <div class="scene-card">
+                    <div class="scene-header">
+                        <span class="scene-id">장면 ${s.scene_id}</span>
+                        <span class="scene-meta">${s.emotion || 'neutral'}</span>
+                    </div>
+                    <div class="scene-text">${s.script_text || s.text || ''}</div>
+                    ${s.keywords && s.keywords.length ? `<div style="margin-top:0.5rem;display:flex;gap:0.3rem;flex-wrap:wrap;">${s.keywords.map(k => `<span style="font-size:0.65rem;background:var(--gold);color:#000;padding:0.1rem 0.4rem;border-radius:0.2rem;">${k}</span>`).join('')}</div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function exportScenes() {
+            if (!scenes.length) {
+                toast('내보낼 장면이 없습니다', 'error');
+                return;
+            }
+            
+            // 순수 분할 대본 출력 - M-07, M-08, M-09에서 각자 프롬프트 생성
+            const data = {
+                project_id: `proj_${Date.now()}`,
+                title: document.getElementById('topic').value || '무제',
+                total_scenes: scenes.length,
+                scenes: scenes.map(s => ({
+                    scene_id: s.scene_id,
+                    script_text: s.script_text || s.text || '',
+                    keywords: s.keywords || [],
+                    emotion: s.emotion || 'neutral'
+                })),
+                metadata: {
+                    generated_at: new Date().toISOString(),
+                    ai_provider: selectedAI,
+                    source: 'm06_script',
+                    version: '2.0'
+                }
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `script_scenes_${Date.now()}.json`;
+            a.click();
+            toast('JSON 파일로 내보내기 완료!');
+        }
+
+        // ============================================
+        // Generate Instructions
+        // ============================================
+        async function generateInstructions() {
+            toast('AI가 지침을 생성 중...');
+            try {
+                const res = await fetch('/api/generate-instructions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ai_provider: selectedAI,
+                        category: document.getElementById('category').value,
+                        tone: document.getElementById('tone').value,
+                        audience_age: document.getElementById('audienceAge').value,
+                        audience_persona: document.getElementById('audiencePersona').value,
+                        hook_style: document.getElementById('hookStyle').value
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const inst = data.instructions;
+                    let text = '';
+                    if (inst.persona) text += `[페르소나]\n${inst.persona}\n\n`;
+                    if (inst.speech_style) text += `[말투]\n${inst.speech_style}\n\n`;
+                    if (inst.environment) text += `[환경]\n${inst.environment}`;
+                    document.getElementById('customInstructions').value = text.trim();
+                    toast('지침이 생성되었습니다!');
+                } else {
+                    toast(data.error || '생성 실패', 'error');
+                }
+            } catch (e) {
+                toast('오류: ' + e.message, 'error');
+            }
+        }
+
+        // ============================================
+        // Toast
+        // ============================================
+        function toast(message, type = 'success') {
+            const el = document.getElementById('toast');
+            el.innerHTML = (type === 'success' ? '✅ ' : '❌ ') + message;
+            el.className = 'toast show';
+            setTimeout(() => el.classList.remove('show'), 3000);
+        }
+    </script>
+</body>
+</html>
