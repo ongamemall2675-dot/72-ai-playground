@@ -1,0 +1,68 @@
+{
+  "name": "Script Generator - 간단한 대본 생성",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "script-webhook",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "script-generator-webhook"
+    },
+    {
+      "parameters": {
+        "url": "http://152.42.210.15:8003/webhook/script",
+        "authentication": "none",
+        "requestMethod": "POST",
+        "jsonParameters": true,
+        "options": {
+          "timeout": 120000
+        },
+        "bodyParametersJson": "={\n  \"topic\": \"{{ $json.body.topic }}\",\n  \"ai_provider\": \"{{ $json.body.ai_provider || 'gemini' }}\",\n  \"category\": \"{{ $json.body.category || 'education' }}\",\n  \"duration\": \"{{ $json.body.duration || '5min' }}\",\n  \"structure\": \"{{ $json.body.structure || 'hook_develop_resolve' }}\",\n  \"tone\": \"{{ $json.body.tone || 'friendly' }}\",\n  \"auto_split_scenes\": {{ $json.body.auto_split_scenes || true }}\n}"
+      },
+      "name": "Script Generator API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      },
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [690, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Script Generator API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Script Generator API": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

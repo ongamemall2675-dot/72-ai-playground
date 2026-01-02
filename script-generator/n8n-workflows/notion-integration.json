@@ -1,0 +1,176 @@
+{
+    "name": "Script Generator - Notion 통합",
+    "nodes": [
+        {
+            "parameters": {
+                "resource": "databasePage",
+                "databaseId": "YOUR_DATABASE_ID",
+                "simple": false,
+                "options": {}
+            },
+            "name": "Notion Trigger",
+            "type": "n8n-nodes-base.notionTrigger",
+            "typeVersion": 1,
+            "position": [
+                250,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "url": "http://152.42.210.15:8003/webhook/script",
+                "authentication": "none",
+                "requestMethod": "POST",
+                "jsonParameters": true,
+                "options": {
+                    "timeout": 120000
+                },
+                "bodyParametersJson": "={\n  \"topic\": \"{{ $json.properties.Topic?.title[0]?.plain_text }}\",\n  \"ai_provider\": \"gemini\",\n  \"category\": \"{{ $json.properties.Category?.select?.name || 'education' }}\",\n  \"duration\": \"{{ $json.properties.Duration?.select?.name || '5min' }}\",\n  \"tone\": \"{{ $json.properties.Tone?.select?.name || 'friendly' }}\",\n  \"auto_split_scenes\": true\n}"
+            },
+            "name": "Script Generator API",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 3,
+            "position": [
+                470,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "resource": "page",
+                "pageId": "={{ $('Notion Trigger').item.json.id }}",
+                "properties": {
+                    "property": [
+                        {
+                            "key": "Script",
+                            "textContent": "={{ $json.script }}"
+                        },
+                        {
+                            "key": "AI Provider",
+                            "textContent": "={{ $json.metadata.ai_provider }}"
+                        },
+                        {
+                            "key": "Scene Count",
+                            "numberValue": "={{ $json.scenes ? $json.scenes.length : 0 }}"
+                        },
+                        {
+                            "key": "Status",
+                            "selectValue": "Generated"
+                        },
+                        {
+                            "key": "Generated At",
+                            "dateValue": "={{ $json.metadata.generated_at }}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "name": "Notion - 업데이트",
+            "type": "n8n-nodes-base.notion",
+            "typeVersion": 2,
+            "position": [
+                690,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "boolean": [
+                        {
+                            "value1": "={{ $json.scenes && $json.scenes.length > 0 }}",
+                            "value2": true
+                        }
+                    ]
+                }
+            },
+            "name": "장면 분할 여부",
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 1,
+            "position": [
+                910,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "resource": "page",
+                "databaseId": "YOUR_SCENES_DATABASE_ID",
+                "properties": {
+                    "property": [
+                        {
+                            "key": "Scene ID",
+                            "numberValue": "={{ $json.scene_id }}"
+                        },
+                        {
+                            "key": "Script Text",
+                            "textContent": "={{ $json.script_text }}"
+                        },
+                        {
+                            "key": "Keywords",
+                            "multiSelectValue": "={{ $json.keywords.join(',') }}"
+                        },
+                        {
+                            "key": "Emotion",
+                            "selectValue": "={{ $json.emotion }}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "name": "Notion - 장면 생성",
+            "type": "n8n-nodes-base.notion",
+            "typeVersion": 2,
+            "position": [
+                1130,
+                200
+            ]
+        }
+    ],
+    "connections": {
+        "Notion Trigger": {
+            "main": [
+                [
+                    {
+                        "node": "Script Generator API",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Script Generator API": {
+            "main": [
+                [
+                    {
+                        "node": "Notion - 업데이트",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Notion - 업데이트": {
+            "main": [
+                [
+                    {
+                        "node": "장면 분할 여부",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "장면 분할 여부": {
+            "main": [
+                [
+                    {
+                        "node": "Notion - 장면 생성",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}

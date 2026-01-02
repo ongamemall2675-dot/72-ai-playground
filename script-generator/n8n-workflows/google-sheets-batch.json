@@ -1,0 +1,158 @@
+{
+    "name": "Script Generator - Google Sheets 일괄 처리",
+    "nodes": [
+        {
+            "parameters": {
+                "rule": {
+                    "interval": [
+                        {
+                            "field": "hours",
+                            "hoursInterval": 1
+                        }
+                    ]
+                }
+            },
+            "name": "Schedule Trigger",
+            "type": "n8n-nodes-base.scheduleTrigger",
+            "typeVersion": 1,
+            "position": [
+                250,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "read",
+                "sheetId": "YOUR_SHEET_ID",
+                "range": "Sheet1!A2:B100",
+                "options": {}
+            },
+            "name": "Google Sheets - 읽기",
+            "type": "n8n-nodes-base.googleSheets",
+            "typeVersion": 3,
+            "position": [
+                470,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "url": "http://152.42.210.15:8003/webhook/script",
+                "authentication": "none",
+                "requestMethod": "POST",
+                "jsonParameters": true,
+                "options": {
+                    "timeout": 120000,
+                    "batching": {
+                        "batch": {
+                            "batchSize": 1,
+                            "batchInterval": 10000
+                        }
+                    }
+                },
+                "bodyParametersJson": "={\n  \"topic\": \"{{ $json.topic }}\",\n  \"ai_provider\": \"gemini\",\n  \"category\": \"{{ $json.category || 'education' }}\",\n  \"duration\": \"5min\",\n  \"auto_split_scenes\": true\n}"
+            },
+            "name": "Script Generator API",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 3,
+            "position": [
+                690,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "keepOnlySet": true,
+                "values": {
+                    "string": [
+                        {
+                            "name": "topic",
+                            "value": "={{ $json.metadata.topic }}"
+                        },
+                        {
+                            "name": "script",
+                            "value": "={{ $json.script }}"
+                        },
+                        {
+                            "name": "scene_count",
+                            "value": "={{ $json.scenes ? $json.scenes.length : 0 }}"
+                        },
+                        {
+                            "name": "generated_at",
+                            "value": "={{ $json.metadata.generated_at }}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "name": "데이터 정리",
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 2,
+            "position": [
+                910,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "append",
+                "sheetId": "YOUR_SHEET_ID",
+                "range": "Results!A:D",
+                "options": {}
+            },
+            "name": "Google Sheets - 쓰기",
+            "type": "n8n-nodes-base.googleSheets",
+            "typeVersion": 3,
+            "position": [
+                1130,
+                300
+            ]
+        }
+    ],
+    "connections": {
+        "Schedule Trigger": {
+            "main": [
+                [
+                    {
+                        "node": "Google Sheets - 읽기",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Google Sheets - 읽기": {
+            "main": [
+                [
+                    {
+                        "node": "Script Generator API",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Script Generator API": {
+            "main": [
+                [
+                    {
+                        "node": "데이터 정리",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "데이터 정리": {
+            "main": [
+                [
+                    {
+                        "node": "Google Sheets - 쓰기",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}
