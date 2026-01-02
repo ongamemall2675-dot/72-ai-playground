@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎙️ Smart TTS Studio | AI 음성 생성</title>
+    <meta name="description" content="AI가 대본을 분석하여 최적의 TTS 설정을 추천하는 지능형 음성 생성 스튜디오">
+
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Background Effects -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+
+    <!-- Main Container -->
+    <div class="app-container">
+
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">🎙️</span>
+                <div class="logo-text">
+                    <h1>Smart TTS Studio</h1>
+                    <span class="logo-subtitle">AI 음성 생성 스튜디오</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="api-status" id="apiStatus">
+                    <span class="status-dot"></span>
+                    <span>API 연결 확인 중...</span>
+                </div>
+                <button class="btn btn-icon" id="apiSettingsBtn" title="API 설정">
+                    <i class="fas fa-key"></i>
+                </button>
+                <button class="btn btn-icon" id="helpBtn" title="도움말">
+                    <i class="fas fa-question-circle"></i>
+                </button>
+                <button class="btn btn-icon" id="historyBtn" title="히스토리">
+                    <i class="fas fa-history"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- Step 1: Script Input -->
+            <section class="section script-section">
+                <div class="section-header">
+                    <span class="section-icon">📝</span>
+                    <h2>대본 입력</h2>
+                    <span class="step-badge">Step 1</span>
+                </div>
+                <div class="script-input-wrapper">
+                    <textarea id="scriptInput" class="script-textarea" placeholder="음성으로 변환할 대본을 입력하세요...
+
+※ 긴 대본은 자동으로 3,000자 단위로 분할되어 생성됩니다.
+※ 의미 단위(문장, 문단)를 기준으로 자연스럽게 분할됩니다."></textarea>
+                    <div class="script-footer">
+                        <div class="script-info">
+                            <span class="char-count"><span id="charCount">0</span> / 10000 자</span>
+                            <span class="segment-info" id="segmentInfo"></span>
+                        </div>
+                        <button class="btn btn-primary btn-analyze" id="analyzeBtn">
+                            <i class="fas fa-magic"></i>
+                            <span>AI 분석 시작</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Step 2: AI Recommendations -->
+            <section class="section recommendations-section" id="recommendationsSection">
+                <div class="section-header">
+                    <span class="section-icon">🤖</span>
+                    <h2>AI 추천 스타일</h2>
+                    <span class="step-badge">Step 2</span>
+                </div>
+
+                <!-- Analysis Result -->
+                <div class="analysis-result" id="analysisResult">
+                    <div class="analysis-item">
+                        <span class="analysis-label">감지된 톤</span>
+                        <span class="analysis-value" id="detectedTone">-</span>
+                    </div>
+                    <div class="analysis-item">
+                        <span class="analysis-label">주요 감정</span>
+                        <span class="analysis-value" id="detectedEmotion">-</span>
+                    </div>
+                    <div class="analysis-item">
+                        <span class="analysis-label">목적</span>
+                        <span class="analysis-value" id="detectedPurpose">-</span>
+                    </div>
+                    <div class="analysis-item">
+                        <span class="analysis-label">권장 속도</span>
+                        <span class="analysis-value" id="detectedPace">-</span>
+                    </div>
+                </div>
+
+                <!-- Recommendation Cards -->
+                <div class="recommendation-cards" id="recommendationCards">
+                    <div class="recommendation-placeholder">
+                        <i class="fas fa-wand-magic-sparkles"></i>
+                        <p>대본을 입력하고 "AI 분석 시작" 버튼을 클릭하면<br>최적의 TTS 스타일 3가지를 추천해드립니다.</p>
+                    </div>
+                </div>
+
+                <!-- Custom Mix Toggle -->
+                <div class="custom-mix-toggle">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="enableCustomMix">
+                        <span class="checkmark"></span>
+                        <span>추천 프롬프트 + 고급 옵션 믹스 모드</span>
+                    </label>
+                    <p class="mix-hint">AI 추천 프롬프트를 기반으로 고급 옵션에서 세부 설정을 조정할 수 있습니다.</p>
+                </div>
+            </section>
+
+            <!-- Step 3: Advanced Options (Accordion) -->
+            <section class="section advanced-section" id="advancedSection">
+                <div class="section-header">
+                    <span class="section-icon">🎚️</span>
+                    <h2>고급 옵션</h2>
+                    <span class="optional-badge">선택사항</span>
+                </div>
+
+                <div class="accordion-container">
+
+                    <!-- TTS Service Selection -->
+                    <div class="accordion-item open" data-accordion="service">
+                        <button class="accordion-header">
+                            <span class="accordion-icon">🔌</span>
+                            <span class="accordion-title">TTS 서비스 & 모델 선택</span>
+                            <span class="accordion-value" id="selectedServiceLabel">Google AI Studio</span>
+                            <i class="fas fa-chevron-down accordion-arrow"></i>
+                        </button>
+                        <div class="accordion-content">
+                            <div class="service-grid">
+                                <label class="service-card active" data-service="google">
+                                    <input type="radio" name="ttsService" value="google" checked>
+                                    <div class="service-card-content">
+                                        <img src="https://www.gstatic.com/lamda/images/gemini_sparkle_v002_d4735304ff6292a690345.svg"
+                                            alt="Google" class="service-logo">
+                                        <span class="service-name">Google AI Studio</span>
+                                        <span class="service-desc">Gemini TTS, 자연어 프롬프트 지원</span>
+                                    </div>
+                                </label>
+                                <label class="service-card" data-service="elevenlabs">
+                                    <input type="radio" name="ttsService" value="elevenlabs">
+                                    <div class="service-card-content">
+                                        <i class="fas fa-wave-square service-icon"></i>
+                                        <span class="service-name">ElevenLabs</span>
+                                        <span class="service-desc">최고 품질, 한국어 최적화</span>
+                                    </div>
+                                </label>
+                                <label class="service-card" data-service="openai">
+                                    <input type="radio" name="ttsService" value="openai">
+                                    <div class="service-card-content">
+                                        <i class="fas fa-robot service-icon"></i>
+                                        <span class="service-name">OpenAI TTS</span>
+                                        <span class="service-desc">안정적 품질, 다국어 지원</span>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <!-- Model & Voice Selection -->
+                            <div class="model-voice-section">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="form-label">모델 선택</label>
+                                        <select class="form-select" id="modelSelect">
+                                            <!-- Dynamically populated based on service -->
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">음성 선택</label>
+                                        <select class="form-select" id="voiceSelect">
+                                            <!-- Dynamically populated based on service -->
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="voice-preview" id="voicePreview">
+                                    <!-- Voice description -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Generated Prompt -->
+                    <div class="accordion-item" data-accordion="prompt">
+                        <button class="accordion-header">
+                            <span class="accordion-icon">✨</span>
+                            <span class="accordion-title">AI 생성 프롬프트</span>
+                            <span class="accordion-value">영문/한글</span>
+                            <i class="fas fa-chevron-down accordion-arrow"></i>
+                        </button>
+                        <div class="accordion-content">
+                            <div class="prompt-container">
+                                <div class="prompt-box">
+                                    <label class="form-label">🇺🇸 영문 프롬프트 (English)</label>
+                                    <textarea class="prompt-textarea" id="promptEnglish"
+                                        placeholder="AI 분석 후 영문 프롬프트가 생성됩니다..."></textarea>
+                                    <button class="btn btn-sm btn-outline copy-btn"
+                                        onclick="copyPrompt('promptEnglish')">
+                                        <i class="fas fa-copy"></i> 복사
+                                    </button>
+                                </div>
+                                <div class="prompt-box">
+                                    <label class="form-label">🇰🇷 한글 프롬프트 (Korean)</label>
+                                    <textarea class="prompt-textarea" id="promptKorean"
+                                        placeholder="AI 분석 후 한글 프롬프트가 생성됩니다..."></textarea>
+                                    <button class="btn btn-sm btn-outline copy-btn"
+                                        onclick="copyPrompt('promptKorean')">
+                                        <i class="fas fa-copy"></i> 복사
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="prompt-edit-toggle">
+                                <label class="checkbox-container">
+                                    <input type="checkbox" id="enablePromptEdit">
+                                    <span class="checkmark"></span>
+                                    <span>프롬프트 직접 수정</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tone & Mood -->
+                    <div class="accordion-item" data-accordion="tone">
+                        <button class="accordion-header">
+                            <span class="accordion-icon">📢</span>
+                            <span class="accordion-title">말투 / 분위기</span>
+                            <span class="accordion-value" id="toneLabel">일반</span>
+                            <i class="fas fa-chevron-down accordion-arrow"></i>
+                        </button>
+                        <div class="accordion-content">
+                            <div class="form-group">
+                                <label class="form-label">스타일 프리셋</label>
+                                <select class="form-select" id="stylePreset">
+                                    <optgroup label="📌 기본 스타일">
+                                        <option value="normal">일반 (Normal) - 중립적인 기본 톤</option>
+                                        <option value="narration">내레이션 (Narration) - 다큐/강의 스타일</option>
+                                    </optgroup>
+                                    <optgroup label="📌 전문적 스타일">
+                                        <option value="professional">전문가 (Professional) - 비즈니스/공식 발표</option>
+                                        <option value="news_anchor">뉴스 앵커 (News Anchor) - 뉴스 리포트</option>
+                                        <option value="medical">의료/과학 (Medical) - 신뢰감 있는 설명</option>
+                                    </optgroup>
+                                    <optgroup label="📌 친근한 스타일">
+                                        <option value="warm_friendly">다정함 (Warm) - 따뜻하고 부드러운 톤</option>
+                                        <option value="conversational">대화체 (Conversational) - 자연스러운 대화</option>
+                                        <option value="caring">케어링 (Caring) - 공감과 배려</option>
+                                    </optgroup>
+                                    <optgroup label="📌 에너지틱 스타일">
+                                        <option value="energetic">활기찬 (Energetic) - 밝고 활발한 톤</option>
+                                        <option value="promotional">홍보/광고 (Promotional) - 마케팅 최적화</option>
+                                        <option value="cheerful">응원 (Cheerful) - 격려하는 느낌</option>
+                                    </optgroup>
+                                    <optgroup label="📌 스토리텔링 스타일">
+                                        <option value="storyteller">이야기꾼 (Storyteller) - 동화 읽기</option>
+                                        <option value="dramatic">드라마틱 (Dramatic) - 감정 강조</option>
+                                        <option value="mysterious">미스터리 (Mysterious) - 긴장감</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="slider-group">
+                                <div class="slider-item">
+                                    <label class="slider-label">
+                                        <span>전문성</span>
+                                        <span class="slider-value" id="professionalismValue">50</span>
+                                    </label>
+                                    <input type="range" class="slider" id="professionalism" min="0" max="100"
+                                        value="50">
+                                </div>
+                                <div class="slider-item">
+                                    <label class="slider-label">
+                                        <span>친근함</span>
+                                        <span class="slider-value" id="friendlinessValue">50</span>
+                                    </label>
+                                    <input type="range" class="slider" id="friendliness" min="0" max="100" value="50">
+                                </div>
+                                <div class="slider-item">
+                                    <label class="slider-label">
+                                        <span>설득력</span>
+                                        <span class="slider-value" id="persuasivenessValue">50</span>
+                                    </label>
+                                    <input type="range" class="slider" id="persuasiveness" min="0" max="100" value="50">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Emotion -->
+                    <div class="accordion-item" data-accordion="emotion">
+                        <button class="accordion-header">
+                            <span class="accordion-icon">💭</span>
+                            <span class="accordion-title">감정 상태</span>
+                            <span class="accordion-value" id="emotionLabel">일반</span>
+                            <i class="fas fa-chevron-down accordion-arrow"></i>
+                        </button>
+                        <div class="accordion-content">
+                            <div class="emotion-grid">
+                                <button class="emotion-btn active" data-emotion="normal" title="일반">
+                                    <span class="emotion-emoji">😐</span>
+                                    <span class="emotion-name">일반</span>
+                                    <span class="emotion-desc">중립적인 기본 감정</span>
+                                </button>
+                                <button class="emotion-btn" data-emotion="happy" title="기쁨">
+                                    <span class="emotion-emoji">😊</span>
+                                    <span class="emotion-name">기쁨</span>
+                                    <span class="emotion-desc">밝고 즐거운 톤</span>
+                                </button>
+                                <button class="emotion-btn" data-emotion="sad" title="슬픔">
+                                    <span class="emotion-emoji">😢</span>
+                                    <span class="emotion-name">슬픔</span>
+                                    <span class="emotion-desc">차분하고 우울한 톤</span>
+                                </button>
+                                <button class="emotion-btn" data-emotion="angry" title="분노">
+                                    <span class="emotion-emoji">😠</span>
+                                    <span class="emotion-name">분노</span>
+                                    <span class="emotion-desc">강하고 격앙된 톤</span>
+                                </button>
+                                <button class="emotion-btn" data-emotion="excited" title="흥분">
+                                    <span class="emotion-emoji">🤩</span>
+                                    <span class="emotion-name">흥분</span>
+                                    <span class="emotion-desc">열정적이고 고조된 톤</span>
+                                </button>
+                                <button class="emotion-btn" data-emotion="calm" title="차분">
+                                    <span class="emotion-emoji">😌</span>
+                                    <span class="emotion-name">차분</span>
+                                    <span class="emotion-desc">평온하고 안정적인 톤</span>
+                                </button>
+                                <button class="emotion-btn" data-emotion="confident" title="자신감">
+                                    <span class="emotion-emoji">😎</span>
+                                    <span class="emotion-name">자신감</span>
+                                    <span class="emotion-desc">당당하고 확신있는 톤</span>
+                                </button>
+                                <button class="emotion-btn" data-emotion="caring" title="배려">
+                                    <span class="emotion-emoji">🤗</span>
+                                    <span class="emotion-name">배려</span>
+                                    <span class="emotion-desc">따뜻하고 공감하는 톤</span>
+                                </button>
+                                <button class="emotion-btn" data-emotion="serious" title="진지">
+                                    <span class="emotion-emoji">🧐</span>
+                                    <span class="emotion-name">진지</span>
+                                    <span class="emotion-desc">엄숙하고 무거운 톤</span>
+                                </button>
+                                <button class="emotion-btn" data-emotion="playful" title="장난">
+                                    <span class="emotion-emoji">😜</span>
+                                    <span class="emotion-name">장난</span>
+                                    <span class="emotion-desc">재미있고 유쾌한 톤</span>
+                                </button>
+                                <button class="emotion-btn" data-emotion="inspiring" title="영감">
+                                    <span class="emotion-emoji">✨</span>
+                                    <span class="emotion-name">영감</span>
+                                    <span class="emotion-desc">동기부여 고취하는 톤</span>
+                                </button>
+                                <button class="emotion-btn" data-emotion="whisper" title="속삭임">
+                                    <span class="emotion-emoji">🤫</span>
+                                    <span class="emotion-name">속삭임</span>
+                                    <span class="emotion-desc">조용하고 은밀한 톤</span>
+                                </button>
+                            </div>
+                            <div class="slider-item" style="margin-top: 1rem;">
+                                <label class="slider-label">
+                                    <span>감정 강도</span>
+                                    <span class="slider-value" id="emotionIntensityValue">50</span>
+                                </label>
+                                <input type="range" class="slider" id="emotionIntensity" min="0" max="100" value="50">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Speed & Timing -->
+                    <div class="accordion-item" data-accordion="speed">
+                        <button class="accordion-header">
+                            <span class="accordion-icon">⏱️</span>
+                            <span class="accordion-title">속도 / 타이밍</span>
+                            <span class="accordion-value" id="speedLabel">1.0x</span>
+                            <i class="fas fa-chevron-down accordion-arrow"></i>
+                        </button>
+                        <div class="accordion-content">
+                            <div class="slider-item">
+                                <label class="slider-label">
+                                    <span>재생 속도</span>
+                                    <span class="slider-value" id="speedValue">1.0x</span>
+                                </label>
+                                <input type="range" class="slider" id="speed" min="50" max="200" value="100" step="5">
+                            </div>
+                            <div class="form-row" style="margin-top: 1rem;">
+                                <div class="form-group">
+                                    <label class="form-label">끊어 읽기</label>
+                                    <div class="toggle-group" id="pauseStrength">
+                                        <button class="toggle-btn" data-value="light">약</button>
+                                        <button class="toggle-btn active" data-value="medium">중</button>
+                                        <button class="toggle-btn" data-value="strong">강</button>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">끝음 조절</label>
+                                    <div class="toggle-group" id="endingTone">
+                                        <button class="toggle-btn" data-value="falling">내림</button>
+                                        <button class="toggle-btn active" data-value="level">유지</button>
+                                        <button class="toggle-btn" data-value="rising">올림</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Technical Settings -->
+                    <div class="accordion-item" data-accordion="technical">
+                        <button class="accordion-header">
+                            <span class="accordion-icon">🔧</span>
+                            <span class="accordion-title">기술 설정</span>
+                            <span class="accordion-value">고급</span>
+                            <i class="fas fa-chevron-down accordion-arrow"></i>
+                        </button>
+                        <div class="accordion-content">
+                            <div class="slider-item">
+                                <label class="slider-label">
+                                    <span>피치 (Pitch)</span>
+                                    <span class="slider-value" id="pitchValue">0</span>
+                                </label>
+                                <input type="range" class="slider" id="pitch" min="-20" max="20" value="0">
+                            </div>
+                            <div class="slider-item elevenlabs-only">
+                                <label class="slider-label">
+                                    <span>Stability (안정성)</span>
+                                    <span class="slider-value" id="stabilityValue">0.50</span>
+                                </label>
+                                <input type="range" class="slider" id="stability" min="0" max="100" value="50">
+                            </div>
+                            <div class="slider-item elevenlabs-only">
+                                <label class="slider-label">
+                                    <span>Similarity Boost (유사도)</span>
+                                    <span class="slider-value" id="similarityValue">0.75</span>
+                                </label>
+                                <input type="range" class="slider" id="similarity" min="0" max="100" value="75">
+                            </div>
+                            <div class="form-row" style="margin-top: 1rem;">
+                                <div class="form-group">
+                                    <label class="form-label">출력 포맷</label>
+                                    <select class="form-select" id="outputFormat">
+                                        <option value="mp3" selected>MP3 (압축, 웹 최적화)</option>
+                                        <option value="wav">WAV (무손실, 고품질)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">샘플레이트</label>
+                                    <select class="form-select" id="sampleRate">
+                                        <option value="16000">16 kHz (표준)</option>
+                                        <option value="24000" selected>24 kHz (고품질)</option>
+                                        <option value="44100">44.1 kHz (CD 품질)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-outline btn-reset" id="resetOptionsBtn">
+                    <i class="fas fa-undo"></i>
+                    기본값으로 초기화
+                </button>
+            </section>
+
+            <!-- Step 4: Generate -->
+            <section class="section generate-section" id="generateSection">
+                <div class="section-header">
+                    <span class="section-icon">🔊</span>
+                    <h2>음성 생성</h2>
+                    <span class="step-badge">Step 3</span>
+                </div>
+
+                <button class="btn btn-generate" id="generateBtn">
+                    <i class="fas fa-play"></i>
+                    <span>음성 생성하기</span>
+                </button>
+
+                <!-- Generation Status -->
+                <div class="generation-status" id="generationStatus">
+                    <div class="status-header">
+                        <div class="status-icon">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </div>
+                        <div class="status-text">
+                            <p class="status-title">음성 생성 중...</p>
+                            <p class="status-desc" id="statusDesc">대본 분석 중</p>
+                        </div>
+                    </div>
+                    <div class="status-progress">
+                        <div class="status-progress-bar" id="progressBar"></div>
+                    </div>
+                    <div class="segment-progress" id="segmentProgress">
+                        <!-- Segment progress will be shown here -->
+                    </div>
+                </div>
+
+                <!-- Generated Audio Results -->
+                <div class="audio-results" id="audioResults">
+                    <div class="results-header">
+                        <h3>생성된 음성 (<span id="totalSegments">0</span>개 세그먼트)</h3>
+                        <div class="results-actions">
+                            <button class="btn btn-outline" id="playAllBtn">
+                                <i class="fas fa-play"></i> 전체 재생
+                            </button>
+                            <button class="btn btn-primary" id="downloadAllBtn">
+                                <i class="fas fa-download"></i> 일괄 다운로드
+                            </button>
+                        </div>
+                    </div>
+                    <div class="segment-list" id="segmentList">
+                        <!-- Generated segments will appear here -->
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>© 2025 Smart TTS Studio | Powered by RAG Backend Server</p>
+        </footer>
+    </div>
+
+    <!-- API Settings Modal -->
+    <div class="modal-overlay" id="apiSettingsModal">
+        <div class="modal modal-lg">
+            <div class="modal-header">
+                <h3>🔑 API 설정</h3>
+                <button class="modal-close" id="closeApiSettingsModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="api-settings-tabs">
+                    <button class="tab-btn active" data-tab="connection">연결 설정</button>
+                    <button class="tab-btn" data-tab="keys">API 키 관리</button>
+                    <button class="tab-btn" data-tab="guide">사용 가이드</button>
+                </div>
+
+                <!-- Connection Tab -->
+                <div class="tab-content active" id="tab-connection">
+                    <div class="form-group">
+                        <label class="form-label">RAG 백엔드 서버 URL</label>
+                        <div class="input-with-btn">
+                            <input type="text" class="form-input" id="ragServerUrl" value="http://localhost:8001">
+                            <button class="btn btn-outline" id="testConnectionBtn">
+                                <i class="fas fa-plug"></i> 연결 테스트
+                            </button>
+                        </div>
+                        <div class="connection-status" id="connectionStatus"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">기본 언어</label>
+                        <select class="form-select" id="defaultLanguage">
+                            <option value="ko" selected>한국어 (Korean)</option>
+                            <option value="en">English</option>
+                            <option value="ja">日本語</option>
+                            <option value="zh">中文</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">대본 분할 설정</label>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label-sm">최대 분할 글자수</label>
+                                <select class="form-select" id="maxSegmentLength">
+                                    <option value="1500">1,500자</option>
+                                    <option value="2000">2,000자</option>
+                                    <option value="2500">2,500자</option>
+                                    <option value="3000" selected>3,000자</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label-sm">분할 기준</label>
+                                <select class="form-select" id="segmentMethod">
+                                    <option value="semantic" selected>의미 단위 (권장)</option>
+                                    <option value="sentence">문장 단위</option>
+                                    <option value="paragraph">문단 단위</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- API Keys Tab -->
+                <div class="tab-content" id="tab-keys">
+                    <p class="tab-desc">API 키는 RAG 백엔드 서버에 안전하게 저장됩니다.</p>
+
+                    <div class="api-key-group">
+                        <div class="api-key-header">
+                            <img src="https://www.gstatic.com/lamda/images/gemini_sparkle_v002_d4735304ff6292a690345.svg"
+                                alt="Google" class="api-key-logo">
+                            <span>Google AI Studio</span>
+                            <span class="key-status" id="googleKeyStatus">미등록</span>
+                        </div>
+                        <div class="input-with-btn">
+                            <input type="password" class="form-input" id="googleApiKey"
+                                placeholder="Google AI Studio API Key">
+                            <button class="btn btn-outline" onclick="testApiKey('google')">
+                                <i class="fas fa-check"></i> 테스트
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="api-key-group">
+                        <div class="api-key-header">
+                            <i class="fas fa-wave-square api-key-icon"></i>
+                            <span>ElevenLabs</span>
+                            <span class="key-status" id="elevenlabsKeyStatus">미등록</span>
+                        </div>
+                        <div class="input-with-btn">
+                            <input type="password" class="form-input" id="elevenlabsApiKey"
+                                placeholder="ElevenLabs API Key">
+                            <button class="btn btn-outline" onclick="testApiKey('elevenlabs')">
+                                <i class="fas fa-check"></i> 테스트
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="api-key-group">
+                        <div class="api-key-header">
+                            <i class="fas fa-robot api-key-icon"></i>
+                            <span>OpenAI</span>
+                            <span class="key-status" id="openaiKeyStatus">미등록</span>
+                        </div>
+                        <div class="input-with-btn">
+                            <input type="password" class="form-input" id="openaiApiKey" placeholder="OpenAI API Key">
+                            <button class="btn btn-outline" onclick="testApiKey('openai')">
+                                <i class="fas fa-check"></i> 테스트
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Guide Tab -->
+                <div class="tab-content" id="tab-guide">
+                    <div class="guide-section">
+                        <h4>📋 Smart TTS Studio 사용 가이드</h4>
+
+                        <div class="guide-step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h5>대본 입력</h5>
+                                <p>음성으로 변환할 대본을 입력합니다. 긴 대본은 자동으로 3,000자 단위로 분할됩니다.</p>
+                            </div>
+                        </div>
+
+                        <div class="guide-step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h5>AI 분석</h5>
+                                <p>"AI 분석 시작" 버튼을 클릭하면 대본의 톤, 감정, 목적을 분석하여 3가지 스타일을 추천합니다.</p>
+                            </div>
+                        </div>
+
+                        <div class="guide-step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h5>스타일 선택</h5>
+                                <p>추천된 스타일 중 하나를 선택하거나, "믹스 모드"를 활성화하여 프롬프트와 고급 옵션을 조합할 수 있습니다.</p>
+                            </div>
+                        </div>
+
+                        <div class="guide-step">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <h5>음성 생성</h5>
+                                <p>"음성 생성하기" 버튼을 클릭하면 선택한 설정으로 TTS가 생성됩니다. 분할된 음성은 개별 또는 일괄 다운로드 가능합니다.</p>
+                            </div>
+                        </div>
+
+                        <div class="guide-tips">
+                            <h5>💡 팁</h5>
+                            <ul>
+                                <li>긴 대본은 의미 단위로 분할되어 자연스러운 음성이 생성됩니다.</li>
+                                <li>AI 추천 프롬프트는 영문/한글 동시 생성되며, TTS 서비스에 최적화됩니다.</li>
+                                <li>API 키는 백엔드 서버에 안전하게 저장되어 관리됩니다.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancelApiSettingsBtn">취소</button>
+                <button class="btn btn-primary" id="saveApiSettingsBtn">
+                    <i class="fas fa-save"></i> 저장
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div class="modal-overlay" id="historyModal">
+        <div class="modal modal-lg">
+            <div class="modal-header">
+                <h3>📜 생성 히스토리</h3>
+                <button class="modal-close" id="closeHistoryModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="history-list" id="historyList">
+                    <div class="history-empty">
+                        <i class="fas fa-clock"></i>
+                        <p>아직 생성된 음성이 없습니다</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div class="modal-overlay" id="helpModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>❓ 도움말</h3>
+                <button class="modal-close" id="closeHelpModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="help-content">
+                    <h4>Smart TTS Studio란?</h4>
+                    <p>AI가 대본을 분석하여 최적의 TTS 설정을 추천하는 지능형 음성 생성 스튜디오입니다.</p>
+
+                    <h4>지원 TTS 서비스</h4>
+                    <ul>
+                        <li><strong>Google AI Studio</strong>: Gemini TTS, 자연어 프롬프트 지원</li>
+                        <li><strong>ElevenLabs</strong>: 최고 품질, 한국어 음성 다수 보유</li>
+                        <li><strong>OpenAI TTS</strong>: 안정적인 품질, 다국어 지원</li>
+                    </ul>
+
+                    <h4>주요 기능</h4>
+                    <ul>
+                        <li>AI 대본 분석 및 3가지 스타일 추천</li>
+                        <li>영문/한글 프롬프트 동시 생성</li>
+                        <li>긴 대본 자동 분할 (의미 단위)</li>
+                        <li>분할 음성 개별/일괄 다운로드</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+</body>
+
+</html>
