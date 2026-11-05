@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>혜화 부동산 메타버스</title>
+<script src="https://cdn.jsdelivr.net/npm/cesium@1.120.0/Build/Cesium/Cesium.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/cesium@1.120.0/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+<style>
+:root{--bg:#0f172a;--panel:rgba(15,23,42,.92);--fg:#e2e8f0;--accent:#38bdf8;--muted:#94a3b8}
+html,body,#map{margin:0;width:100%;height:100%;background:var(--bg);color:var(--fg);font-family:'Pretendard','Noto Sans KR',sans-serif}
+#ui{position:absolute;top:12px;left:12px;width:300px;max-width:calc(100% - 32px);max-height:calc(100% - 24px);overflow:auto;background:var(--panel);border-radius:12px;padding:14px;box-sizing:border-box;z-index:10}
+h1{font-size:17px;margin:0 0 4px}small{color:var(--muted)}
+input,select,button{width:100%;box-sizing:border-box;padding:8px;margin:4px 0;border-radius:8px;border:1px solid #334155;background:#1e293b;color:var(--fg)}
+button{background:var(--accent);color:#0f172a;font-weight:700;cursor:pointer;border:0}
+.item{padding:8px;border-radius:8px;background:#1e293b;margin:6px 0;cursor:pointer}.item:hover{outline:1px solid var(--accent)}
+.item b{color:var(--accent)}
+#detail{display:none;margin-top:10px;padding:10px;border-radius:8px;background:#0b1220;border:1px solid var(--accent)}
+.cesium-viewer-bottom{display:none}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="ui">
+  <h1>🏙 혜화역 부동산 메타버스</h1>
+  <small>V월드 3D 지도 · 혜화역(4호선) 반경 매물</small>
+  <input id="key" placeholder="V월드 API 인증키 (vworld.kr 발급)">
+  <button id="applyKey">V월드 위성지도 + 3D 건물 적용</button>
+  <small id="bstat"></small>
+  <select id="filter"><option value="">전체 매물</option><option>아파트</option><option>오피스텔</option><option>상가</option><option>원룸</option></select>
+  <button id="fly" style="background:#334155;color:var(--fg)">📍 혜화역으로 이동 / 회전 투어</button>
+  <div id="list"></div>
+  <div id="detail"></div>
+</div>
+<script>
+const STATION={lon:127.0018,lat:37.5822};
+// 샘플 매물(가상 데이터) — 실제 매물로 교체하세요
+const PROPS=[
+ {n:'대학로 오피스텔 A',t:'오피스텔',lon:127.0028,lat:37.5830,f:15,p:'전세 2억 3천',a:'24㎡',d:'혜화역 2번 출구 도보 3분'},
+ {n:'마로니에 상가',t:'상가',lon:127.0030,lat:37.5810,f:5,p:'보증금 5천/월 350',a:'66㎡',d:'마로니에공원 앞 1층, 유동인구 최상'},
+ {n:'명륜동 아파트',t:'아파트',lon:126.9985,lat:37.5865,f:12,p:'매매 9억 5천',a:'84㎡',d:'성균관대 인접, 학군 수요'},
+ {n:'혜화동 원룸',t:'원룸',lon:127.0010,lat:37.5868,f:4,p:'보증금 1천/월 65',a:'19㎡',d:'학생 수요 풍부'},
+ {n:'이화동 상가주택',t:'상가',lon:127.0055,lat:37.5785,f:4,p:'매매 18억',a:'대지 132㎡',d:'낙산공원 벽화마을 인근'},
+ {n:'동숭동 오피스텔 B',t:'오피스텔',lon:127.0045,lat:37.5840,f:18,p:'월세 1천/85',a:'28㎡',d:'공연장 밀집 지역'},
+ {n:'창경궁로 아파트',t:'아파트',lon:126.9965,lat:37.5805,f:15,p:'전세 5억 2천',a:'59㎡',d:'창경궁 조망'},
+];
+const COLORS={'아파트':'#38bdf8','오피스텔':'#a78bfa','상가':'#f59e0b','원룸':'#34d399'};
+const viewer=new Cesium.Viewer('map',{baseLayer:Cesium.ImageryLayer.fromProviderAsync(Promise.resolve(new Cesium.OpenStreetMapImageryProvider({url:'https://tile.openstreetmap.org/'}))),
+ baseLayerPicker:false,geocoder:false,timeline:false,animation:false,homeButton:false,sceneModePicker:false,navigationHelpButton:false,infoBox:false});
+viewer.scene.globe.depthTestAgainstTerrain=false;
+function setVworld(key){
+  viewer.imageryLayers.removeAll();
+  viewer.imageryLayers.addImageryProvider(new Cesium.UrlTemplateImageryProvider({url:`https://api.vworld.kr/req/wmts/1.0.0/${key}/Satellite/{z}/{y}/{x}.jpeg`,maximumLevel:19,credit:'V월드'}));
+  viewer.imageryLayers.addImageryProvider(new Cesium.UrlTemplateImageryProvider({url:`https://api.vworld.kr/req/wmts/1.0.0/${key}/Hybrid/{z}/{y}/{x}.png`,maximumLevel:19}));
+}
+let saved='';try{saved=localStorage.getItem('vwkey')||''}catch(e){}
+const keyEl=document.getElementById('key');keyEl.value=saved;if(saved)setVworld(saved);
+document.getElementById('applyKey').onclick=()=>{const k=keyEl.value.trim();if(!k)return alert('V월드 인증키를 입력하세요');try{localStorage.setItem('vwkey',k)}catch(e){}setVworld(k);loadBuildings(k)};
+// ── V월드 3D 건물: 도로명주소 건물(LT_C_SPBD) 폴리곤을 지상층수×3m로 돌출 ──
+const bstat=document.getElementById('bstat');let bldSrc=null;
+function jsonp(url){return new Promise((ok,no)=>{const cb='vw'+Math.random().toString(36).slice(2);const s=document.createElement('script');
+ const t=setTimeout(()=>{cleanup();no(new Error('timeout'))},15000);
+ function cleanup(){clearTimeout(t);delete window[cb];s.remove()}
+ window[cb]=d=>{cleanup();ok(d)};s.onerror=()=>{cleanup();no(new Error('load'))};s.src=url+'&callback='+cb;document.head.appendChild(s)})}
+async function loadBuildings(key){
+ const d=0.006,box=`BOX(${STATION.lon-d},${STATION.lat-d*0.8},${STATION.lon+d},${STATION.lat+d*0.8})`;
+ const feats=[];bstat.textContent='3D 건물 불러오는 중…';
+ try{for(let page=1;page<=10;page++){
+   const u=`https://api.vworld.kr/req/data?service=data&request=GetFeature&data=LT_C_SPBD&key=${key}&domain=${encodeURIComponent(location.origin)}&format=json&size=1000&page=${page}&geometry=true&attribute=true&crs=EPSG:4326&geomFilter=${box}`;
+   const r=await jsonp(u),res=r.response;
+   if(res.status!=='OK'){if(page===1)throw new Error(res.error?res.error.text:res.status);break}
+   feats.push(...res.result.featureCollection.features);
+   if(page>=+res.page.total)break}
+ }catch(e){bstat.textContent='건물 로드 실패: '+e.message+' (인증키·등록 도메인 확인)';return}
+ if(bldSrc)viewer.dataSources.remove(bldSrc);
+ bldSrc=await Cesium.GeoJsonDataSource.load({type:'FeatureCollection',features:feats});
+ bldSrc.entities.values.forEach(e=>{if(!e.polygon)return;const p=e.properties;
+  const fl=Math.max(1,+(p.gro_flo_co&&p.gro_flo_co.getValue())||1);
+  e.polygon.extrudedHeight=fl*3.2;e.polygon.height=0;e.polygon.outline=false;
+  e.polygon.material=Cesium.Color.fromCssColorString('#e2e8f0').withAlpha(.85);
+  e.description=undefined});
+ viewer.dataSources.add(bldSrc);bstat.textContent=`V월드 건물 ${feats.length}동 표시 중`}
+if(saved)loadBuildings(saved);
+// 혜화역 마커
+viewer.entities.add({position:Cesium.Cartesian3.fromDegrees(STATION.lon,STATION.lat,5),point:{pixelSize:14,color:Cesium.Color.fromCssColorString('#3b82f6'),outlineColor:Cesium.Color.WHITE,outlineWidth:3},
+ label:{text:'🚇 혜화역',font:'bold 16px sans-serif',pixelOffset:new Cesium.Cartesian2(0,-24),fillColor:Cesium.Color.WHITE,outlineWidth:3,style:Cesium.LabelStyle.FILL_AND_OUTLINE}});
+viewer.entities.add({position:Cesium.Cartesian3.fromDegrees(STATION.lon,STATION.lat),ellipse:{semiMajorAxis:500,semiMinorAxis:500,material:Cesium.Color.fromCssColorString('#3b82f6').withAlpha(.08),outline:true,outlineColor:Cesium.Color.fromCssColorString('#3b82f6')}});
+// 매물 3D 건물(층수×3m)
+const ents=PROPS.map((p,i)=>{const h=p.f*3,c=Cesium.Color.fromCssColorString(COLORS[p.t]);const d=0.00012;
+ return viewer.entities.add({id:'p'+i,polygon:{hierarchy:Cesium.Cartesian3.fromDegreesArray([p.lon-d,p.lat-d,p.lon+d,p.lat-d,p.lon+d,p.lat+d,p.lon-d,p.lat+d]),extrudedHeight:h,material:c.withAlpha(.75),outline:true,outlineColor:Cesium.Color.WHITE},
+  position:Cesium.Cartesian3.fromDegrees(p.lon,p.lat,h+8),label:{text:`${p.n}\n${p.p}`,font:'13px sans-serif',fillColor:Cesium.Color.WHITE,showBackground:true,backgroundColor:c.withAlpha(.85),distanceDisplayCondition:new Cesium.DistanceDisplayCondition(0,2500)}})});
+const detail=document.getElementById('detail');
+function dist(p){const R=6371e3,r=Math.PI/180,x=(p.lon-STATION.lon)*r*Math.cos(STATION.lat*r),y=(p.lat-STATION.lat)*r;return Math.round(Math.hypot(x,y)*R)}
+function show(i){const p=PROPS[i];detail.style.display='block';
+ detail.innerHTML=`<b style="color:${COLORS[p.t]}">[${p.t}] ${p.n}</b><br>💰 ${p.p}<br>📐 ${p.a} · ${p.f}층<br>🚶 혜화역 직선 ${dist(p)}m (도보 약 ${Math.ceil(dist(p)/67)}분)<br>📝 ${p.d}`;
+ viewer.camera.flyTo({destination:Cesium.Cartesian3.fromDegrees(p.lon,p.lat-0.0035,350),orientation:{pitch:Cesium.Math.toRadians(-35)}});}
+function render(){const f=document.getElementById('filter').value;const L=document.getElementById('list');L.innerHTML='';
+ PROPS.forEach((p,i)=>{const on=!f||p.t===f;ents[i].show=on;if(!on)return;const el=document.createElement('div');el.className='item';
+  el.innerHTML=`<b>${p.n}</b><br><small>${p.t} · ${p.p} · 역까지 ${dist(p)}m</small>`;el.onclick=()=>show(i);L.appendChild(el)})}
+document.getElementById('filter').onchange=render;render();
+new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas).setInputAction(e=>{const o=viewer.scene.pick(e.position);if(o&&o.id&&String(o.id.id).startsWith('p'))show(+o.id.id.slice(1))},Cesium.ScreenSpaceEventType.LEFT_CLICK);
+// 혜화역 회전 투어
+let tour=null;
+function home(){viewer.camera.flyTo({destination:Cesium.Cartesian3.fromDegrees(STATION.lon,STATION.lat-0.012,1100),orientation:{pitch:Cesium.Math.toRadians(-40)}})}
+document.getElementById('fly').onclick=()=>{if(tour){tour();tour=null;return home()}
+ const c=Cesium.Cartesian3.fromDegrees(STATION.lon,STATION.lat);let hd=0;
+ tour=viewer.clock.onTick.addEventListener(()=>{hd+=0.003;viewer.camera.lookAt(c,new Cesium.HeadingPitchRange(hd,Cesium.Math.toRadians(-35),1300))});};
+home();
+</script>
+</body>
+</html>
