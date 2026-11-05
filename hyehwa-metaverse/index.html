@@ -24,7 +24,8 @@ button{background:var(--accent);color:#0f172a;font-weight:700;cursor:pointer;bor
   <h1>🏙 혜화역 부동산 메타버스</h1>
   <small>V월드 3D 지도 · 혜화역(4호선) 반경 매물</small>
   <input id="key" placeholder="V월드 API 인증키 (vworld.kr 발급)">
-  <button id="applyKey">V월드 위성지도 적용</button>
+  <button id="applyKey">V월드 위성지도 + 3D 건물 적용</button>
+  <small id="bstat"></small>
   <select id="filter"><option value="">전체 매물</option><option>아파트</option><option>오피스텔</option><option>상가</option><option>원룸</option></select>
   <button id="fly" style="background:#334155;color:var(--fg)">📍 혜화역으로 이동 / 회전 투어</button>
   <div id="list"></div>
@@ -53,7 +54,32 @@ function setVworld(key){
 }
 let saved='';try{saved=localStorage.getItem('vwkey')||''}catch(e){}
 const keyEl=document.getElementById('key');keyEl.value=saved;if(saved)setVworld(saved);
-document.getElementById('applyKey').onclick=()=>{const k=keyEl.value.trim();if(!k)return alert('V월드 인증키를 입력하세요');try{localStorage.setItem('vwkey',k)}catch(e){}setVworld(k)};
+document.getElementById('applyKey').onclick=()=>{const k=keyEl.value.trim();if(!k)return alert('V월드 인증키를 입력하세요');try{localStorage.setItem('vwkey',k)}catch(e){}setVworld(k);loadBuildings(k)};
+// ── V월드 3D 건물: 도로명주소 건물(LT_C_SPBD) 폴리곤을 지상층수×3m로 돌출 ──
+const bstat=document.getElementById('bstat');let bldSrc=null;
+function jsonp(url){return new Promise((ok,no)=>{const cb='vw'+Math.random().toString(36).slice(2);const s=document.createElement('script');
+ const t=setTimeout(()=>{cleanup();no(new Error('timeout'))},15000);
+ function cleanup(){clearTimeout(t);delete window[cb];s.remove()}
+ window[cb]=d=>{cleanup();ok(d)};s.onerror=()=>{cleanup();no(new Error('load'))};s.src=url+'&callback='+cb;document.head.appendChild(s)})}
+async function loadBuildings(key){
+ const d=0.006,box=`BOX(${STATION.lon-d},${STATION.lat-d*0.8},${STATION.lon+d},${STATION.lat+d*0.8})`;
+ const feats=[];bstat.textContent='3D 건물 불러오는 중…';
+ try{for(let page=1;page<=10;page++){
+   const u=`https://api.vworld.kr/req/data?service=data&request=GetFeature&data=LT_C_SPBD&key=${key}&domain=${encodeURIComponent(location.origin)}&format=json&size=1000&page=${page}&geometry=true&attribute=true&crs=EPSG:4326&geomFilter=${box}`;
+   const r=await jsonp(u),res=r.response;
+   if(res.status!=='OK'){if(page===1)throw new Error(res.error?res.error.text:res.status);break}
+   feats.push(...res.result.featureCollection.features);
+   if(page>=+res.page.total)break}
+ }catch(e){bstat.textContent='건물 로드 실패: '+e.message+' (인증키·등록 도메인 확인)';return}
+ if(bldSrc)viewer.dataSources.remove(bldSrc);
+ bldSrc=await Cesium.GeoJsonDataSource.load({type:'FeatureCollection',features:feats});
+ bldSrc.entities.values.forEach(e=>{if(!e.polygon)return;const p=e.properties;
+  const fl=Math.max(1,+(p.gro_flo_co&&p.gro_flo_co.getValue())||1);
+  e.polygon.extrudedHeight=fl*3.2;e.polygon.height=0;e.polygon.outline=false;
+  e.polygon.material=Cesium.Color.fromCssColorString('#e2e8f0').withAlpha(.85);
+  e.description=undefined});
+ viewer.dataSources.add(bldSrc);bstat.textContent=`V월드 건물 ${feats.length}동 표시 중`}
+if(saved)loadBuildings(saved);
 // 혜화역 마커
 viewer.entities.add({position:Cesium.Cartesian3.fromDegrees(STATION.lon,STATION.lat,5),point:{pixelSize:14,color:Cesium.Color.fromCssColorString('#3b82f6'),outlineColor:Cesium.Color.WHITE,outlineWidth:3},
  label:{text:'🚇 혜화역',font:'bold 16px sans-serif',pixelOffset:new Cesium.Cartesian2(0,-24),fillColor:Cesium.Color.WHITE,outlineWidth:3,style:Cesium.LabelStyle.FILL_AND_OUTLINE}});
