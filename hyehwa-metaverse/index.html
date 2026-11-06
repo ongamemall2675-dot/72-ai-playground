@@ -139,7 +139,7 @@ function useData(d,fresh){PROPS=d.filter(p=>p.lat&&p.lng).map(p=>EXACT&&EXACT[p.
  [...new Set(PROPS.map(p=>p.cat))].sort().forEach(c=>sel.add(new Option(c,c)));sel.value=cur;render();
  const id=+location.hash.slice(1),hp=PROPS.find(p=>p.id===id);if(hp&&!window._opened){window._opened=1;show(hp)}}
 async function boot(){
- try{const c=await (await fetch(ADM+'/sync/pub/config')).json();window.CFG=c;if(c.vworldKey&&!vkey()){try{localStorage.setItem('vwkey',c.vworldKey)}catch(e){}keyEl.placeholder='V월드 키 자동 적용됨 (바꿀 때만 입력)';setVworld(c.vworldKey);loadBuildings(c.vworldKey);$('style').value='vsat'}}catch(e){window.CFG={}}
+ try{const c=await (await fetch(ADM+'/sync/pub/config')).json();window.CFG=c;if(c.vworldKey&&vkey()!==c.vworldKey){try{localStorage.setItem('vwkey',c.vworldKey)}catch(e){}keyEl.placeholder='V월드 키 자동 적용됨 (바꿀 때만 입력)';setVworld(c.vworldKey);loadBuildings(c.vworldKey);$('style').value='vsat'}}catch(e){window.CFG={}}
  try{const r=await fetch(ADM+'/api/mv/coords',{credentials:'include'});if(r.ok){const a=await r.json();EXACT={};a.forEach(x=>EXACT[x.id]=x);$('adm').style.display='block'}}catch(e){}
  try{const c=JSON.parse(localStorage.getItem('h72props2')||'null');if(c)useData(c)}catch(e){}
 fetch(API).then(r=>r.json()).then(d=>{useData(d);try{localStorage.setItem('h72props2',JSON.stringify(d))}catch(e){}})
