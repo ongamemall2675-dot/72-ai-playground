@@ -63,7 +63,6 @@ body.clean #ui{display:none}
   <div class="row"><select id="style"><option value="vbase">기본 지도</option><option value="vcad">지적도 (땅 경계)</option><option value="vsat">위성 사진</option><option value="osm">일반 지도(OSM)</option><option value="dark">야간 지도</option></select>
   <select id="radius"><option value="500">반경 500m</option><option value="250">반경 250m</option><option value="1000">반경 1km</option><option value="0">반경 숨김</option></select></div>
   <input id="maxp" type="number" placeholder="최대 금액 (만원, 매매가·보증금)">
-  <div class="row"><button id="ptour" class="sub">🎬 매물 순회</button></div>
   <div class="row"><button id="clean" class="sub">🎥 촬영 화면 (H)</button><button id="share" class="sub">🔗 링크 복사</button></div>
   <button id="fly" style="background:#334155;color:var(--fg)">📍 혜화역으로 이동 / 회전 투어</button>
   <div id="detail"></div>
@@ -292,9 +291,6 @@ window.routeTo=async (id,play=true)=>{const p=PROPS.find(x=>x.id===id);stopAll()
   if(u>=1){done=true;viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);stopFns=stopFns.filter(f=>f!==stop);rm()}});
  const stop=()=>{done=true;rm()};stopFns.push(stop)};
 let walkOn=false;
-$('ptour').onclick=()=>{stopAll();let i=0;const go=()=>{const c=cells[i++%cells.length];if(!c)return;
- viewer.camera.flyTo({destination:Cesium.Cartesian3.fromDegrees(c.lng,c.lat-0.003,300),orientation:{pitch:Cesium.Math.toRadians(-35)},duration:2.5});
- toast(c.items[0].dong+' · '+(c.items.length>1?c.items.length+'건':priceTxt(c.items[0])),4000)};go();const iv=setInterval(go,5000);stopFns.push(()=>clearInterval(iv))};
 $('clean').onclick=()=>{document.body.classList.add('clean');toast('H 키를 누르면 메뉴가 다시 나옵니다')};
 addEventListener('keydown',e=>{if(e.key.toLowerCase()==='h'&&!walkOn&&e.target.tagName!=='INPUT')document.body.classList.toggle('clean')});
 $('share').onclick=()=>{navigator.clipboard.writeText(location.href).then(()=>toast('링크를 복사했습니다'),()=>toast(location.href,8000))};
