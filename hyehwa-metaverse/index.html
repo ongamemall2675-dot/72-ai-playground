@@ -217,7 +217,7 @@ async function boot(){
  try{const c=JSON.parse(localStorage.getItem('h72props2')||'null');if(c)useData(c)}catch(e){}
 fetch(API).then(r=>r.json()).then(d=>{useData(d);try{localStorage.setItem('h72props2',JSON.stringify(d))}catch(e){}})
  .catch(e=>document.getElementById('cnt').textContent='매물장부 불러오기 실패: '+e.message);}
-new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas).setInputAction(e=>{const o=viewer.scene.pick(e.position);if(o&&o.id&&o.id.id==='office')return openOffice();if(!o&&EXACT)return adminPick(e.position);if(o&&o.id&&/^c\d+$/.test(String(o.id.id)))cellList(cells[+o.id.id.slice(1)])},Cesium.ScreenSpaceEventType.LEFT_CLICK);
+new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas).setInputAction(e=>{const o=viewer.scene.pick(e.position);const oid=o&&o.id&&o.id.id!=null?String(o.id.id):'';if(oid==='office')return openOffice();if(/^c\d+$/.test(oid))return cellList(cells[+oid.slice(1)]);if(EXACT)return adminPick(e.position)},Cesium.ScreenSpaceEventType.LEFT_CLICK);
 // 혜화역 회전 투어
 let tour=null;
 function home(){viewer.camera.flyTo({destination:Cesium.Cartesian3.fromDegrees(STATION.lon,STATION.lat-0.012,1100),orientation:{pitch:Cesium.Math.toRadians(-40)}})}
