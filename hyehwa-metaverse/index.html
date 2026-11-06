@@ -75,7 +75,7 @@ a.cta{background:#394457;color:#d3e3fd;font-weight:600}
   <small>V월드 지도 · 대학로 혜화72공인중개사사무소 공개 매물</small>
   <input id="key" style="display:none" autocomplete="off" placeholder="V월드 API 인증키 (vworld.kr 발급)">
   <button id="applyKey" style="display:none">V월드 위성지도 + 3D 건물 적용</button>
-  <small id="bstat"></small><div id="adm">🔑 관리자 모드: 정확한 위치로 경로·로드뷰를 보여 줍니다 (브리핑용)</div>
+  <small id="bstat"></small><div id="adm">🔑 관리자 모드: 정확한 위치로 경로·로드뷰를 보여 줍니다 (브리핑용)<div style="display:flex;gap:4px;margin-top:6px"><input id="addrQ" placeholder="신규매물 주소 검색 (예: 명륜2가 237, 대학로 100)" style="flex:1;min-width:0;padding:6px 8px;border-radius:6px;border:1px solid #555;background:#1e1e1e;color:#eee" onkeydown="if(event.key==='Enter')addrSearch()"><button onclick="addrSearch()" style="padding:6px 10px;border-radius:6px;border:0;cursor:pointer">🔍</button></div><div id="addrR" style="max-height:180px;overflow:auto"></div></div>
   <div id="types"></div><label style="font-size:13px;display:flex;gap:6px;align-items:center"><input type="checkbox" id="onlyPhoto" style="width:auto;margin:0">📷 사진 있는 매물만</label>
   <select id="deal"><option value="">전체 거래</option><option>매매</option><option>전세</option><option>월세</option></select>
   <small id="cnt">매물장부 불러오는 중…</small>
@@ -168,7 +168,15 @@ let pickEnt=null,embedded=false;
 function embedForm(u){embedded=true;$('card').classList.add('wide');$('p-info').innerHTML='<iframe src="'+u+'" style="width:100%;height:100%;min-height:560px;border:0;border-radius:8px;background:#fff" allow="clipboard-write"></iframe>';
  $('cTitle').innerHTML='<b>✏️ 새 매물 입력</b> <small>(업무관리 · 저장 후 ✕ 로 닫으면 지도에 반영)</small>'}
 async function adminPick(pos){const c=viewer.camera.pickEllipsoid(pos,viewer.scene.globe.ellipsoid);if(!c)return;const g=Cesium.Cartographic.fromCartesian(c);return adminPickAt(Cesium.Math.toDegrees(g.longitude),Cesium.Math.toDegrees(g.latitude))}
-function addHere(id){const x=EXACT&&EXACT[id];if(x&&x.lng)adminPickAt(+x.lng,+x.lat)}
+async function addrSearch(){const q=$('addrQ').value.trim(),R=$('addrR');if(!q)return;R.innerHTML='<small>검색 중…</small>';
+ try{await kakaoLoad();const geo=new kakao.maps.services.Geocoder();let r=await kp(geo.addressSearch.bind(geo),q);
+  if(!r.length)r=await kp(geo.addressSearch.bind(geo),'서울 종로구 '+q);
+  if(!r.length){const ps=new kakao.maps.services.Places();r=(await kp(ps.keywordSearch.bind(ps),q)).map(x=>({x:x.x,y:x.y,address_name:(x.road_address_name||x.address_name)+' · '+x.place_name}))}
+  if(!r.length){R.innerHTML='<small>결과 없음. 동 이름+번지로 다시 검색해 보세요.</small>';return}
+  window._AR=r.slice(0,8);R.innerHTML=window._AR.map((a,i)=>'<div onclick="addrGo('+i+')" style="cursor:pointer;padding:5px 6px;border-bottom:1px solid #333;font-size:12px">📍 '+(a.road_address&&a.address?a.address.address_name+' <small>('+a.road_address.address_name+')</small>':a.address_name)+'</div>').join('');
+  if(window._AR.length===1)addrGo(0)}catch(e){R.innerHTML='<small>검색 실패: '+e.message+'</small>'}}
+function addrGo(i){const a=window._AR[i],lng=+a.x,lat=+a.y;$('addrR').innerHTML='';
+ viewer.camera.flyToBoundingSphere(new Cesium.BoundingSphere(Cesium.Cartesian3.fromDegrees(lng,lat,20),60),{offset:new Cesium.HeadingPitchRange(0,Cesium.Math.toRadians(-45),550),duration:1.5});adminPickAt(lng,lat)}function addHere(id){const x=EXACT&&EXACT[id];if(x&&x.lng)adminPickAt(+x.lng,+x.lat)}
 async function adminPickAt(lng,lat){
  stopAll();const p={office:true,id:'pick',lng,lat};cardP=p;$('card').style.display='flex';
  $('cTitle').innerHTML='<b style="font-size:18px">📍 이 위치에 매물 등록</b><div><small>관리자 전용 · 지도에서 누른 필지</small></div>';
