@@ -6,20 +6,22 @@
 <script src="https://cdn.jsdelivr.net/npm/cesium@1.120.0/Build/Cesium/Cesium.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/cesium@1.120.0/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
 <style>
-:root{--bg:#0f172a;--panel:rgba(15,23,42,.92);--fg:#e2e8f0;--accent:#38bdf8;--muted:#94a3b8}
-html,body,#map{margin:0;width:100%;height:100%;background:var(--bg);color:var(--fg);font-family:'Pretendard','Noto Sans KR',sans-serif}
-#ui{position:absolute;top:12px;left:12px;width:300px;max-width:calc(100% - 32px);max-height:calc(100% - 24px);overflow:auto;background:var(--panel);border-radius:12px;padding:14px;box-sizing:border-box;z-index:10}
-h1{font-size:17px;margin:0 0 4px}small{color:var(--muted)}
-input,select,button{width:100%;box-sizing:border-box;padding:8px;margin:4px 0;border-radius:8px;border:1px solid #334155;background:#1e293b;color:var(--fg)}
-button{background:var(--accent);color:#0f172a;font-weight:700;cursor:pointer;border:0}
-.item{padding:8px;border-radius:8px;background:#1e293b;margin:6px 0;cursor:pointer}.item:hover{outline:1px solid var(--accent)}
-.item b{color:var(--accent)}
-.grp{border:2px solid #facc15;border-radius:10px;background:rgba(250,204,21,.08);padding:6px;margin:10px 0}.grp .gh{color:#facc15;font-weight:700;cursor:pointer;padding:2px 4px}.grp .gn{background:#facc15;color:#0f172a;border-radius:10px;padding:1px 8px;margin-left:4px}.grp .item{margin:5px 0 0 8px;border-left:3px solid #facc15}
-#detail{display:none;margin-top:10px;padding:10px;border-radius:8px;background:#0b1220;border:1px solid var(--accent)}
+:root{--bg:#05060d;--panel:rgba(9,11,24,.78);--fg:#e6ecff;--accent:#00e5ff;--hot:#ff2bd6;--muted:#8b93b8;--line:rgba(0,229,255,.22)}
+html,body,#map{margin:0;width:100%;height:100%;background:var(--bg);color:var(--fg);font-family:'Pretendard','Noto Sans KR',sans-serif;letter-spacing:-.01em}
+#ui{position:absolute;top:12px;left:12px;width:310px;max-width:calc(100% - 32px);max-height:calc(100% - 24px);overflow:auto;background:var(--panel);backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);border:1px solid var(--line);border-radius:16px;padding:16px;box-sizing:border-box;z-index:10;box-shadow:0 0 0 1px rgba(255,43,214,.08),0 12px 40px rgba(0,0,0,.55),0 0 30px rgba(0,229,255,.08)}
+#ui::-webkit-scrollbar{width:6px}#ui::-webkit-scrollbar-thumb{background:linear-gradient(var(--accent),var(--hot));border-radius:6px}
+h1{font-size:18px;margin:0 0 6px;font-weight:800;background:linear-gradient(90deg,#fff,#a5f3ff);-webkit-background-clip:text;background-clip:text}small{color:var(--muted)}
+input,select,button{width:100%;box-sizing:border-box;padding:8px 10px;margin:4px 0;border-radius:10px;border:1px solid rgba(139,147,184,.25);background:rgba(20,24,45,.8);color:var(--fg);font-family:inherit}
+input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,229,255,.15)}
+button{background:linear-gradient(135deg,#00e5ff,#7c5cff);color:#05060d;font-weight:800;cursor:pointer;border:0;transition:transform .15s,box-shadow .15s}button:hover{box-shadow:0 0 18px rgba(0,229,255,.45)}
+.item{--c:var(--accent);padding:9px 10px 9px 12px;border-radius:10px;background:rgba(20,24,45,.72);margin:6px 0;cursor:pointer;border:1px solid rgba(139,147,184,.12);border-left:3px solid var(--c);transition:all .15s}
+.item:hover{background:rgba(28,34,64,.9);border-color:var(--c);box-shadow:0 0 14px color-mix(in srgb,var(--c) 35%,transparent)}
+.item b{color:var(--c);font-weight:700}
+.grp{border:1px solid rgba(255,43,214,.55);border-radius:14px;background:linear-gradient(160deg,rgba(255,43,214,.10),rgba(0,229,255,.05));padding:8px;margin:12px 0;box-shadow:0 0 18px rgba(255,43,214,.18)}.grp .gh{color:#ff7ae6;font-weight:800;cursor:pointer;padding:2px 4px}.grp .gn{background:var(--hot);color:#fff;border-radius:999px;padding:1px 9px;margin-left:4px;box-shadow:0 0 10px rgba(255,43,214,.6)}.grp .item{margin:6px 0 0 4px}#detail{display:none;margin-top:10px;padding:10px;border-radius:8px;background:#0b1220;border:1px solid var(--accent)}
 .cesium-viewer-bottom{display:none}
 #detail img{width:100%;border-radius:6px;margin-bottom:6px}
-a.cta{display:block;text-align:center;margin-top:8px;padding:9px;border-radius:8px;background:var(--accent);color:#0f172a;font-weight:700;text-decoration:none}
-.row{display:flex;gap:6px}.row>*{flex:1}.mb{background:#334155;color:var(--fg)}.mb.on{background:var(--accent);color:#0f172a}.sub{background:#334155;color:var(--fg);font-size:13px}
+a.cta{display:block;text-align:center;margin-top:8px;padding:10px;border-radius:10px;background:linear-gradient(135deg,#00e5ff,#7c5cff);color:#05060d;font-weight:700;text-decoration:none}
+.row{display:flex;gap:6px}.row>*{flex:1}.mb{background:rgba(20,24,45,.8);color:var(--fg);border:1px solid rgba(139,147,184,.2)}.mb.on{background:linear-gradient(135deg,#00e5ff,#7c5cff);color:#05060d}.sub{background:rgba(20,24,45,.8);color:var(--fg);font-size:13px;border:1px solid rgba(139,147,184,.2)}
 #toast{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);background:var(--panel);padding:10px 16px;border-radius:10px;border:1px solid var(--accent);display:none;z-index:11;max-width:80%}
 body.clean #ui{display:none}
 .pop{position:absolute;top:12px;right:12px;width:360px;max-width:calc(100% - 24px);background:var(--panel);border:1px solid var(--accent);border-radius:12px;padding:10px;z-index:12;display:none}
@@ -28,20 +30,20 @@ body.clean #ui{display:none}
 #rvModal{position:absolute;inset:5% 5% 5% 330px;background:#0f172a;border:1px solid var(--accent);border-radius:12px;z-index:13;display:none;flex-direction:column;padding:8px}
 @media(max-width:800px){#rvModal{inset:8px}}
 .rvbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}#rv{flex:1;border-radius:8px;overflow:hidden}
-#card{position:absolute;right:16px;top:50%;transform:translateY(-50%);width:min(620px,94vw);height:min(640px,88vh);background:#0f172a;border:1px solid var(--accent);border-radius:14px;z-index:14;display:none;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+#card{position:absolute;right:16px;top:50%;transform:translateY(-50%);width:min(620px,94vw);height:min(640px,88vh);background:rgba(8,10,22,.92);backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:18px;z-index:14;display:none;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.6)}
 .cHead{display:flex;justify-content:space-between;align-items:flex-start;padding:14px 16px 6px}.cHead .x{width:auto;padding:4px 10px;margin:0;background:#334155;color:var(--fg)}
 #cTitle .price{font-size:22px;font-weight:800;margin:4px 0}.cTabs{display:flex;gap:4px;padding:0 16px;border-bottom:1px solid #334155}
 .cTabs button{width:auto;margin:0;border-radius:8px 8px 0 0;background:transparent;color:var(--muted);padding:8px 14px}.cTabs button.on{background:#1e293b;color:var(--accent)}
 .cBody{flex:1;overflow:auto;padding:14px 16px}.pane{display:none;height:100%}.pane.on{display:block}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin:8px 0}.grid div{background:#1e293b;border-radius:8px;padding:8px}.grid small{display:block;color:var(--muted);font-size:11px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin:8px 0}.grid div{background:rgba(20,24,45,.75);border:1px solid rgba(139,147,184,.12);border-radius:8px;padding:8px}.grid small{display:block;color:var(--muted);font-size:11px}
 .st{display:flex;justify-content:space-between;gap:8px;padding:9px 10px;border-bottom:1px solid #1e293b;cursor:pointer;border-radius:6px}.st:hover{background:#1e293b}.st small{color:var(--muted)}.st .ph{color:#34d399;white-space:nowrap}
-.desc{white-space:pre-wrap;line-height:1.6;font-size:14px;background:#1e293b;border-radius:8px;padding:10px}
+.desc{white-space:pre-wrap;line-height:1.7;font-size:14px;background:rgba(20,24,45,.75);border-radius:8px;padding:10px}
 #p-ph .big{width:100%;max-height:60vh;object-fit:contain;background:#000;border-radius:8px}#p-ph .th{display:flex;gap:4px;overflow:auto;margin-top:6px}#p-ph .th img{height:60px;border-radius:4px;cursor:pointer}
 #card.wide{width:min(980px,96vw);height:min(820px,94vh)}#card.wide .cBody{padding:6px}
 @media(max-width:800px){#card{right:3vw}}
 #p-rv #rvWrap{display:flex;flex-direction:column;height:100%}#p-rv #rv{min-height:380px}
 #adm{display:none;font-size:12px;color:#facc15}
-.chips{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0}.chip{width:auto;padding:5px 10px;margin:0;font-size:13px;background:#334155;color:var(--fg)}.chip.on{background:var(--accent);color:#0f172a}
+.chips{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0}.chip{width:auto;padding:5px 11px;margin:0;font-size:13px;border-radius:999px;background:rgba(20,24,45,.8);color:var(--fg);border:1px solid rgba(139,147,184,.22)}.chip.on{background:linear-gradient(135deg,#00e5ff,#ff2bd6);color:#05060d;box-shadow:0 0 12px rgba(255,43,214,.35)}
 .tag{display:inline-block;font-size:11px;padding:1px 6px;border-radius:6px;margin-right:4px;color:#0f172a}
 </style>
 </head>
@@ -51,7 +53,7 @@ body.clean #ui{display:none}
 <div id="rvModal"><div id="rvWrap"><div class="rvbar"><b id="rvTitle">로드뷰</b><span><button id="rvPrev">◀ 이전</button><button id="rvNext">다음 ▶</button><button id="rvClose">✕ 닫기</button></span></div><div id="rv"></div><small id="rvNote"></small></div></div>
 <div id="card"><div class="cHead"><div id="cTitle"></div><button class="x" onclick="closeCard()">✕</button></div><div class="cTabs"><button data-p="info" class="on">매물 정보</button><button data-p="ph">사진</button><button data-p="rv">로드뷰</button><button data-p="land">건물·토지</button><button data-p="st">상점</button></div><div class="cBody"><div id="p-info" class="pane"></div><div id="p-ph" class="pane"></div><div id="p-rv" class="pane"></div><div id="p-land" class="pane"></div><div id="p-st" class="pane"></div></div></div>
 <div id="ui">
-  <h1>🏙 혜화<span style="color:#facc15;font-size:1.25em;font-weight:900">72</span>부동산 메타버스</h1>
+  <h1>🏙 혜화<span style="color:#ff2bd6;-webkit-text-fill-color:#ff2bd6;font-size:1.3em;font-weight:900;text-shadow:0 0 12px rgba(255,43,214,.7)">72</span>부동산 메타버스</h1>
   <small>V월드 지도 · 대학로 혜화72공인중개사사무소 공개 매물</small>
   <input id="key" style="display:none" autocomplete="off" placeholder="V월드 API 인증키 (vworld.kr 발급)">
   <button id="applyKey" style="display:none">V월드 위성지도 + 3D 건물 적용</button>
@@ -76,8 +78,8 @@ let EXACT=null,RAW=null;
 const TYPES=['전체','원룸·투룸','주택','오피스텔','상가','사무실','건물'];
 const TYPE=c=>/원룸|투룸/.test(c)?'원룸·투룸':/3룸|빌라|단독|다가구|아파트/.test(c)?'주택':/오피스텔/.test(c)?'오피스텔':/상가/.test(c)?'상가':/사무실/.test(c)?'사무실':/건물/.test(c)?'건물':'주택';
 let curType='전체';
-const GROUP=c=>/상가|사무실/.test(c)?'상가·사무실':/원룸|투룸|3룸/.test(c)?'주거 임대':/오피스텔/.test(c)?'오피스텔':'매매 주택·건물';
-const COLORS={'상가·사무실':'#f59e0b','주거 임대':'#34d399','오피스텔':'#a78bfa','매매 주택·건물':'#38bdf8'};
+const GROUP=p=>{const c=typeof p==='string'?p:(p.cat||''),d=typeof p==='string'?'':(p.deal||'');return d==='매매'||/매매|건물/.test(c)?'매매':/상가|사무실/.test(c)?'상가·사무실':/원룸|투룸|3룸/.test(c)?'원룸·주거 임대':'오피스텔·기타 임대'};
+const COLORS={'매매':'#ff3864','상가·사무실':'#2d9bff','원룸·주거 임대':'#1fffa0','오피스텔·기타 임대':'#c77dff'};
 Cesium.Camera.DEFAULT_VIEW_RECTANGLE=Cesium.Rectangle.fromDegrees(OFFICE.lon-.006,OFFICE.lat-.004,OFFICE.lon+.006,OFFICE.lat+.004);Cesium.Camera.DEFAULT_VIEW_FACTOR=0;
 const viewer=new Cesium.Viewer('map',{sceneMode:Cesium.SceneMode.SCENE2D,mapProjection:new Cesium.WebMercatorProjection(),baseLayer:Cesium.ImageryLayer.fromProviderAsync(Promise.resolve(new Cesium.OpenStreetMapImageryProvider({url:'https://tile.openstreetmap.org/'}))),
  baseLayerPicker:false,geocoder:false,timeline:false,animation:false,homeButton:false,sceneModePicker:false,navigationHelpButton:false,infoBox:false});
@@ -117,7 +119,7 @@ function tab(n){document.querySelectorAll('.cTabs button').forEach(b=>b.classLis
  if(n==='rv')cardRV();if(n==='land')cardLand();if(n==='st')cardStores()}
 function closeCard(){$('card').style.display='none';$('card').classList.remove('wide');if(typeof embedded!=='undefined'&&embedded){embedded=false;$('p-info').innerHTML='';fetch(API+'&t='+Date.now()).then(r=>r.json()).then(d=>{useData(d);try{localStorage.setItem('h72props2',JSON.stringify(d))}catch(e){}}).catch(()=>{})}if(typeof pickEnt!=='undefined'&&pickEnt){viewer.dataSources.remove(pickEnt);pickEnt=null;viewer.scene.requestRender()}if($('p-rv').contains($('rvWrap')))$('rvModal').appendChild($('rvWrap'))}
 const cell=(k,v)=>v?'<div><small>'+k+'</small>'+esc(v)+'</div>':'';
-async function openCard(p){cardP=p;const g=GROUP(p.cat);$('card').style.display='flex';
+async function openCard(p){cardP=p;const g=GROUP(p);$('card').style.display='flex';
  $('cTitle').innerHTML='<span class="tag" style="background:'+COLORS[g]+'">'+esc(p.cat)+'</span>'+(p.hp_pick?'<span class="tag" style="background:#f87171">'+esc(p.hp_pick)+'</span>':'')+' <b>'+esc(p.dong)+' '+esc(p.bldg_type||'')+'</b><div class="price" style="color:'+COLORS[g]+'">'+priceTxt(p)+'</div><small>매물번호 '+p.id+' · '+walk(p)+'</small>';
  const phB=document.querySelector('.cTabs [data-p="ph"]');phB.style.display=p.has_photo?'':'none';phB.textContent='사진';tab('info');
  $('p-info').innerHTML='<small>불러오는 중…</small>';$('p-land').innerHTML='';$('p-land').dataset.id='';$('p-st').innerHTML='';$('p-st').dataset.id='';document.querySelectorAll('.cTabs button').forEach(b=>b.style.display='');$('p-ph').innerHTML='';
@@ -201,16 +203,16 @@ function filtered(){const d=document.getElementById('deal').value,op=document.ge
 function render(){pins.forEach(e=>viewer.entities.remove(e));pins=[];
  const list=filtered(),m={};list.forEach(p=>{const k=p.lat+','+p.lng;(m[k]=m[k]||{lat:p.lat,lng:p.lng,items:[]}).items.push(p)});
  cells=Object.values(m);
- cells.forEach((c,i)=>{const g=GROUP(c.items[0].cat),col=Cesium.Color.fromCssColorString(COLORS[g]),H=70;
+ cells.forEach((c,i)=>{const g=GROUP(c.items[0]),col=Cesium.Color.fromCssColorString(COLORS[g]),H=70;
   pins.push(viewer.entities.add({polyline:{positions:Cesium.Cartesian3.fromDegreesArrayHeights([c.lng,c.lat,0,c.lng,c.lat,H]),width:2,material:col.withAlpha(.7)}}));
   pins.push(viewer.entities.add({id:'c'+i,position:Cesium.Cartesian3.fromDegrees(c.lng,c.lat,H),point:{pixelSize:c.items.length>1?20:14,color:col,outlineColor:Cesium.Color.WHITE,outlineWidth:2,disableDepthTestDistance:Number.POSITIVE_INFINITY},
-   label:{text:c.items.length>1?c.items.length+'건':priceTxt(c.items[0]),font:'bold 13px sans-serif',pixelOffset:new Cesium.Cartesian2(0,-20),showBackground:true,backgroundColor:col.withAlpha(.85),fillColor:Cesium.Color.fromCssColorString('#0f172a'),disableDepthTestDistance:Number.POSITIVE_INFINITY,distanceDisplayCondition:new Cesium.DistanceDisplayCondition(0,c.items.length>1?2500:900)}}))});
+   label:{text:c.items.length>1?c.items.length+'건':priceTxt(c.items[0]),font:'bold 13px sans-serif',pixelOffset:new Cesium.Cartesian2(0,-20),showBackground:true,backgroundColor:Cesium.Color.fromCssColorString('#0a0d1a').withAlpha(.88),backgroundPadding:new Cesium.Cartesian2(8,5),fillColor:col,outlineColor:Cesium.Color.BLACK,outlineWidth:2,style:Cesium.LabelStyle.FILL_AND_OUTLINE,disableDepthTestDistance:Number.POSITIVE_INFINITY,distanceDisplayCondition:new Cesium.DistanceDisplayCondition(0,c.items.length>1?2500:900)}}))});
  viewer.scene.requestRender();setTimeout(()=>viewer.scene.requestRender(),500);
  const why=[document.getElementById('deal').value&&('거래: '+document.getElementById('deal').value),document.getElementById('onlyPhoto').checked&&'사진 있는 매물만',$('maxp').value&&('최대 '+$('maxp').value+'만원')].filter(Boolean);
  document.getElementById('cnt').innerHTML='공개 매물 '+list.length+'건 표시 중'+(why.length?' <small style="color:#facc15">(조건: '+why.join(', ')+')</small> <a href="#" id="clr" style="color:var(--accent)">조건 풀기</a>':'');
  const clr=document.getElementById('clr');if(clr)clr.onclick=e=>{e.preventDefault();document.getElementById('deal').value='';document.getElementById('onlyPhoto').checked=false;$('maxp').value='';render()};
  const L=document.getElementById('list');L.innerHTML='';
- const row=(p,inG)=>{const el=document.createElement('div');el.className='item';
+ const row=(p,inG)=>{const el=document.createElement('div');el.className='item';el.style.setProperty('--c',COLORS[GROUP(p)]);
   el.innerHTML=`<b>${inG?(p.floor?esc(p.floor)+(/층|지하|B/i.test(p.floor)?'':'층')+' · ':'')+esc(p.cat):esc(p.dong)+' '+esc(p.cat)}</b>${p.hp_pick?' <span class="tag" style="background:#f87171">'+esc(p.hp_pick)+'</span>':''}${p.has_photo?' 📷':''}<br><small>${priceTxt(p)}${inG?'':' · '+walk(p)}</small>`;el.onclick=()=>show(p);return el};
  const seen=new Set();let n=0;
  for(const p of list){if(n>=80)break;const k=p.lat+','+p.lng;if(seen.has(k))continue;seen.add(k);const c=m[k];
