@@ -114,7 +114,7 @@ function show(p){stopAll();detail.style.display='none';$('photoBox').style.displ
 let cardP=null;
 function tab(n){document.querySelectorAll('.cTabs button').forEach(b=>b.classList.toggle('on',b.dataset.p===n));document.querySelectorAll('.pane').forEach(x=>x.classList.toggle('on',x.id==='p-'+n));
  if(n==='rv')cardRV();if(n==='land')cardLand();if(n==='st')cardStores()}
-function closeCard(){$('card').style.display='none';if($('p-rv').contains($('rvWrap')))$('rvModal').appendChild($('rvWrap'))}
+function closeCard(){$('card').style.display='none';if(typeof pickEnt!=='undefined'&&pickEnt){viewer.dataSources.remove(pickEnt);pickEnt=null;viewer.scene.requestRender()}if($('p-rv').contains($('rvWrap')))$('rvModal').appendChild($('rvWrap'))}
 const cell=(k,v)=>v?'<div><small>'+k+'</small>'+esc(v)+'</div>':'';
 async function openCard(p){cardP=p;const g=GROUP(p.cat);$('card').style.display='flex';
  $('cTitle').innerHTML='<span class="tag" style="background:'+COLORS[g]+'">'+esc(p.cat)+'</span>'+(p.hp_pick?'<span class="tag" style="background:#f87171">'+esc(p.hp_pick)+'</span>':'')+' <b>'+esc(p.dong)+' '+esc(p.bldg_type||'')+'</b><div class="price" style="color:'+COLORS[g]+'">'+priceTxt(p)+'</div><small>매물번호 '+p.id+' · '+walk(p)+'</small>';
@@ -142,6 +142,27 @@ async function cardLand(){const p=cardP,d=p._d||p,el=$('p-land');if(el.dataset.i
   +(b||l?'<small>출처: V월드 도로명주소 건물·연속지적도</small>':'<small>V월드에서 찾지 못했습니다</small>');
  el.innerHTML=h}
 document.querySelectorAll('.cTabs button').forEach(b=>b.onclick=()=>tab(b.dataset.p));
+// 관리자: 지도 빈 곳(건물)을 누르면 그 필지 주소로 업무관리 새 매물 창 열기
+let pickEnt=null;
+async function adminPick(pos){const c=viewer.camera.pickEllipsoid(pos,viewer.scene.globe.ellipsoid);if(!c)return;const g=Cesium.Cartographic.fromCartesian(c),lng=Cesium.Math.toDegrees(g.longitude),lat=Cesium.Math.toDegrees(g.latitude);
+ stopAll();const p={office:true,id:'pick',lng,lat};cardP=p;$('card').style.display='flex';
+ $('cTitle').innerHTML='<b style="font-size:18px">📍 이 위치에 매물 등록</b><div><small>관리자 전용 · 지도에서 누른 필지</small></div>';
+ document.querySelectorAll('.cTabs button').forEach(b=>b.style.display=b.dataset.p==='st'?'':'none');tab('info');$('p-info').classList.add('on');$('p-info').innerHTML='<small>V월드에서 주소 찾는 중…</small>';
+ const k=vkey(),q=(ds,geo)=>jsonp('https://api.vworld.kr/req/data?service=data&request=GetFeature&data='+ds+'&key='+k+'&domain='+encodeURIComponent(location.origin)+'&format=json&size=1&geometry='+geo+'&attribute=true&crs=EPSG:4326&geomFilter=POINT('+lng+' '+lat+')').then(r=>r.response.status==='OK'?r.response.result.featureCollection.features[0]:null).catch(()=>null);
+ const [lf,bf]=await Promise.all([q('LP_PA_CBND_BUBUN',true),q('LT_C_SPBD',false)]);if(cardP!==p)return;
+ if(pickEnt){viewer.dataSources.remove(pickEnt);pickEnt=null}
+ if(!lf){$('p-info').innerHTML='<small>이 위치의 필지를 찾지 못했습니다. 건물 위를 다시 눌러 보세요.</small>';return}
+ pickEnt=await Cesium.GeoJsonDataSource.load({type:'FeatureCollection',features:[lf]},{stroke:Cesium.Color.RED,fill:Cesium.Color.RED.withAlpha(.25),strokeWidth:3});viewer.dataSources.add(pickEnt);viewer.scene.requestRender();
+ const L_=lf.properties,B_=bf&&bf.properties,parts=(L_.addr||'').split(' '),gu=parts[1]||'',dong=parts[2]||'',bunji=parts.slice(3).join(' ');
+ const road=B_?[B_.sido,B_.sigungu,B_.rd_nm,B_.buld_no].filter(Boolean).join(' '):'';
+ const row={gu,dong,bunji,jibun_addr:L_.addr,road_addr:road,pnu:L_.pnu,b_code:(L_.pnu||'').slice(0,10),lat:+lat.toFixed(7),lng:+lng.toFixed(7),bldg:B_&&B_.buld_nm||''};
+ const dup=PROPS.filter(x=>Math.hypot((x.lng-lng)*88000,(x.lat-lat)*111000)<25);
+ const url='https://admin.hyehwa72.org/#newat/'+encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(row)))));
+ $('p-info').innerHTML='<div class="grid">'+cell('지번',L_.addr)+cell('도로명',road)+cell('건물명',row.bldg)+cell('지목',L_.jibun)+cell('공시지가(㎡)',L_.jiga?(+L_.jiga).toLocaleString()+'원':'')+cell('지상층수',B_&&B_.gro_flo_co?B_.gro_flo_co+'층':'')+'</div>'
+  +(dup.length?'<p style="color:#facc15"><small>⚠ 이 근처(25m)에 이미 공개 매물 '+dup.length+'건이 있습니다: '+dup.map(x=>x.id+' '+esc(x.cat)).join(', ')+'</small></p>':'')
+  +'<a class="cta" href="'+url+'" target="_blank">업무관리에서 이 주소로 새 매물 등록 →</a><p><small>업무관리 등록 창이 주소가 채워진 채로 열리고, 건축물대장·토지 정보를 자동으로 불러옵니다. 저장은 업무관리에서 직접 눌러 주세요.</small></p>';
+ document.querySelector('.cTabs [data-p="st"]').style.display='';$('p-st').dataset.id=''}
+
 // 카카오 장소: 관리자=매물 건물 안 상점 / 일반=주변 상점(위치 보호)
 const kp=(fn,...a)=>new Promise(ok=>fn(...a,(r,s,pg)=>ok(s==='OK'?r:[])));
 async function storesInBuilding(lng,lat){await kakaoLoad();const geo=new kakao.maps.services.Geocoder(),ps=new kakao.maps.services.Places();
@@ -196,7 +217,7 @@ async function boot(){
  try{const c=JSON.parse(localStorage.getItem('h72props2')||'null');if(c)useData(c)}catch(e){}
 fetch(API).then(r=>r.json()).then(d=>{useData(d);try{localStorage.setItem('h72props2',JSON.stringify(d))}catch(e){}})
  .catch(e=>document.getElementById('cnt').textContent='매물장부 불러오기 실패: '+e.message);}
-new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas).setInputAction(e=>{const o=viewer.scene.pick(e.position);if(o&&o.id&&o.id.id==='office')return openOffice();if(o&&o.id&&/^c\d+$/.test(String(o.id.id)))cellList(cells[+o.id.id.slice(1)])},Cesium.ScreenSpaceEventType.LEFT_CLICK);
+new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas).setInputAction(e=>{const o=viewer.scene.pick(e.position);if(o&&o.id&&o.id.id==='office')return openOffice();if(!o&&EXACT)return adminPick(e.position);if(o&&o.id&&/^c\d+$/.test(String(o.id.id)))cellList(cells[+o.id.id.slice(1)])},Cesium.ScreenSpaceEventType.LEFT_CLICK);
 // 혜화역 회전 투어
 let tour=null;
 function home(){viewer.camera.flyTo({destination:Cesium.Cartesian3.fromDegrees(STATION.lon,STATION.lat-0.012,1100),orientation:{pitch:Cesium.Math.toRadians(-40)}})}
