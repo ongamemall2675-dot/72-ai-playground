@@ -178,6 +178,7 @@ function render(){pins.forEach(e=>viewer.entities.remove(e));pins=[];
   pins.push(viewer.entities.add({polyline:{positions:Cesium.Cartesian3.fromDegreesArrayHeights([c.lng,c.lat,0,c.lng,c.lat,H]),width:2,material:col.withAlpha(.7)}}));
   pins.push(viewer.entities.add({id:'c'+i,position:Cesium.Cartesian3.fromDegrees(c.lng,c.lat,H),point:{pixelSize:c.items.length>1?20:14,color:col,outlineColor:Cesium.Color.WHITE,outlineWidth:2,disableDepthTestDistance:Number.POSITIVE_INFINITY},
    label:{text:c.items.length>1?c.items.length+'건':priceTxt(c.items[0]),font:'bold 13px sans-serif',pixelOffset:new Cesium.Cartesian2(0,-20),showBackground:true,backgroundColor:col.withAlpha(.85),fillColor:Cesium.Color.fromCssColorString('#0f172a'),disableDepthTestDistance:Number.POSITIVE_INFINITY,distanceDisplayCondition:new Cesium.DistanceDisplayCondition(0,c.items.length>1?2500:900)}}))});
+ viewer.scene.requestRender();setTimeout(()=>viewer.scene.requestRender(),500);
  document.getElementById('cnt').textContent='공개 매물 '+list.length+'건 표시 중';
  const L=document.getElementById('list');L.innerHTML='';
  list.slice(0,80).forEach(p=>{const el=document.createElement('div');el.className='item';
@@ -212,7 +213,7 @@ viewer.scene.morphComplete.addEventListener(()=>{return view();if(viewer.scene.m
 const vkey=()=>{try{return localStorage.getItem('vwkey')||''}catch(e){return ''}};
 $('style').onchange=e=>{const v=e.target.value,L=viewer.imageryLayers,k=vkey();
  if(v[0]==='v'&&!k){toast('V월드 인증키를 먼저 넣어 주세요');e.target.value='osm';return}
- L.removeAll();
+ L.removeAll();setTimeout(()=>viewer.scene.requestRender(),300);
  if(v==='osm')L.addImageryProvider(new Cesium.OpenStreetMapImageryProvider({url:'https://tile.openstreetmap.org/'}));
  if(v==='dark'){const l=L.addImageryProvider(new Cesium.OpenStreetMapImageryProvider({url:'https://tile.openstreetmap.org/'}));l.brightness=.35;l.contrast=1.3;l.saturation=.2;l.hue=.55}
  if(v==='vbase')L.addImageryProvider(new Cesium.UrlTemplateImageryProvider({url:'https://api.vworld.kr/req/wmts/1.0.0/'+k+'/Base/{z}/{y}/{x}.png',maximumLevel:19,credit:'V월드'}));
