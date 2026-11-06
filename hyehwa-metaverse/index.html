@@ -127,7 +127,7 @@ let PROPS=[],cells=[],pins=[];
 const dealOf=p=>p.deal||((+p.rent)>0?'월세':(p.deposit?'전세':'임대'));
 const won=v=>{v=+v;if(!v)return '';const e=Math.floor(v/10000),m=v%10000;return (e?e+'억':'')+(m?(e?' ':'')+m.toLocaleString()+'만':'')};
 function priceTxt(p){if(p.deal==='매매')return '매매 '+won(p.price);
- const d=p.deposit?won(p.deposit):'',r=(+p.rent)?' / 월 '+(+p.rent).toLocaleString()+'만':'';return dealOf(p)+' '+(d||'협의')+r}
+ const d=p.deposit?won(p.deposit):'',k=dealOf(p);if(k==='전세')return '전세 '+(d||'협의');const r=(+p.rent)?' / 월세 '+(+p.rent).toLocaleString()+'만':(k==='월세'?' / 월세 협의':'');return '보증금 '+(d||'협의')+r}
 function walk(p){try{const a=JSON.parse(p.near_st).st,s=a.find(x=>x.name==='혜화역')||a[0];return s?s.name+' 도보 약 '+s.min+'분':''}catch(e){return ''}}
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const detail=document.getElementById('detail');
