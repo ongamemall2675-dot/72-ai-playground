@@ -14,6 +14,7 @@ input,select,button{width:100%;box-sizing:border-box;padding:8px;margin:4px 0;bo
 button{background:var(--accent);color:#0f172a;font-weight:700;cursor:pointer;border:0}
 .item{padding:8px;border-radius:8px;background:#1e293b;margin:6px 0;cursor:pointer}.item:hover{outline:1px solid var(--accent)}
 .item b{color:var(--accent)}
+.grp{border:2px solid #facc15;border-radius:10px;background:rgba(250,204,21,.08);padding:6px;margin:10px 0}.grp .gh{color:#facc15;font-weight:700;cursor:pointer;padding:2px 4px}.grp .gn{background:#facc15;color:#0f172a;border-radius:10px;padding:1px 8px;margin-left:4px}.grp .item{margin:5px 0 0 8px;border-left:3px solid #facc15}
 #detail{display:none;margin-top:10px;padding:10px;border-radius:8px;background:#0b1220;border:1px solid var(--accent)}
 .cesium-viewer-bottom{display:none}
 #detail img{width:100%;border-radius:6px;margin-bottom:6px}
@@ -210,8 +211,13 @@ function render(){pins.forEach(e=>viewer.entities.remove(e));pins=[];
  document.getElementById('cnt').innerHTML='공개 매물 '+list.length+'건 표시 중'+(why.length?' <small style="color:#facc15">(조건: '+why.join(', ')+')</small> <a href="#" id="clr" style="color:var(--accent)">조건 풀기</a>':'');
  const clr=document.getElementById('clr');if(clr)clr.onclick=e=>{e.preventDefault();document.getElementById('deal').value='';document.getElementById('onlyPhoto').checked=false;$('maxp').value='';render()};
  const L=document.getElementById('list');L.innerHTML='';
- list.slice(0,80).forEach(p=>{const el=document.createElement('div');el.className='item';
-  el.innerHTML=`<b>${esc(p.dong)} ${esc(p.cat)}</b>${p.hp_pick?' <span class="tag" style="background:#f87171">'+esc(p.hp_pick)+'</span>':''}${p.has_photo?' 📷':''}<br><small>${priceTxt(p)} · ${walk(p)}</small>`;el.onclick=()=>show(p);L.appendChild(el)})}
+ const row=(p,inG)=>{const el=document.createElement('div');el.className='item';
+  el.innerHTML=`<b>${inG?(p.floor?esc(p.floor)+(/층|지하|B/i.test(p.floor)?'':'층')+' · ':'')+esc(p.cat):esc(p.dong)+' '+esc(p.cat)}</b>${p.hp_pick?' <span class="tag" style="background:#f87171">'+esc(p.hp_pick)+'</span>':''}${p.has_photo?' 📷':''}<br><small>${priceTxt(p)}${inG?'':' · '+walk(p)}</small>`;el.onclick=()=>show(p);return el};
+ const seen=new Set();let n=0;
+ for(const p of list){if(n>=80)break;const k=p.lat+','+p.lng;if(seen.has(k))continue;seen.add(k);const c=m[k];
+  if(c.items.length<2){L.appendChild(row(p));n++;continue}
+  const g=document.createElement('div');g.className='grp';g.innerHTML=`<div class="gh">🏢 같은 건물 매물 <span class="gn">${c.items.length}건</span><br><small>${esc(p.dong)} · ${walk(p)}</small></div>`;
+  g.querySelector('.gh').onclick=()=>cellList(c);c.items.forEach(x=>g.appendChild(row(x,true)));L.appendChild(g);n+=c.items.length}}
 document.getElementById('onlyPhoto').onchange=render;document.getElementById('deal').onchange=render;
 function useData(d,fresh){PROPS=d.filter(p=>p.lat&&p.lng).map(p=>EXACT&&EXACT[p.id]?{...p,lat:EXACT[p.id].lat,lng:EXACT[p.id].lng}:p);const tb=document.getElementById('types');tb.className='chips';tb.innerHTML=TYPES.map(t=>{const n=t==='전체'?PROPS.length:PROPS.filter(p=>TYPE(p.cat)===t).length;return n?`<button class="chip${t===curType?' on':''}" data-t="${t}">${t} ${n}</button>`:''}).join('');
  tb.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{curType=b.dataset.t;tb.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===b));render()});render();
