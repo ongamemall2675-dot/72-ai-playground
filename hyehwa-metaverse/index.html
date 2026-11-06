@@ -199,7 +199,8 @@ $('radius').onchange=e=>{const r=+e.target.value;ring.show=!!r;if(r){ring.ellips
 $('maxp').oninput=()=>render();
 // 지적선: V월드 연속지적도(LP_PA_CBND_BUBUN)를 확대했을 때 화면 범위만 받아 선으로 그림
 let cadOn=false,cadSrc=null,cadKey='',cadT=null;
-async function cadLoad(){if(!cadOn)return;const r=viewer.camera.computeViewRectangle();if(!r)return;
+function viewRect(){let r=viewer.camera.computeViewRectangle();if(r)return r;const c=viewer.canvas,el=viewer.scene.globe.ellipsoid,pts=[[0,0],[c.clientWidth,c.clientHeight]].map(([x,y])=>viewer.camera.pickEllipsoid(new Cesium.Cartesian2(x,y),el));if(pts.some(p=>!p))return null;const a=Cesium.Cartographic.fromCartesian(pts[0]),b=Cesium.Cartographic.fromCartesian(pts[1]);return new Cesium.Rectangle(Math.min(a.longitude,b.longitude),Math.min(a.latitude,b.latitude),Math.max(a.longitude,b.longitude),Math.max(a.latitude,b.latitude))}
+async function cadLoad(){if(!cadOn)return;const r=viewRect();if(!r)return;
  const W_=Cesium.Math.toDegrees(r.west),S_=Cesium.Math.toDegrees(r.south),E_=Cesium.Math.toDegrees(r.east),N_=Cesium.Math.toDegrees(r.north);
  if(E_-W_>0.012){if(cadSrc)cadSrc.show=false;return}
  const f=v=>Math.round(v*500)/500,box=[f(W_)-.002,f(S_)-.002,f(E_)+.002,f(N_)+.002],key=box.join(',');if(key===cadKey){cadSrc&&(cadSrc.show=true);return}cadKey=key;
