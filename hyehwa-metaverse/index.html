@@ -165,7 +165,7 @@ function openOffice(){stopAll();const p={office:true,id:0,lng:OFFICE.lon,lat:OFF
  $('cTitle').innerHTML='<b style="font-size:18px">대학로혜화72공인중개사사무소</b><div class="price" style="color:#facc15;font-size:16px">02-766-0720</div><small>서울 종로구 창경궁로 266, 1층 (혜화역 4번 출구 근처)</small>';
  document.querySelectorAll('.cTabs button').forEach(b=>b.style.display=b.dataset.p==='st'?'':'none');$('p-st').dataset.id='';tab('st')}
 function showCell(c){detail.style.display='block';detail.innerHTML='<b>이 구역 매물 '+c.items.length+'건</b>'+c.items.map(p=>`<div class="item" data-id="${p.id}"><small>${esc(p.cat)} · ${priceTxt(p)}</small></div>`).join('');detail.querySelectorAll('.item').forEach(el=>el.onclick=()=>show(PROPS.find(p=>p.id==el.dataset.id)))}
-function cellList(c){stopAll();detail.style.display='block';detail.innerHTML='<b>이 구역 매물 '+c.items.length+'건</b>'+c.items.map(p=>`<div class="item" data-id="${p.id}"><small>${esc(p.cat)} · ${priceTxt(p)} · ${esc(p.floor||'')}</small></div>`).join('');
+function cellList(c){stopAll();if(c.items.length===1)return show(c.items[0]);detail.style.display='block';detail.innerHTML='<b>이 구역 매물 '+c.items.length+'건</b>'+c.items.map(p=>`<div class="item" data-id="${p.id}"><small>${esc(p.cat)} · ${priceTxt(p)} · ${esc(p.floor||'')}</small></div>`).join('');
  detail.querySelectorAll('.item').forEach(el=>el.onclick=()=>show(PROPS.find(p=>p.id==el.dataset.id)));
  viewer.camera.flyToBoundingSphere(new Cesium.BoundingSphere(Cesium.Cartesian3.fromDegrees(c.lng,c.lat,20),60),{offset:new Cesium.HeadingPitchRange(0,Cesium.Math.toRadians(-45),550),duration:1.5});}
 function filtered(){const d=document.getElementById('deal').value,op=document.getElementById('onlyPhoto').checked;
