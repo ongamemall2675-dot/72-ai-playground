@@ -16,34 +16,32 @@ button{background:var(--accent);color:#0f172a;font-weight:700;cursor:pointer;bor
 .item b{color:var(--accent)}
 #detail{display:none;margin-top:10px;padding:10px;border-radius:8px;background:#0b1220;border:1px solid var(--accent)}
 .cesium-viewer-bottom{display:none}
+#detail img{width:100%;border-radius:6px;margin-bottom:6px}
+#detail a.cta{display:block;text-align:center;margin-top:8px;padding:9px;border-radius:8px;background:var(--accent);color:#0f172a;font-weight:700;text-decoration:none}
+.tag{display:inline-block;font-size:11px;padding:1px 6px;border-radius:6px;margin-right:4px;color:#0f172a}
 </style>
 </head>
 <body>
 <div id="map"></div>
 <div id="ui">
   <h1>🏙 혜화역 부동산 메타버스</h1>
-  <small>V월드 3D 지도 · 혜화역(4호선) 반경 매물</small>
+  <small>V월드 3D 지도 · 대학로 혜화72공인중개사사무소 공개 매물</small>
   <input id="key" placeholder="V월드 API 인증키 (vworld.kr 발급)">
   <button id="applyKey">V월드 위성지도 + 3D 건물 적용</button>
   <small id="bstat"></small>
-  <select id="filter"><option value="">전체 매물</option><option>아파트</option><option>오피스텔</option><option>상가</option><option>원룸</option></select>
+  <select id="filter"><option value="">전체 분류</option></select>
+  <select id="deal"><option value="">전체 거래</option><option>매매</option><option>전세</option><option>월세</option></select>
+  <small id="cnt">매물장부 불러오는 중…</small>
   <button id="fly" style="background:#334155;color:var(--fg)">📍 혜화역으로 이동 / 회전 투어</button>
-  <div id="list"></div>
   <div id="detail"></div>
+  <div id="list"></div>
 </div>
 <script>
 const STATION={lon:127.0018,lat:37.5822};
-// 샘플 매물(가상 데이터) — 실제 매물로 교체하세요
-const PROPS=[
- {n:'대학로 오피스텔 A',t:'오피스텔',lon:127.0028,lat:37.5830,f:15,p:'전세 2억 3천',a:'24㎡',d:'혜화역 2번 출구 도보 3분'},
- {n:'마로니에 상가',t:'상가',lon:127.0030,lat:37.5810,f:5,p:'보증금 5천/월 350',a:'66㎡',d:'마로니에공원 앞 1층, 유동인구 최상'},
- {n:'명륜동 아파트',t:'아파트',lon:126.9985,lat:37.5865,f:12,p:'매매 9억 5천',a:'84㎡',d:'성균관대 인접, 학군 수요'},
- {n:'혜화동 원룸',t:'원룸',lon:127.0010,lat:37.5868,f:4,p:'보증금 1천/월 65',a:'19㎡',d:'학생 수요 풍부'},
- {n:'이화동 상가주택',t:'상가',lon:127.0055,lat:37.5785,f:4,p:'매매 18억',a:'대지 132㎡',d:'낙산공원 벽화마을 인근'},
- {n:'동숭동 오피스텔 B',t:'오피스텔',lon:127.0045,lat:37.5840,f:18,p:'월세 1천/85',a:'28㎡',d:'공연장 밀집 지역'},
- {n:'창경궁로 아파트',t:'아파트',lon:126.9965,lat:37.5805,f:15,p:'전세 5억 2천',a:'59㎡',d:'창경궁 조망'},
-];
-const COLORS={'아파트':'#38bdf8','오피스텔':'#a78bfa','상가':'#f59e0b','원룸':'#34d399'};
+// 실제 매물: 업무관리 공개 매물 통로(홈페이지 공개 + 계약가능). 좌표는 통로가 주는 약 100m 단위 좌표만 쓴다(정확한 주소 노출 방지).
+const API='https://admin.hyehwa72.org/sync/pub/listings', SITE='https://hyehwa72.org/listing/';
+const GROUP=c=>/상가|사무실/.test(c)?'상가·사무실':/원룸|투룸|3룸/.test(c)?'주거 임대':/오피스텔/.test(c)?'오피스텔':'매매 주택·건물';
+const COLORS={'상가·사무실':'#f59e0b','주거 임대':'#34d399','오피스텔':'#a78bfa','매매 주택·건물':'#38bdf8'};
 const viewer=new Cesium.Viewer('map',{baseLayer:Cesium.ImageryLayer.fromProviderAsync(Promise.resolve(new Cesium.OpenStreetMapImageryProvider({url:'https://tile.openstreetmap.org/'}))),
  baseLayerPicker:false,geocoder:false,timeline:false,animation:false,homeButton:false,sceneModePicker:false,navigationHelpButton:false,infoBox:false});
 viewer.scene.globe.depthTestAgainstTerrain=false;
@@ -84,20 +82,42 @@ if(saved)loadBuildings(saved);
 viewer.entities.add({position:Cesium.Cartesian3.fromDegrees(STATION.lon,STATION.lat,5),point:{pixelSize:14,color:Cesium.Color.fromCssColorString('#3b82f6'),outlineColor:Cesium.Color.WHITE,outlineWidth:3},
  label:{text:'🚇 혜화역',font:'bold 16px sans-serif',pixelOffset:new Cesium.Cartesian2(0,-24),fillColor:Cesium.Color.WHITE,outlineWidth:3,style:Cesium.LabelStyle.FILL_AND_OUTLINE}});
 viewer.entities.add({position:Cesium.Cartesian3.fromDegrees(STATION.lon,STATION.lat),ellipse:{semiMajorAxis:500,semiMinorAxis:500,material:Cesium.Color.fromCssColorString('#3b82f6').withAlpha(.08),outline:true,outlineColor:Cesium.Color.fromCssColorString('#3b82f6')}});
-// 매물 3D 건물(층수×3m)
-const ents=PROPS.map((p,i)=>{const h=p.f*3,c=Cesium.Color.fromCssColorString(COLORS[p.t]);const d=0.00012;
- return viewer.entities.add({id:'p'+i,polygon:{hierarchy:Cesium.Cartesian3.fromDegreesArray([p.lon-d,p.lat-d,p.lon+d,p.lat-d,p.lon+d,p.lat+d,p.lon-d,p.lat+d]),extrudedHeight:h,material:c.withAlpha(.75),outline:true,outlineColor:Cesium.Color.WHITE},
-  position:Cesium.Cartesian3.fromDegrees(p.lon,p.lat,h+8),label:{text:`${p.n}\n${p.p}`,font:'13px sans-serif',fillColor:Cesium.Color.WHITE,showBackground:true,backgroundColor:c.withAlpha(.85),distanceDisplayCondition:new Cesium.DistanceDisplayCondition(0,2500)}})});
+// ── 매물 핀: 같은 100m 칸의 매물은 핀 하나로 묶는다 ──
+let PROPS=[],cells=[],pins=[];
+const won=v=>{v=+v;if(!v)return '';const e=Math.floor(v/10000),m=v%10000;return (e?e+'억':'')+(m?(e?' ':'')+m.toLocaleString()+'만':'')};
+function priceTxt(p){if(p.deal==='매매')return '매매 '+won(p.price);
+ const d=p.deposit?won(p.deposit):'',r=(+p.rent)?' / 월 '+(+p.rent).toLocaleString()+'만':'';return (p.deal||'임대')+' '+(d||'협의')+r}
+function walk(p){try{const s=JSON.parse(p.near_st).st.find(x=>x.name==='혜화역');return s?'혜화역 도보 약 '+s.min+'분':''}catch(e){return ''}}
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const detail=document.getElementById('detail');
-function dist(p){const R=6371e3,r=Math.PI/180,x=(p.lon-STATION.lon)*r*Math.cos(STATION.lat*r),y=(p.lat-STATION.lat)*r;return Math.round(Math.hypot(x,y)*R)}
-function show(i){const p=PROPS[i];detail.style.display='block';
- detail.innerHTML=`<b style="color:${COLORS[p.t]}">[${p.t}] ${p.n}</b><br>💰 ${p.p}<br>📐 ${p.a} · ${p.f}층<br>🚶 혜화역 직선 ${dist(p)}m (도보 약 ${Math.ceil(dist(p)/67)}분)<br>📝 ${p.d}`;
- viewer.camera.flyTo({destination:Cesium.Cartesian3.fromDegrees(p.lon,p.lat-0.0035,350),orientation:{pitch:Cesium.Math.toRadians(-35)}});}
-function render(){const f=document.getElementById('filter').value;const L=document.getElementById('list');L.innerHTML='';
- PROPS.forEach((p,i)=>{const on=!f||p.t===f;ents[i].show=on;if(!on)return;const el=document.createElement('div');el.className='item';
-  el.innerHTML=`<b>${p.n}</b><br><small>${p.t} · ${p.p} · 역까지 ${dist(p)}m</small>`;el.onclick=()=>show(i);L.appendChild(el)})}
-document.getElementById('filter').onchange=render;render();
-new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas).setInputAction(e=>{const o=viewer.scene.pick(e.position);if(o&&o.id&&String(o.id.id).startsWith('p'))show(+o.id.id.slice(1))},Cesium.ScreenSpaceEventType.LEFT_CLICK);
+function show(p){detail.style.display='block';const g=GROUP(p.cat);
+ detail.innerHTML=(p.thumb?`<img src="${p.thumb}" alt="">`:'')+`<span class="tag" style="background:${COLORS[g]}">${esc(p.cat)}</span>${p.hp_pick?'<span class="tag" style="background:#f87171">'+esc(p.hp_pick)+'</span>':''}
+ <br><b style="color:${COLORS[g]}">${esc(p.dong)} ${esc(p.bldg_type||'')}</b><br>💰 ${priceTxt(p)}${p.mgmt?' · 관리비 '+p.mgmt+'만':''}
+ <br>📐 ${esc(p.area_py||(p.excl_m2?p.excl_m2+'㎡':''))} · ${esc(p.floor||'')} ${esc(p.rooms||'')}<br>🚶 ${walk(p)}
+ <br><small>${esc((p.ad_desc||'').split('\n')[1]||'').slice(0,120)}</small><br><small>매물번호 ${p.id} · 위치는 약 100m 범위로 표시</small>
+ <a class="cta" href="${SITE}${p.id}" target="_blank">매물 자세히 보기 · 문의하기</a>`;
+ viewer.camera.flyTo({destination:Cesium.Cartesian3.fromDegrees(p.lng,p.lat-0.0035,350),orientation:{pitch:Cesium.Math.toRadians(-35)}});}
+function cellList(c){detail.style.display='block';detail.innerHTML='<b>이 구역 매물 '+c.items.length+'건</b>'+c.items.map(p=>`<div class="item" data-id="${p.id}"><small>${esc(p.cat)} · ${priceTxt(p)} · ${esc(p.floor||'')}</small></div>`).join('');
+ detail.querySelectorAll('.item').forEach(el=>el.onclick=()=>show(PROPS.find(p=>p.id==el.dataset.id)));
+ viewer.camera.flyTo({destination:Cesium.Cartesian3.fromDegrees(c.lng,c.lat-0.0035,350),orientation:{pitch:Cesium.Math.toRadians(-35)}});}
+function filtered(){const f=document.getElementById('filter').value,d=document.getElementById('deal').value;
+ return PROPS.filter(p=>(!f||p.cat===f)&&(!d||p.deal===d))}
+function render(){pins.forEach(e=>viewer.entities.remove(e));pins=[];
+ const list=filtered(),m={};list.forEach(p=>{const k=p.lat+','+p.lng;(m[k]=m[k]||{lat:p.lat,lng:p.lng,items:[]}).items.push(p)});
+ cells=Object.values(m);
+ cells.forEach((c,i)=>{const g=GROUP(c.items[0].cat),col=Cesium.Color.fromCssColorString(COLORS[g]),H=70;
+  pins.push(viewer.entities.add({polyline:{positions:Cesium.Cartesian3.fromDegreesArrayHeights([c.lng,c.lat,0,c.lng,c.lat,H]),width:2,material:col.withAlpha(.7)}}));
+  pins.push(viewer.entities.add({id:'c'+i,position:Cesium.Cartesian3.fromDegrees(c.lng,c.lat,H),point:{pixelSize:c.items.length>1?20:14,color:col,outlineColor:Cesium.Color.WHITE,outlineWidth:2,disableDepthTestDistance:Number.POSITIVE_INFINITY},
+   label:{text:c.items.length>1?c.items.length+'건':priceTxt(c.items[0]),font:'bold 13px sans-serif',pixelOffset:new Cesium.Cartesian2(0,-20),showBackground:true,backgroundColor:col.withAlpha(.85),fillColor:Cesium.Color.fromCssColorString('#0f172a'),disableDepthTestDistance:Number.POSITIVE_INFINITY,distanceDisplayCondition:new Cesium.DistanceDisplayCondition(0,c.items.length>1?2500:900)}}))});
+ document.getElementById('cnt').textContent='공개 매물 '+list.length+'건 표시 중';
+ const L=document.getElementById('list');L.innerHTML='';
+ list.slice(0,80).forEach(p=>{const el=document.createElement('div');el.className='item';
+  el.innerHTML=`<b>${esc(p.dong)} ${esc(p.cat)}</b>${p.hp_pick?' <span class="tag" style="background:#f87171">'+esc(p.hp_pick)+'</span>':''}<br><small>${priceTxt(p)} · ${walk(p)}</small>`;el.onclick=()=>show(p);L.appendChild(el)})}
+document.getElementById('filter').onchange=render;document.getElementById('deal').onchange=render;
+fetch(API).then(r=>r.json()).then(d=>{PROPS=d.filter(p=>p.lat&&p.lng);
+ const sel=document.getElementById('filter');[...new Set(PROPS.map(p=>p.cat))].sort().forEach(c=>sel.add(new Option(c,c)));render()})
+ .catch(e=>document.getElementById('cnt').textContent='매물장부 불러오기 실패: '+e.message);
+new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas).setInputAction(e=>{const o=viewer.scene.pick(e.position);if(o&&o.id&&/^c\d+$/.test(String(o.id.id)))cellList(cells[+o.id.id.slice(1)])},Cesium.ScreenSpaceEventType.LEFT_CLICK);
 // 혜화역 회전 투어
 let tour=null;
 function home(){viewer.camera.flyTo({destination:Cesium.Cartesian3.fromDegrees(STATION.lon,STATION.lat-0.012,1100),orientation:{pitch:Cesium.Math.toRadians(-40)}})}
