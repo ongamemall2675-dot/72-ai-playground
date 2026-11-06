@@ -41,7 +41,7 @@ body.clean #ui{display:none}
 #p-ph .big{width:100%;max-height:60vh;object-fit:contain;background:#000;border-radius:8px}#p-ph .th{display:flex;gap:4px;overflow:auto;margin-top:6px}#p-ph .th img{height:60px;border-radius:4px;cursor:pointer}
 #card.wide{width:min(980px,96vw);height:min(820px,94vh)}#card.wide .cBody{padding:6px}
 @media(max-width:800px){#card{right:3vw}}
-#p-rv #rvWrap{display:flex;flex-direction:column;height:100%}#p-rv #rv{min-height:380px}
+#rvModal #rvWrap{display:flex;flex-direction:column;flex:1;min-height:0}#p-rv #rvWrap{display:flex;flex-direction:column;height:100%}#p-rv #rv{min-height:380px}
 #adm{display:none;font-size:12px;color:#facc15}
 .chips{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0}.chip{width:auto;padding:5px 11px;margin:0;font-size:13px;border-radius:999px;background:rgba(20,24,45,.8);color:var(--fg);border:1px solid rgba(139,147,184,.22)}.chip.on{background:linear-gradient(135deg,#00e5ff,#ff2bd6);color:#05060d;box-shadow:0 0 12px rgba(255,43,214,.35)}
 .tag{display:inline-block;font-size:11px;padding:1px 6px;border-radius:6px;margin-right:4px;color:#0f172a}
@@ -338,7 +338,7 @@ let rv=null,rvc=null,rvPts=[],rvI=0;
 function rvGo(i){rvI=Math.max(0,Math.min(rvPts.length-1,i));const [lng,lat]=rvPts[rvI],last=rvI===rvPts.length-1;
  rvc.getNearestPanoId(new kakao.maps.LatLng(lat,lng),last&&!EXACT?120:60,pid=>{if(pid){rv.setPanoId(pid,new kakao.maps.LatLng(lat,lng));$('rvNote').textContent=''}else $('rvNote').textContent='이 지점은 로드뷰 사진이 없습니다. 다음으로 넘겨 보세요.'});
  $('rvTitle').textContent=rvPts.length>1?('혜화역 → 매물 로드뷰 '+(rvI+1)+' / '+rvPts.length+(last?(EXACT?' · 매물 앞':' · 매물 근처'):'')):'로드뷰';}
-window.rvAt=async (lng,lat)=>{$('photoBox').style.display='none';$('rvModal').style.zIndex=100;$('rvModal').style.display='flex';$('rvNote').textContent='로드뷰 불러오는 중…';try{await kakaoLoad()}catch(e){$('rvNote').textContent=e.message;return}if(!rv){rv=new kakao.maps.Roadview($('rv'));rvc=new kakao.maps.RoadviewClient()}rvPts=[[+lng,+lat]];rvGo(0);setTimeout(()=>rv.relayout&&rv.relayout(),200)};
+window.rvAt=async (lng,lat)=>{$('photoBox').style.display='none';if(!$('rvModal').contains($('rvWrap')))$('rvModal').appendChild($('rvWrap'));$('rvClose').style.display='';$('rvModal').style.zIndex=100;$('rvModal').style.display='flex';$('rvNote').textContent='로드뷰 불러오는 중…';try{await kakaoLoad()}catch(e){$('rvNote').textContent=e.message;return}if(!rv){rv=new kakao.maps.Roadview($('rv'));rvc=new kakao.maps.RoadviewClient()}rvPts=[[+lng,+lat]];rvGo(0);setTimeout(()=>rv.relayout&&rv.relayout(),200)};
 window.openRV=async (id,inCard)=>{const p=PROPS.find(x=>x.id===id);$('photoBox').style.display='none';if(!inCard)$('rvModal').style.display='flex';$('rvNote').textContent='로드뷰 불러오는 중…';
  try{await kakaoLoad()}catch(e){$('rvNote').textContent=e.message;return}
  if(!rv){rv=new kakao.maps.Roadview($('rv'));rvc=new kakao.maps.RoadviewClient()}
