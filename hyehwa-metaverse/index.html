@@ -193,11 +193,22 @@ $('style').onchange=e=>{const v=e.target.value,L=viewer.imageryLayers,k=vkey();
  if(v==='dark'){const l=L.addImageryProvider(new Cesium.OpenStreetMapImageryProvider({url:'https://tile.openstreetmap.org/'}));l.brightness=.35;l.contrast=1.3;l.saturation=.2;l.hue=.55}
  if(v==='vbase')L.addImageryProvider(new Cesium.UrlTemplateImageryProvider({url:'https://api.vworld.kr/req/wmts/1.0.0/'+k+'/Base/{z}/{y}/{x}.png',maximumLevel:19,credit:'V월드'}));
  if(v==='vsat')setVworld(k);
- if(v==='vcad'){L.addImageryProvider(new Cesium.UrlTemplateImageryProvider({url:'https://api.vworld.kr/req/wmts/1.0.0/'+k+'/Base/{z}/{y}/{x}.png',maximumLevel:19,credit:'V월드'}));
-  L.addImageryProvider(new Cesium.WebMapServiceImageryProvider({url:'https://api.vworld.kr/req/wms',layers:'lp_pa_cbnd_bubun,lp_pa_cbnd_bonbun',parameters:{styles:'lp_pa_cbnd_bubun_line,lp_pa_cbnd_bonbun_line',format:'image/png',transparent:true,version:'1.3.0',key:k,domain:location.origin},crs:'EPSG:4326',rectangle:Cesium.Rectangle.fromDegrees(126.95,37.55,127.06,37.62),maximumLevel:19,credit:'V월드 연속지적도'}))}};
+ if(v==='vcad'){L.addImageryProvider(new Cesium.UrlTemplateImageryProvider({url:'https://api.vworld.kr/req/wmts/1.0.0/'+k+'/Base/{z}/{y}/{x}.png',maximumLevel:19,credit:'V월드'}));}cadOn=(v==='vcad');cadSrc&&(cadSrc.show=cadOn);if(cadOn)cadLoad()};
 const ring=viewer.entities.values.find(e=>e.ellipse);
 $('radius').onchange=e=>{const r=+e.target.value;ring.show=!!r;if(r){ring.ellipse.semiMajorAxis=r;ring.ellipse.semiMinorAxis=r}};
 $('maxp').oninput=()=>render();
+// 지적선: V월드 연속지적도(LP_PA_CBND_BUBUN)를 확대했을 때 화면 범위만 받아 선으로 그림
+let cadOn=false,cadSrc=null,cadKey='',cadT=null;
+async function cadLoad(){if(!cadOn)return;const r=viewer.camera.computeViewRectangle();if(!r)return;
+ const W_=Cesium.Math.toDegrees(r.west),S_=Cesium.Math.toDegrees(r.south),E_=Cesium.Math.toDegrees(r.east),N_=Cesium.Math.toDegrees(r.north);
+ if(E_-W_>0.012){if(cadSrc)cadSrc.show=false;return}
+ const f=v=>Math.round(v*500)/500,box=[f(W_)-.002,f(S_)-.002,f(E_)+.002,f(N_)+.002],key=box.join(',');if(key===cadKey){cadSrc&&(cadSrc.show=true);return}cadKey=key;
+ const feats=[];try{for(let pg=1;pg<=4;pg++){const r2=await jsonp('https://api.vworld.kr/req/data?service=data&request=GetFeature&data=LP_PA_CBND_BUBUN&key='+vkey()+'&domain='+encodeURIComponent(location.origin)+'&format=json&size=1000&page='+pg+'&geometry=true&attribute=false&crs=EPSG:4326&geomFilter=BOX('+box.join(',')+')');
+  const rs=r2.response;if(rs.status!=='OK')break;feats.push(...rs.result.featureCollection.features);if(pg>=+rs.page.total)break}}catch(e){}
+ if(key!==cadKey||!feats.length)return;const ds=await Cesium.GeoJsonDataSource.load({type:'FeatureCollection',features:feats},{stroke:Cesium.Color.fromCssColorString('#f59e0b'),fill:Cesium.Color.TRANSPARENT,strokeWidth:1.5});
+ if(cadSrc)viewer.dataSources.remove(cadSrc);cadSrc=ds;ds.entities.values.forEach(e=>{if(e.polygon){e.polygon.outline=false;e.polyline=new Cesium.PolylineGraphics({positions:e.polygon.hierarchy.getValue().positions.concat([e.polygon.hierarchy.getValue().positions[0]]),width:1.5,material:Cesium.Color.fromCssColorString('#f59e0b').withAlpha(.9),clampToGround:false});e.polygon=undefined}});
+ viewer.dataSources.add(ds);viewer.scene.requestRender()}
+viewer.camera.moveEnd.addEventListener(()=>{clearTimeout(cadT);cadT=setTimeout(cadLoad,300)});
 if(vkey()){$('style').value='vcad';$('style').onchange({target:$('style')})}
 let routeEnt=null,walker=null;
 window.routeTo=async (id,play=true)=>{const p=PROPS.find(x=>x.id===id);stopAll();toast('길 찾는 중…',0);let pts,dist;
