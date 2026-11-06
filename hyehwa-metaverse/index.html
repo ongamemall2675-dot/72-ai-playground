@@ -103,9 +103,10 @@ viewer.entities.add({position:Cesium.Cartesian3.fromDegrees(STATION.lon,STATION.
 viewer.entities.add({position:Cesium.Cartesian3.fromDegrees(STATION.lon,STATION.lat),ellipse:{semiMajorAxis:500,semiMinorAxis:500,material:Cesium.Color.fromCssColorString('#3b82f6').withAlpha(.08),outline:true,outlineColor:Cesium.Color.fromCssColorString('#3b82f6')}});
 // ── 매물 핀: 같은 100m 칸의 매물은 핀 하나로 묶는다 ──
 let PROPS=[],cells=[],pins=[];
+const dealOf=p=>p.deal||((+p.rent)>0?'월세':(p.deposit?'전세':'임대'));
 const won=v=>{v=+v;if(!v)return '';const e=Math.floor(v/10000),m=v%10000;return (e?e+'억':'')+(m?(e?' ':'')+m.toLocaleString()+'만':'')};
 function priceTxt(p){if(p.deal==='매매')return '매매 '+won(p.price);
- const d=p.deposit?won(p.deposit):'',r=(+p.rent)?' / 월 '+(+p.rent).toLocaleString()+'만':'';return (p.deal||'임대')+' '+(d||'협의')+r}
+ const d=p.deposit?won(p.deposit):'',r=(+p.rent)?' / 월 '+(+p.rent).toLocaleString()+'만':'';return dealOf(p)+' '+(d||'협의')+r}
 function walk(p){try{const a=JSON.parse(p.near_st).st,s=a.find(x=>x.name==='혜화역')||a[0];return s?s.name+' 도보 약 '+s.min+'분':''}catch(e){return ''}}
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const detail=document.getElementById('detail');
@@ -170,7 +171,7 @@ function cellList(c){stopAll();if(c.items.length===1)return show(c.items[0]);det
  viewer.camera.flyToBoundingSphere(new Cesium.BoundingSphere(Cesium.Cartesian3.fromDegrees(c.lng,c.lat,20),60),{offset:new Cesium.HeadingPitchRange(0,Cesium.Math.toRadians(-45),550),duration:1.5});}
 function filtered(){const d=document.getElementById('deal').value,op=document.getElementById('onlyPhoto').checked;
  const mx=+document.getElementById('maxp').value||0;
- return PROPS.filter(p=>(curType==='전체'||TYPE(p.cat)===curType)&&(!op||p.has_photo)&&(!d||p.deal===d)&&(!mx||((p.deal==='매매'?+p.price:+p.deposit)||0)<=mx))}
+ return PROPS.filter(p=>(curType==='전체'||TYPE(p.cat)===curType)&&(!op||p.has_photo)&&(!d||dealOf(p)===d)&&(!mx||((p.deal==='매매'?+p.price:+p.deposit)||0)<=mx))}
 function render(){pins.forEach(e=>viewer.entities.remove(e));pins=[];
  const list=filtered(),m={};list.forEach(p=>{const k=p.lat+','+p.lng;(m[k]=m[k]||{lat:p.lat,lng:p.lng,items:[]}).items.push(p)});
  cells=Object.values(m);
@@ -179,7 +180,9 @@ function render(){pins.forEach(e=>viewer.entities.remove(e));pins=[];
   pins.push(viewer.entities.add({id:'c'+i,position:Cesium.Cartesian3.fromDegrees(c.lng,c.lat,H),point:{pixelSize:c.items.length>1?20:14,color:col,outlineColor:Cesium.Color.WHITE,outlineWidth:2,disableDepthTestDistance:Number.POSITIVE_INFINITY},
    label:{text:c.items.length>1?c.items.length+'건':priceTxt(c.items[0]),font:'bold 13px sans-serif',pixelOffset:new Cesium.Cartesian2(0,-20),showBackground:true,backgroundColor:col.withAlpha(.85),fillColor:Cesium.Color.fromCssColorString('#0f172a'),disableDepthTestDistance:Number.POSITIVE_INFINITY,distanceDisplayCondition:new Cesium.DistanceDisplayCondition(0,c.items.length>1?2500:900)}}))});
  viewer.scene.requestRender();setTimeout(()=>viewer.scene.requestRender(),500);
- document.getElementById('cnt').textContent='공개 매물 '+list.length+'건 표시 중';
+ const why=[document.getElementById('deal').value&&('거래: '+document.getElementById('deal').value),document.getElementById('onlyPhoto').checked&&'사진 있는 매물만',$('maxp').value&&('최대 '+$('maxp').value+'만원')].filter(Boolean);
+ document.getElementById('cnt').innerHTML='공개 매물 '+list.length+'건 표시 중'+(why.length?' <small style="color:#facc15">(조건: '+why.join(', ')+')</small> <a href="#" id="clr" style="color:var(--accent)">조건 풀기</a>':'');
+ const clr=document.getElementById('clr');if(clr)clr.onclick=e=>{e.preventDefault();document.getElementById('deal').value='';document.getElementById('onlyPhoto').checked=false;$('maxp').value='';render()};
  const L=document.getElementById('list');L.innerHTML='';
  list.slice(0,80).forEach(p=>{const el=document.createElement('div');el.className='item';
   el.innerHTML=`<b>${esc(p.dong)} ${esc(p.cat)}</b>${p.hp_pick?' <span class="tag" style="background:#f87171">'+esc(p.hp_pick)+'</span>':''}${p.has_photo?' 📷':''}<br><small>${priceTxt(p)} · ${walk(p)}</small>`;el.onclick=()=>show(p);L.appendChild(el)})}
