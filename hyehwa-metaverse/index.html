@@ -125,7 +125,7 @@ async function openCard(p){cardP=p;const g=GROUP(p.cat);$('card').style.display=
  if(cardP!==p)return;p._d=d;
  $('p-info').innerHTML='<div class="grid">'+cell('가격',priceTxt(d))+cell('관리비',d.mgmt?d.mgmt+'만원':'')+cell('권리금',d.premium)+cell('면적',d.area_py||(d.excl_m2?d.excl_m2+'㎡':''))+cell('전용면적',d.excl_m2?d.excl_m2+'㎡':'')+cell('해당층',d.floor)+cell('방/욕실',[d.rooms,d.baths].filter(Boolean).join(' · '))+cell('방향',d.direction)+cell('입주가능',d.move_in)+cell('주차',d.parking)+cell('엘리베이터',d.elevator)+'</div>'
   +(d.features?'<p><b>'+esc(d.features)+'</b></p>':'')+'<div class="desc">'+esc(d.ad_desc||'')+'</div>'
-  +'<a class="cta" href="'+SITE+p.id+'" target="_blank">홈페이지에서 보기 · 문의하기</a><p><small>대학로혜화72공인중개사사무소 · 02-766-0720 · 위치는 '+(EXACT?'정확한 위치(관리자)':'약 100m 범위로 표시')+'</small></p>';
+  +(EXACT&&EXACT[p.id]?'<button class="cta" style="width:100%;border:0;cursor:pointer;background:#22c55e" onclick="addHere('+p.id+')">➕ 이 건물에 매물 추가 입력 (다른 층·호수)</button>':'')+'<a class="cta" href="'+SITE+p.id+'" target="_blank">홈페이지에서 보기 · 문의하기</a><a class="cta" href="https://pf.kakao.com/_virmX/chat" target="_blank" style="background:#FEE500;color:#191919">💬 카카오톡으로 문의 (매물번호 '+p.id+')</a><p><small>대학로혜화72공인중개사사무소 · 02-766-0720 · 위치는 '+(EXACT?'정확한 위치(관리자)':'약 100m 범위로 표시')+'</small></p>';
  if(d.photos&&d.photos.length){const big=i=>$('p-ph').querySelector('.big').src=ADM+'/sync/pub/photo/'+d.photos[i];
   $('p-ph').innerHTML='<img class="big" alt="매물 사진"><div class="th">'+d.photos.map((x,i)=>'<img loading="lazy" data-i="'+i+'" src="'+ADM+'/sync/pub/photo/'+x+'">').join('')+'</div>';
   $('p-ph').querySelectorAll('.th img').forEach(im=>im.onclick=()=>big(+im.dataset.i));big(0);phB.textContent='사진 '+d.photos.length;phB.style.display=''}
@@ -147,7 +147,9 @@ document.querySelectorAll('.cTabs button').forEach(b=>b.onclick=()=>tab(b.datase
 let pickEnt=null,embedded=false;
 function embedForm(u){embedded=true;$('card').classList.add('wide');$('p-info').innerHTML='<iframe src="'+u+'" style="width:100%;height:100%;min-height:560px;border:0;border-radius:8px;background:#fff" allow="clipboard-write"></iframe>';
  $('cTitle').innerHTML='<b>✏️ 새 매물 입력</b> <small>(업무관리 · 저장 후 ✕ 로 닫으면 지도에 반영)</small>'}
-async function adminPick(pos){const c=viewer.camera.pickEllipsoid(pos,viewer.scene.globe.ellipsoid);if(!c)return;const g=Cesium.Cartographic.fromCartesian(c),lng=Cesium.Math.toDegrees(g.longitude),lat=Cesium.Math.toDegrees(g.latitude);
+async function adminPick(pos){const c=viewer.camera.pickEllipsoid(pos,viewer.scene.globe.ellipsoid);if(!c)return;const g=Cesium.Cartographic.fromCartesian(c);return adminPickAt(Cesium.Math.toDegrees(g.longitude),Cesium.Math.toDegrees(g.latitude))}
+function addHere(id){const x=EXACT&&EXACT[id];if(x&&x.lng)adminPickAt(+x.lng,+x.lat)}
+async function adminPickAt(lng,lat){
  stopAll();const p={office:true,id:'pick',lng,lat};cardP=p;$('card').style.display='flex';
  $('cTitle').innerHTML='<b style="font-size:18px">📍 이 위치에 매물 등록</b><div><small>관리자 전용 · 지도에서 누른 필지</small></div>';
  document.querySelectorAll('.cTabs button').forEach(b=>b.style.display=b.dataset.p==='st'?'':'none');tab('info');$('p-info').classList.add('on');$('p-info').innerHTML='<small>V월드에서 주소 찾는 중…</small>';
