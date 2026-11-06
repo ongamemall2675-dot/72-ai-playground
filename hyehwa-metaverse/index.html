@@ -193,7 +193,7 @@ async function adminPickAt(lng,lat){
  const url='https://admin.hyehwa72.org/#newat/'+encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(row)))));
  $('p-info').innerHTML='<div class="grid">'+cell('지번',L_.addr)+cell('도로명',road)+cell('건물명',row.bldg)+cell('지목',L_.jibun)+cell('공시지가(㎡)',L_.jiga?(+L_.jiga).toLocaleString()+'원':'')+cell('지상층수',B_&&B_.gro_flo_co?B_.gro_flo_co+'층':'')+'</div>'
   +(dup.length?'<p style="color:#facc15"><small>⚠ 이 근처(25m)에 이미 공개 매물 '+dup.length+'건이 있습니다: '+dup.map(x=>x.id+' '+esc(x.cat)).join(', ')+'</small></p>':'')
-  +'<button class="cta" style="width:100%;border:0;cursor:pointer" onclick="embedForm(\''+url+'\')">✏️ 여기서 바로 매물 입력</button><p><small>업무관리 등록 창이 이 자리에 열립니다(주소 채워짐). 저장하면 업무관리 매물장부에 바로 들어갑니다. · <a href="'+url+'" target="_blank" style="color:var(--accent)">새 탭으로 열기</a></small></p>';
+  +'<button class="cta" style="width:100%;border:0;cursor:pointer;background:#334155;color:#fff;margin-bottom:6px" onclick="rvAt('+lng+','+lat+')">🚶 이 위치 로드뷰 보기</button>'+'<button class="cta" style="width:100%;border:0;cursor:pointer" onclick="embedForm(\''+url+'\')">✏️ 여기서 바로 매물 입력</button><p><small>업무관리 등록 창이 이 자리에 열립니다(주소 채워짐). 저장하면 업무관리 매물장부에 바로 들어갑니다. · <a href="'+url+'" target="_blank" style="color:var(--accent)">새 탭으로 열기</a></small></p>';
  document.querySelector('.cTabs [data-p="st"]').style.display='';$('p-st').dataset.id=''}
 
 // 카카오 장소: 관리자=매물 건물 안 상점 / 일반=주변 상점(위치 보호)
@@ -338,6 +338,7 @@ let rv=null,rvc=null,rvPts=[],rvI=0;
 function rvGo(i){rvI=Math.max(0,Math.min(rvPts.length-1,i));const [lng,lat]=rvPts[rvI],last=rvI===rvPts.length-1;
  rvc.getNearestPanoId(new kakao.maps.LatLng(lat,lng),last&&!EXACT?120:60,pid=>{if(pid){rv.setPanoId(pid,new kakao.maps.LatLng(lat,lng));$('rvNote').textContent=''}else $('rvNote').textContent='이 지점은 로드뷰 사진이 없습니다. 다음으로 넘겨 보세요.'});
  $('rvTitle').textContent=rvPts.length>1?('혜화역 → 매물 로드뷰 '+(rvI+1)+' / '+rvPts.length+(last?(EXACT?' · 매물 앞':' · 매물 근처'):'')):'로드뷰';}
+window.rvAt=async (lng,lat)=>{$('photoBox').style.display='none';$('rvModal').style.display='flex';$('rvNote').textContent='로드뷰 불러오는 중…';try{await kakaoLoad()}catch(e){$('rvNote').textContent=e.message;return}if(!rv){rv=new kakao.maps.Roadview($('rv'));rvc=new kakao.maps.RoadviewClient()}rvPts=[[+lng,+lat]];rvGo(0);setTimeout(()=>rv.relayout&&rv.relayout(),200)};
 window.openRV=async (id,inCard)=>{const p=PROPS.find(x=>x.id===id);$('photoBox').style.display='none';if(!inCard)$('rvModal').style.display='flex';$('rvNote').textContent='로드뷰 불러오는 중…';
  try{await kakaoLoad()}catch(e){$('rvNote').textContent=e.message;return}
  if(!rv){rv=new kakao.maps.Roadview($('rv'));rvc=new kakao.maps.RoadviewClient()}
