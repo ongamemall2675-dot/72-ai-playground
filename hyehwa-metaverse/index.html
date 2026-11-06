@@ -45,7 +45,7 @@ body.clean #ui{display:none}
   <div id="types"></div><label style="font-size:13px;display:flex;gap:6px;align-items:center"><input type="checkbox" id="onlyPhoto" style="width:auto;margin:0">📷 사진 있는 매물만</label>
   <select id="deal"><option value="">전체 거래</option><option>매매</option><option>전세</option><option>월세</option></select>
   <small id="cnt">매물장부 불러오는 중…</small>
-  <div class="row"><button data-mode="3d" class="mb on">3D</button><button data-mode="25d" class="mb">2.5D</button><button data-mode="2d" class="mb">2D</button></div>
+  <div class="row"><button data-mode="2d" class="mb on">2D</button><button data-mode="25d" class="mb">2.5D</button><button data-mode="3d" class="mb">3D</button></div>
   <div class="row"><select id="style"><option value="osm">일반 지도</option><option value="dark">야간 지도</option><option value="vbase">V월드 기본</option><option value="vsat">V월드 위성</option></select>
   <select id="radius"><option value="500">반경 500m</option><option value="250">반경 250m</option><option value="1000">반경 1km</option><option value="0">반경 숨김</option></select></div>
   <input id="maxp" type="number" placeholder="최대 금액 (만원, 매매가·보증금)">
@@ -65,7 +65,8 @@ const TYPE=c=>/원룸|투룸/.test(c)?'원룸·투룸':/3룸|빌라|단독|다�
 let curType='전체';
 const GROUP=c=>/상가|사무실/.test(c)?'상가·사무실':/원룸|투룸|3룸/.test(c)?'주거 임대':/오피스텔/.test(c)?'오피스텔':'매매 주택·건물';
 const COLORS={'상가·사무실':'#f59e0b','주거 임대':'#34d399','오피스텔':'#a78bfa','매매 주택·건물':'#38bdf8'};
-const viewer=new Cesium.Viewer('map',{baseLayer:Cesium.ImageryLayer.fromProviderAsync(Promise.resolve(new Cesium.OpenStreetMapImageryProvider({url:'https://tile.openstreetmap.org/'}))),
+Cesium.Camera.DEFAULT_VIEW_RECTANGLE=Cesium.Rectangle.fromDegrees(STATION.lon-.009,STATION.lat-.006,STATION.lon+.009,STATION.lat+.006);Cesium.Camera.DEFAULT_VIEW_FACTOR=0;
+const viewer=new Cesium.Viewer('map',{sceneMode:Cesium.SceneMode.SCENE2D,mapProjection:new Cesium.WebMercatorProjection(),baseLayer:Cesium.ImageryLayer.fromProviderAsync(Promise.resolve(new Cesium.OpenStreetMapImageryProvider({url:'https://tile.openstreetmap.org/'}))),
  baseLayerPicker:false,geocoder:false,timeline:false,animation:false,homeButton:false,sceneModePicker:false,navigationHelpButton:false,infoBox:false});
 viewer.scene.globe.depthTestAgainstTerrain=false;
 function setVworld(key){
@@ -135,16 +136,17 @@ new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas).setInputAction(e=>{const
 // 혜화역 회전 투어
 let tour=null;
 function home(){viewer.camera.flyTo({destination:Cesium.Cartesian3.fromDegrees(STATION.lon,STATION.lat-0.012,1100),orientation:{pitch:Cesium.Math.toRadians(-40)}})}
-document.getElementById('fly').onclick=()=>{if(tour){tour();tour=null;return home()}
+document.getElementById('fly').onclick=()=>{if(viewer.scene.mode!==Cesium.SceneMode.SCENE3D){stopAll();return view()}if(tour){tour();tour=null;return home()}
  const c=Cesium.Cartesian3.fromDegrees(STATION.lon,STATION.lat);let hd=0;
  tour=viewer.clock.onTick.addEventListener(()=>{hd+=0.003;viewer.camera.lookAt(c,new Cesium.HeadingPitchRange(hd,Cesium.Math.toRadians(-35),1300))});};
-home();
+view();
 // ── 추가 기능 ──
 const $=id=>document.getElementById(id),toast=(t,ms=3500)=>{const e=$('toast');e.innerHTML=t;e.style.display='block';clearTimeout(e._t);if(ms)e._t=setTimeout(()=>e.style.display='none',ms)};
 let stopFns=[];function stopAll(){stopFns.forEach(f=>f());stopFns=[];if(tour){tour();tour=null}viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY)}
 document.querySelectorAll('.mb').forEach(b=>b.onclick=()=>{stopAll();document.querySelectorAll('.mb').forEach(x=>x.classList.toggle('on',x===b));
- const s=viewer.scene,m=b.dataset.mode;m==='2d'?s.morphTo2D(1):m==='25d'?s.morphToColumbusView(1):s.morphTo3D(1)});
-viewer.scene.morphComplete.addEventListener(()=>{if(viewer.scene.mode===Cesium.SceneMode.SCENE3D)return home();
+ const s=viewer.scene,m=b.dataset.mode;m==='2d'?s.morphTo2D(0):m==='25d'?s.morphToColumbusView(0):s.morphTo3D(0)});
+function view(){const M=viewer.scene.mode;if(M===Cesium.SceneMode.SCENE3D)return home();if(M===Cesium.SceneMode.COLUMBUS_VIEW)return viewer.camera.setView({destination:Cesium.Cartesian3.fromDegrees(STATION.lon,STATION.lat-0.011,1000),orientation:{heading:0,pitch:Cesium.Math.toRadians(-45),roll:0}});viewer.camera.setView({destination:Cesium.Rectangle.fromDegrees(STATION.lon-.009,STATION.lat-.006,STATION.lon+.009,STATION.lat+.006)})}
+viewer.scene.morphComplete.addEventListener(()=>{return view();if(viewer.scene.mode===Cesium.SceneMode.SCENE3D)return home();
  if(viewer.scene.mode===Cesium.SceneMode.COLUMBUS_VIEW)return viewer.camera.setView({destination:Cesium.Cartesian3.fromDegrees(STATION.lon,STATION.lat-0.011,1000),orientation:{heading:0,pitch:Cesium.Math.toRadians(-45),roll:0}});
  viewer.camera.setView({destination:Cesium.Rectangle.fromDegrees(STATION.lon-.009,STATION.lat-.006,STATION.lon+.009,STATION.lat+.006)})});
 const vkey=()=>{try{return localStorage.getItem('vwkey')||''}catch(e){return ''}};
@@ -158,6 +160,7 @@ $('style').onchange=e=>{const v=e.target.value,L=viewer.imageryLayers,k=vkey();
 const ring=viewer.entities.values.find(e=>e.ellipse);
 $('radius').onchange=e=>{const r=+e.target.value;ring.show=!!r;if(r){ring.ellipse.semiMajorAxis=r;ring.ellipse.semiMinorAxis=r}};
 $('maxp').oninput=()=>render();
+if(vkey())$('style').value='vsat';
 let routeEnt=null,walker=null;
 window.routeTo=async (id,play=true)=>{const p=PROPS.find(x=>x.id===id);stopAll();toast('길 찾는 중…',0);let pts,dist;
  try{const r=await (await fetch('https://routing.openstreetmap.de/routed-foot/route/v1/foot/'+STATION.lon+','+STATION.lat+';'+p.lng+','+p.lat+'?overview=full&geometries=geojson')).json();
