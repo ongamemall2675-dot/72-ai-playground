@@ -21,6 +21,12 @@ button{background:var(--accent);color:#0f172a;font-weight:700;cursor:pointer;bor
 .row{display:flex;gap:6px}.row>*{flex:1}.mb{background:#334155;color:var(--fg)}.mb.on{background:var(--accent);color:#0f172a}.sub{background:#334155;color:var(--fg);font-size:13px}
 #toast{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);background:var(--panel);padding:10px 16px;border-radius:10px;border:1px solid var(--accent);display:none;z-index:11;max-width:80%}
 body.clean #ui{display:none}
+#fpsHud{display:none}body.fps #fpsHud{display:block}body.fps #ui{display:none}
+#cross{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:#fff;font-size:22px;text-shadow:0 0 3px #000;z-index:12;pointer-events:none}
+#fpsHelp{position:absolute;top:12px;left:50%;transform:translateX(-50%);background:var(--panel);padding:6px 12px;border-radius:8px;font-size:13px;z-index:12}
+#fpsExit{position:absolute;top:12px;right:12px;width:auto;z-index:12;background:#f43f5e;color:#fff}
+#pad{position:absolute;bottom:24px;right:24px;z-index:12;text-align:center}#pad button{width:56px;height:56px;margin:3px;font-size:20px;background:rgba(15,23,42,.8);color:#fff;border:1px solid #475569;touch-action:none}
+@media(hover:hover){#pad{display:none}}
 .pop{position:absolute;top:12px;right:12px;width:360px;max-width:calc(100% - 24px);background:var(--panel);border:1px solid var(--accent);border-radius:12px;padding:10px;z-index:12;display:none}
 .pop .x,.rvbar button{width:auto;padding:4px 10px;margin:0 0 0 4px;background:#334155;color:var(--fg)}.pop .x{float:right}
 #phMain img{width:100%;border-radius:8px;max-height:60vh;object-fit:contain;background:#000}#phThumbs{display:flex;gap:4px;overflow:auto}#phThumbs img{height:54px;border-radius:4px;cursor:pointer;opacity:.7}#phThumbs img:hover{opacity:1}
@@ -33,6 +39,9 @@ body.clean #ui{display:none}
 </head>
 <body>
 <div id="map"></div><div id="toast"></div>
+<div id="fpsHud"><div id="cross">+</div><div id="fpsHelp">마우스: 시선 돌리기 · W/A/S/D: 이동 · Shift: 달리기 · Space/C: 위/아래 · Esc: 마우스 풀기</div>
+<div id="pad"><button data-k="w">▲</button><div><button data-k="a">◀</button><button data-k="s">▼</button><button data-k="d">▶</button></div></div>
+<button id="fpsExit">✕ 1인칭 끝내기</button></div>
 <div id="photoBox" class="pop"><button class="x" onclick="this.parentNode.style.display='none'">✕</button><div id="phMain"></div><div id="phThumbs"></div></div>
 <div id="rvModal"><div class="rvbar"><b id="rvTitle">로드뷰</b><span><button id="rvPrev">◀ 이전</button><button id="rvNext">다음 ▶</button><button id="rvClose">✕ 닫기</button></span></div><div id="rv"></div><small id="rvNote"></small></div>
 <div id="ui">
@@ -48,7 +57,8 @@ body.clean #ui{display:none}
   <div class="row"><select id="style"><option value="osm">일반 지도</option><option value="dark">야간 지도</option><option value="vbase">V월드 기본</option><option value="vsat">V월드 위성</option></select>
   <select id="radius"><option value="500">반경 500m</option><option value="250">반경 250m</option><option value="1000">반경 1km</option><option value="0">반경 숨김</option></select></div>
   <input id="maxp" type="number" placeholder="최대 금액 (만원, 매매가·보증금)">
-  <div class="row"><button id="walk" class="sub">🧍 걷기 모드</button><button id="ptour" class="sub">🎬 매물 순회</button></div>
+  <button id="fps" style="background:#facc15;color:#0f172a">👁 1인칭으로 걸어 다니기</button>
+  <div class="row"><button id="walk" class="sub">🧍 3인칭 걷기</button><button id="ptour" class="sub">🎬 매물 순회</button></div>
   <div class="row"><button id="clean" class="sub">🎥 촬영 화면 (H)</button><button id="share" class="sub">🔗 링크 복사</button></div>
   <button id="fly" style="background:#334155;color:var(--fg)">📍 혜화역으로 이동 / 회전 투어</button>
   <div id="detail"></div>
@@ -203,7 +213,7 @@ let walkOn=false;$('walk').onclick=()=>{if(walkOn){stopAll();return}stopAll();wa
   const pos=Cesium.Cartesian3.fromDegrees(lon,lat,3);av.position=pos;viewer.camera.lookAt(pos,new Cesium.HeadingPitchRange(hd,Cesium.Math.toRadians(-22),90));
   const near=cells.find(c=>Math.hypot((c.lng-lon)*88000,(c.lat-lat)*111000)<60),key=near?near.lat+','+near.lng:'';
   if(key!==last){last=key;if(near){toast('📍 이 근처 매물 '+near.items.length+'건 · '+near.items.slice(0,3).map(p=>priceTxt(p)).join(' / '),5000);showCell(near)}}});
- stopFns.push(()=>{rm();removeEventListener('keydown',kd);removeEventListener('keyup',ku);viewer.entities.remove(av);walkOn=false;$('walk').textContent='🧍 걷기 모드'})};
+ stopFns.push(()=>{rm();removeEventListener('keydown',kd);removeEventListener('keyup',ku);viewer.entities.remove(av);walkOn=false;$('walk').textContent='🧍 3인칭 걷기'})};
 $('ptour').onclick=()=>{stopAll();let i=0;const go=()=>{const c=cells[i++%cells.length];if(!c)return;
  viewer.camera.flyTo({destination:Cesium.Cartesian3.fromDegrees(c.lng,c.lat-0.003,300),orientation:{pitch:Cesium.Math.toRadians(-35)},duration:2.5});
  toast(c.items[0].dong+' · '+(c.items.length>1?c.items.length+'건':priceTxt(c.items[0])),4000)};go();const iv=setInterval(go,5000);stopFns.push(()=>clearInterval(iv))};
@@ -211,6 +221,34 @@ $('clean').onclick=()=>{document.body.classList.add('clean');toast('H 키를 누
 addEventListener('keydown',e=>{if(e.key.toLowerCase()==='h'&&!walkOn&&e.target.tagName!=='INPUT')document.body.classList.toggle('clean')});
 $('share').onclick=()=>{navigator.clipboard.writeText(location.href).then(()=>toast('링크를 복사했습니다'),()=>toast(location.href,8000))};
 viewer.scene.requestRenderMode=true;viewer.scene.maximumRenderTimeChange=Infinity;viewer.clock.onTick.addEventListener(()=>{if(stopFns.length||tour)viewer.scene.requestRender()});
+// ── 1인칭 모드: 마우스로 시선, WASD로 이동 (눈높이 1.7m) ──
+let fpsOn=false;
+$('fps').onclick=()=>{stopAll();if(viewer.scene.mode!==Cesium.SceneMode.SCENE3D){toast('3D 화면에서만 됩니다. 3D 버튼을 먼저 눌러 주세요');return}
+ fpsOn=true;document.body.classList.add('fps');walkOn=true;
+ const cc=viewer.scene.screenSpaceCameraController;cc.enableInputs=false;
+ let lon=STATION.lon,lat=STATION.lat-0.0003,h=1.7,hd=0,pt=0;const keys={};
+ const kd=e=>{keys[e.key.toLowerCase()]=true;if(e.key===' ')e.preventDefault()},ku=e=>{keys[e.key.toLowerCase()]=false};
+ const mm=e=>{if(document.pointerLockElement!==viewer.canvas&&!drag)return;const dx=e.movementX||0,dy=e.movementY||0;hd+=dx*0.0025;pt=Math.max(-1.4,Math.min(1.4,pt-dy*0.0025))};
+ let drag=false;const md=()=>{if(matchMedia('(hover:hover)').matches)viewer.canvas.requestPointerLock();else drag=true},mu=()=>{drag=false};
+ let tp=null;const ts=e=>{tp=e.touches[0]},tm=e=>{const t=e.touches[0];if(tp){hd+=(t.clientX-tp.clientX)*0.005;pt=Math.max(-1.4,Math.min(1.4,pt-(t.clientY-tp.clientY)*0.005))}tp=t};
+ addEventListener('keydown',kd);addEventListener('keyup',ku);addEventListener('mousemove',mm);viewer.canvas.addEventListener('mousedown',md);addEventListener('mouseup',mu);
+ viewer.canvas.addEventListener('touchstart',ts,{passive:true});viewer.canvas.addEventListener('touchmove',tm,{passive:true});
+ const pads=[...document.querySelectorAll('#pad button')];pads.forEach(b=>{b.onpointerdown=()=>keys[b.dataset.k]=true;b.onpointerup=b.onpointerleave=()=>keys[b.dataset.k]=false});
+ toast('화면을 한 번 클릭하면 마우스로 시선을 돌릴 수 있어요',4000);let last='',t0=performance.now();
+ const rm=viewer.clock.onTick.addEventListener(()=>{const now=performance.now(),dt=Math.min(.1,(now-t0)/1000);t0=now;
+  const sp=(keys.shift?12:4)*dt; // m/s
+  let f=(keys.w||keys.arrowup?1:0)-(keys.s||keys.arrowdown?1:0),r=(keys.d?1:0)-(keys.a?1:0);
+  if(keys.arrowleft)hd-=1.5*dt;if(keys.arrowright)hd+=1.5*dt;
+  const dn=(Math.cos(hd)*f-Math.sin(hd)*r)*sp,de=(Math.sin(hd)*f+Math.cos(hd)*r)*sp;
+  lat+=dn/111000;lon+=de/(111000*Math.cos(lat*Math.PI/180));
+  if(keys[' '])h+=4*dt;if(keys.c)h=Math.max(1.7,h-4*dt);
+  viewer.camera.setView({destination:Cesium.Cartesian3.fromDegrees(lon,lat,h),orientation:{heading:hd,pitch:pt,roll:0}});viewer.scene.requestRender();
+  const near=cells.find(c=>Math.hypot((c.lng-lon)*88000,(c.lat-lat)*111000)<60),key=near?near.lat+','+near.lng:'';
+  if(key!==last){last=key;if(near)toast('📍 이 근처 매물 '+near.items.length+'건 · '+near.items.slice(0,2).map(p=>priceTxt(p)).join(' / '),4000)}});
+ stopFns.push(()=>{rm();removeEventListener('keydown',kd);removeEventListener('keyup',ku);removeEventListener('mousemove',mm);viewer.canvas.removeEventListener('mousedown',md);removeEventListener('mouseup',mu);
+  viewer.canvas.removeEventListener('touchstart',ts);viewer.canvas.removeEventListener('touchmove',tm);
+  if(document.pointerLockElement)document.exitPointerLock();cc.enableInputs=true;document.body.classList.remove('fps');fpsOn=false;walkOn=false;home()})};
+$('fpsExit').onclick=()=>stopAll();
 ['pointerdown','wheel','touchstart'].forEach(ev=>viewer.canvas.addEventListener(ev,()=>{if(!walkOn&&(stopFns.length||tour)){stopAll();toast('자동 이동을 멈췄습니다',1500)}},{passive:true}));
 // 사진: 매물을 누를 때만 불러온다
 window.openPhotos=async id=>{const box=$('photoBox');box.style.display='block';$('phMain').innerHTML='<small>사진 불러오는 중…</small>';$('phThumbs').innerHTML='';
