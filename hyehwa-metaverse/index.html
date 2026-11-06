@@ -33,6 +33,7 @@ body.clean #ui{display:none}
 .cTabs button{width:auto;margin:0;border-radius:8px 8px 0 0;background:transparent;color:var(--muted);padding:8px 14px}.cTabs button.on{background:#1e293b;color:var(--accent)}
 .cBody{flex:1;overflow:auto;padding:14px 16px}.pane{display:none;height:100%}.pane.on{display:block}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin:8px 0}.grid div{background:#1e293b;border-radius:8px;padding:8px}.grid small{display:block;color:var(--muted);font-size:11px}
+.st{display:flex;justify-content:space-between;gap:8px;padding:9px 10px;border-bottom:1px solid #1e293b;cursor:pointer;border-radius:6px}.st:hover{background:#1e293b}.st small{color:var(--muted)}.st .ph{color:#34d399;white-space:nowrap}
 .desc{white-space:pre-wrap;line-height:1.6;font-size:14px;background:#1e293b;border-radius:8px;padding:10px}
 #p-ph .big{width:100%;max-height:60vh;object-fit:contain;background:#000;border-radius:8px}#p-ph .th{display:flex;gap:4px;overflow:auto;margin-top:6px}#p-ph .th img{height:60px;border-radius:4px;cursor:pointer}
 @media(max-width:800px){#card{right:3vw}}
@@ -46,7 +47,7 @@ body.clean #ui{display:none}
 <div id="map"></div><div id="toast"></div>
 <div id="photoBox" class="pop"><button class="x" onclick="this.parentNode.style.display='none'">✕</button><div id="phMain"></div><div id="phThumbs"></div></div>
 <div id="rvModal"><div id="rvWrap"><div class="rvbar"><b id="rvTitle">로드뷰</b><span><button id="rvPrev">◀ 이전</button><button id="rvNext">다음 ▶</button><button id="rvClose">✕ 닫기</button></span></div><div id="rv"></div><small id="rvNote"></small></div></div>
-<div id="card"><div class="cHead"><div id="cTitle"></div><button class="x" onclick="closeCard()">✕</button></div><div class="cTabs"><button data-p="info" class="on">매물 정보</button><button data-p="ph">사진</button><button data-p="rv">로드뷰</button><button data-p="land">건물·토지</button></div><div class="cBody"><div id="p-info" class="pane"></div><div id="p-ph" class="pane"></div><div id="p-rv" class="pane"></div><div id="p-land" class="pane"></div></div></div>
+<div id="card"><div class="cHead"><div id="cTitle"></div><button class="x" onclick="closeCard()">✕</button></div><div class="cTabs"><button data-p="info" class="on">매물 정보</button><button data-p="ph">사진</button><button data-p="rv">로드뷰</button><button data-p="land">건물·토지</button><button data-p="st">상점</button></div><div class="cBody"><div id="p-info" class="pane"></div><div id="p-ph" class="pane"></div><div id="p-rv" class="pane"></div><div id="p-land" class="pane"></div><div id="p-st" class="pane"></div></div></div>
 <div id="ui">
   <h1>🏙 혜화역 부동산 메타버스</h1>
   <small>V월드 지도 · 대학로 혜화72공인중개사사무소 공개 매물</small>
@@ -57,7 +58,7 @@ body.clean #ui{display:none}
   <select id="deal"><option value="">전체 거래</option><option>매매</option><option>전세</option><option>월세</option></select>
   <small id="cnt">매물장부 불러오는 중…</small>
   <div class="row"><button data-mode="2d" class="mb on">2D</button><button data-mode="25d" class="mb">2.5D</button><button data-mode="3d" class="mb">3D</button></div>
-  <div class="row"><select id="style"><option value="vcad">V월드 지적도</option><option value="osm">일반 지도</option><option value="dark">야간 지도</option><option value="vbase">V월드 기본</option><option value="vsat">V월드 위성</option></select>
+  <div class="row"><select id="style"><option value="vbase">기본 지도</option><option value="vcad">지적도 (땅 경계)</option><option value="vsat">위성 사진</option><option value="osm">일반 지도(OSM)</option><option value="dark">야간 지도</option></select>
   <select id="radius"><option value="500">반경 500m</option><option value="250">반경 250m</option><option value="1000">반경 1km</option><option value="0">반경 숨김</option></select></div>
   <input id="maxp" type="number" placeholder="최대 금액 (만원, 매매가·보증금)">
   <div class="row"><button id="ptour" class="sub">🎬 매물 순회</button></div>
@@ -67,7 +68,7 @@ body.clean #ui{display:none}
   <div id="list"></div>
 </div>
 <script>
-const STATION={lon:127.0018,lat:37.5822};
+const STATION={lon:127.0018,lat:37.5822},OFFICE={lon:127.000848,lat:37.584835};
 // 실제 매물: 업무관리 공개 매물 통로(홈페이지 공개 + 계약가능). 좌표는 통로가 주는 약 100m 단위 좌표만 쓴다(정확한 주소 노출 방지).
 const ADM='https://admin.hyehwa72.org',API=ADM+'/sync/pub/listings?lite=1', SITE='https://hyehwa72.org/listing/';
 let EXACT=null,RAW=null;
@@ -76,7 +77,7 @@ const TYPE=c=>/원룸|투룸/.test(c)?'원룸·투룸':/3룸|빌라|단독|다�
 let curType='전체';
 const GROUP=c=>/상가|사무실/.test(c)?'상가·사무실':/원룸|투룸|3룸/.test(c)?'주거 임대':/오피스텔/.test(c)?'오피스텔':'매매 주택·건물';
 const COLORS={'상가·사무실':'#f59e0b','주거 임대':'#34d399','오피스텔':'#a78bfa','매매 주택·건물':'#38bdf8'};
-Cesium.Camera.DEFAULT_VIEW_RECTANGLE=Cesium.Rectangle.fromDegrees(STATION.lon-.009,STATION.lat-.006,STATION.lon+.009,STATION.lat+.006);Cesium.Camera.DEFAULT_VIEW_FACTOR=0;
+Cesium.Camera.DEFAULT_VIEW_RECTANGLE=Cesium.Rectangle.fromDegrees(OFFICE.lon-.006,OFFICE.lat-.004,OFFICE.lon+.006,OFFICE.lat+.004);Cesium.Camera.DEFAULT_VIEW_FACTOR=0;
 const viewer=new Cesium.Viewer('map',{sceneMode:Cesium.SceneMode.SCENE2D,mapProjection:new Cesium.WebMercatorProjection(),baseLayer:Cesium.ImageryLayer.fromProviderAsync(Promise.resolve(new Cesium.OpenStreetMapImageryProvider({url:'https://tile.openstreetmap.org/'}))),
  baseLayerPicker:false,geocoder:false,timeline:false,animation:false,homeButton:false,sceneModePicker:false,navigationHelpButton:false,infoBox:false});
 viewer.scene.globe.depthTestAgainstTerrain=false;
@@ -108,16 +109,16 @@ function priceTxt(p){if(p.deal==='매매')return '매매 '+won(p.price);
 function walk(p){try{const a=JSON.parse(p.near_st).st,s=a.find(x=>x.name==='혜화역')||a[0];return s?s.name+' 도보 약 '+s.min+'분':''}catch(e){return ''}}
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const detail=document.getElementById('detail');
-function show(p){stopAll();history.replaceState(null,'','#'+p.id);detail.style.display='none';$('photoBox').style.display='none';routeTo(p.id,false);openCard(p)}
+function show(p){stopAll();detail.style.display='none';$('photoBox').style.display='none';routeTo(p.id,false);openCard(p)}
 let cardP=null;
 function tab(n){document.querySelectorAll('.cTabs button').forEach(b=>b.classList.toggle('on',b.dataset.p===n));document.querySelectorAll('.pane').forEach(x=>x.classList.toggle('on',x.id==='p-'+n));
- if(n==='rv')cardRV();if(n==='land')cardLand()}
+ if(n==='rv')cardRV();if(n==='land')cardLand();if(n==='st')cardStores()}
 function closeCard(){$('card').style.display='none';if($('p-rv').contains($('rvWrap')))$('rvModal').appendChild($('rvWrap'))}
 const cell=(k,v)=>v?'<div><small>'+k+'</small>'+esc(v)+'</div>':'';
 async function openCard(p){cardP=p;const g=GROUP(p.cat);$('card').style.display='flex';
  $('cTitle').innerHTML='<span class="tag" style="background:'+COLORS[g]+'">'+esc(p.cat)+'</span>'+(p.hp_pick?'<span class="tag" style="background:#f87171">'+esc(p.hp_pick)+'</span>':'')+' <b>'+esc(p.dong)+' '+esc(p.bldg_type||'')+'</b><div class="price" style="color:'+COLORS[g]+'">'+priceTxt(p)+'</div><small>매물번호 '+p.id+' · '+walk(p)+'</small>';
  const phB=document.querySelector('.cTabs [data-p="ph"]');phB.style.display=p.has_photo?'':'none';phB.textContent='사진';tab('info');
- $('p-info').innerHTML='<small>불러오는 중…</small>';$('p-land').innerHTML='';$('p-land').dataset.id='';$('p-ph').innerHTML='';
+ $('p-info').innerHTML='<small>불러오는 중…</small>';$('p-land').innerHTML='';$('p-land').dataset.id='';$('p-st').innerHTML='';$('p-st').dataset.id='';document.querySelectorAll('.cTabs button').forEach(b=>b.style.display='');$('p-ph').innerHTML='';
  let d=p;try{d={...p,...await (await fetch(ADM+'/sync/pub/listing/'+p.id)).json()}}catch(e){}
  if(cardP!==p)return;p._d=d;
  $('p-info').innerHTML='<div class="grid">'+cell('가격',priceTxt(d))+cell('관리비',d.mgmt?d.mgmt+'만원':'')+cell('권리금',d.premium)+cell('면적',d.area_py||(d.excl_m2?d.excl_m2+'㎡':''))+cell('전용면적',d.excl_m2?d.excl_m2+'㎡':'')+cell('해당층',d.floor)+cell('방/욕실',[d.rooms,d.baths].filter(Boolean).join(' · '))+cell('방향',d.direction)+cell('입주가능',d.move_in)+cell('주차',d.parking)+cell('엘리베이터',d.elevator)+'</div>'
@@ -140,6 +141,29 @@ async function cardLand(){const p=cardP,d=p._d||p,el=$('p-land');if(el.dataset.i
   +(b||l?'<small>출처: V월드 도로명주소 건물·연속지적도</small>':'<small>V월드에서 찾지 못했습니다</small>');
  el.innerHTML=h}
 document.querySelectorAll('.cTabs button').forEach(b=>b.onclick=()=>tab(b.dataset.p));
+// 카카오 장소: 관리자=매물 건물 안 상점 / 일반=주변 상점(위치 보호)
+const kp=(fn,...a)=>new Promise(ok=>fn(...a,(r,s,pg)=>ok(s==='OK'?r:[])));
+async function storesInBuilding(lng,lat){await kakaoLoad();const geo=new kakao.maps.services.Geocoder(),ps=new kakao.maps.services.Places();
+ const ad=(await kp(geo.coord2Address.bind(geo),lng,lat))[0];if(!ad)return{title:'',list:[]};const road=ad.road_address,jb=ad.address&&ad.address.address_name;
+ const q=road?road.address_name:jb;let list=[];for(let page=1;page<=3;page++){const r=await new Promise(ok=>ps.keywordSearch(q,(r,s,pg)=>ok({r:s==='OK'?r:[],last:!pg||pg.current>=pg.last}),{location:new kakao.maps.LatLng(lat,lng),radius:80,size:15,page}));list.push(...r.r);if(r.last)break}
+ list=list.filter(x=>(road&&x.road_address_name===road.address_name)||x.address_name===jb);
+ return{title:(road&&road.building_name)||q,addr:jb,road:road&&road.address_name,list}}
+async function storesNear(lng,lat){await kakaoLoad();const ps=new kakao.maps.services.Places(),loc=new kakao.maps.LatLng(lat,lng);
+ const cats=['FD6','CE7','CS2','HP8','PM9','BK9','MT1','AC5'];const all=(await Promise.all(cats.map(c=>kp(ps.categorySearch.bind(ps),c,{location:loc,radius:150,sort:kakao.maps.services.SortBy.DISTANCE})))).flat();
+ const seen=new Set();return all.filter(x=>!seen.has(x.id)&&seen.add(x.id)).sort((a,b)=>a.distance-b.distance).slice(0,40)}
+const stRow=x=>'<div class="st" onclick="window.open(\''+x.place_url+'\',\'_blank\')"><div>📍 <b>'+esc(x.place_name)+'</b><br><small>'+esc((x.category_name||'').split(' > ').slice(-1)[0])+(x.distance?' · '+x.distance+'m':'')+'</small></div><div class="ph">'+esc(x.phone||'')+'</div></div>';
+async function cardStores(){const p=cardP,el=$('p-st');if(el.dataset.id==(p.id||'office'))return;el.dataset.id=p.id||'office';el.innerHTML='<small>카카오맵에서 불러오는 중…</small>';
+ try{if(p.office||EXACT){const b=await storesInBuilding(p.lng,p.lat);if(cardP!==p)return;
+   el.innerHTML='<h3 style="margin:2px 0">'+esc(b.title||'이 건물')+'</h3><small>'+esc(b.addr?'(지번) '+b.addr:'')+'</small><p><small>건물 안 상점 '+b.list.length+'곳 · 누르면 카카오맵 소개 페이지가 열립니다'+(p.office?'':' (관리자 전용)')+'</small></p>'+(b.list.map(stRow).join('')||'<small>등록된 상점이 없습니다</small>')}
+  else{const l=await storesNear(p.lng,p.lat);if(cardP!==p)return;
+   el.innerHTML='<h4 style="margin:2px 0">매물 주변 상권 (약 150m)</h4><p><small>음식점·카페·편의점·병원·약국·은행·마트·학원 · 누르면 카카오맵 소개 페이지가 열립니다. 매물이 있는 건물은 문의하시면 안내해 드립니다.</small></p>'+(l.map(stRow).join('')||'<small>주변 상점 정보가 없습니다</small>')}
+ }catch(e){el.innerHTML='<small>상점 정보를 불러오지 못했습니다: '+esc(e.message)+'</small>'}}
+// 사무소 표시 + 누르면 사무소 건물 상점(스샷 형식)
+viewer.entities.add({id:'office',position:Cesium.Cartesian3.fromDegrees(OFFICE.lon,OFFICE.lat,5),point:{pixelSize:16,color:Cesium.Color.fromCssColorString('#facc15'),outlineColor:Cesium.Color.BLACK,outlineWidth:2,disableDepthTestDistance:Number.POSITIVE_INFINITY},
+ label:{text:'🏠 혜화72 부동산',font:'bold 14px sans-serif',pixelOffset:new Cesium.Cartesian2(0,-22),fillColor:Cesium.Color.fromCssColorString('#0f172a'),showBackground:true,backgroundColor:Cesium.Color.fromCssColorString('#facc15'),disableDepthTestDistance:Number.POSITIVE_INFINITY}});
+function openOffice(){stopAll();const p={office:true,id:0,lng:OFFICE.lon,lat:OFFICE.lat};cardP=p;$('card').style.display='flex';
+ $('cTitle').innerHTML='<b style="font-size:18px">대학로혜화72공인중개사사무소</b><div class="price" style="color:#facc15;font-size:16px">02-766-0720</div><small>서울 종로구 창경궁로 266, 1층 (혜화역 4번 출구 근처)</small>';
+ document.querySelectorAll('.cTabs button').forEach(b=>b.style.display=b.dataset.p==='st'?'':'none');$('p-st').dataset.id='';tab('st')}
 function showCell(c){detail.style.display='block';detail.innerHTML='<b>이 구역 매물 '+c.items.length+'건</b>'+c.items.map(p=>`<div class="item" data-id="${p.id}"><small>${esc(p.cat)} · ${priceTxt(p)}</small></div>`).join('');detail.querySelectorAll('.item').forEach(el=>el.onclick=()=>show(PROPS.find(p=>p.id==el.dataset.id)))}
 function cellList(c){stopAll();detail.style.display='block';detail.innerHTML='<b>이 구역 매물 '+c.items.length+'건</b>'+c.items.map(p=>`<div class="item" data-id="${p.id}"><small>${esc(p.cat)} · ${priceTxt(p)} · ${esc(p.floor||'')}</small></div>`).join('');
  detail.querySelectorAll('.item').forEach(el=>el.onclick=()=>show(PROPS.find(p=>p.id==el.dataset.id)));
@@ -161,14 +185,14 @@ function render(){pins.forEach(e=>viewer.entities.remove(e));pins=[];
 document.getElementById('onlyPhoto').onchange=render;document.getElementById('deal').onchange=render;
 function useData(d,fresh){PROPS=d.filter(p=>p.lat&&p.lng).map(p=>EXACT&&EXACT[p.id]?{...p,lat:EXACT[p.id].lat,lng:EXACT[p.id].lng}:p);const tb=document.getElementById('types');tb.className='chips';tb.innerHTML=TYPES.map(t=>{const n=t==='전체'?PROPS.length:PROPS.filter(p=>TYPE(p.cat)===t).length;return n?`<button class="chip${t===curType?' on':''}" data-t="${t}">${t} ${n}</button>`:''}).join('');
  tb.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{curType=b.dataset.t;tb.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===b));render()});render();
- const id=+location.hash.slice(1),hp=PROPS.find(p=>p.id===id);if(hp&&!window._opened){window._opened=1;show(hp)}}
+}
 async function boot(){
- try{const c=await (await fetch(ADM+'/sync/pub/config')).json();window.CFG=c;if(c.vworldKey&&vkey()!==c.vworldKey){try{localStorage.setItem('vwkey',c.vworldKey)}catch(e){}keyEl.placeholder='V월드 키 자동 적용됨 (바꿀 때만 입력)';setVworld(c.vworldKey);loadBuildings(c.vworldKey);$('style').value='vcad';$('style').onchange({target:$('style')})}}catch(e){window.CFG={}}
+ try{const c=await (await fetch(ADM+'/sync/pub/config')).json();window.CFG=c;if(c.vworldKey&&vkey()!==c.vworldKey){try{localStorage.setItem('vwkey',c.vworldKey)}catch(e){}keyEl.placeholder='V월드 키 자동 적용됨 (바꿀 때만 입력)';setVworld(c.vworldKey);loadBuildings(c.vworldKey);$('style').value='vbase';$('style').onchange({target:$('style')})}}catch(e){window.CFG={}}
  try{const r=await fetch(ADM+'/api/mv/coords',{credentials:'include'});if(r.ok){const a=await r.json();EXACT={};a.forEach(x=>EXACT[x.id]=x);$('adm').style.display='block'}}catch(e){}
  try{const c=JSON.parse(localStorage.getItem('h72props2')||'null');if(c)useData(c)}catch(e){}
 fetch(API).then(r=>r.json()).then(d=>{useData(d);try{localStorage.setItem('h72props2',JSON.stringify(d))}catch(e){}})
  .catch(e=>document.getElementById('cnt').textContent='매물장부 불러오기 실패: '+e.message);}
-new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas).setInputAction(e=>{const o=viewer.scene.pick(e.position);if(o&&o.id&&/^c\d+$/.test(String(o.id.id)))cellList(cells[+o.id.id.slice(1)])},Cesium.ScreenSpaceEventType.LEFT_CLICK);
+new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas).setInputAction(e=>{const o=viewer.scene.pick(e.position);if(o&&o.id&&o.id.id==='office')return openOffice();if(o&&o.id&&/^c\d+$/.test(String(o.id.id)))cellList(cells[+o.id.id.slice(1)])},Cesium.ScreenSpaceEventType.LEFT_CLICK);
 // 혜화역 회전 투어
 let tour=null;
 function home(){viewer.camera.flyTo({destination:Cesium.Cartesian3.fromDegrees(STATION.lon,STATION.lat-0.012,1100),orientation:{pitch:Cesium.Math.toRadians(-40)}})}
@@ -181,10 +205,10 @@ const $=id=>document.getElementById(id),toast=(t,ms=3500)=>{const e=$('toast');e
 let stopFns=[];function stopAll(){stopFns.forEach(f=>f());stopFns=[];if(tour){tour();tour=null}viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY)}
 document.querySelectorAll('.mb').forEach(b=>b.onclick=()=>{stopAll();document.querySelectorAll('.mb').forEach(x=>x.classList.toggle('on',x===b));
  const s=viewer.scene,m=b.dataset.mode;m==='2d'?s.morphTo2D(0):m==='25d'?s.morphToColumbusView(0):s.morphTo3D(0)});
-function view(){const M=viewer.scene.mode;if(M===Cesium.SceneMode.SCENE3D)return home();if(M===Cesium.SceneMode.COLUMBUS_VIEW)return viewer.camera.setView({destination:Cesium.Cartesian3.fromDegrees(STATION.lon,STATION.lat-0.011,1000),orientation:{heading:0,pitch:Cesium.Math.toRadians(-45),roll:0}});viewer.camera.setView({destination:Cesium.Rectangle.fromDegrees(STATION.lon-.009,STATION.lat-.006,STATION.lon+.009,STATION.lat+.006)})}
+function view(){const M=viewer.scene.mode;if(M===Cesium.SceneMode.SCENE3D)return home();if(M===Cesium.SceneMode.COLUMBUS_VIEW)return viewer.camera.setView({destination:Cesium.Cartesian3.fromDegrees(STATION.lon,STATION.lat-0.011,1000),orientation:{heading:0,pitch:Cesium.Math.toRadians(-45),roll:0}});viewer.camera.setView({destination:Cesium.Rectangle.fromDegrees(OFFICE.lon-.006,OFFICE.lat-.004,OFFICE.lon+.006,OFFICE.lat+.004)})}
 viewer.scene.morphComplete.addEventListener(()=>{return view();if(viewer.scene.mode===Cesium.SceneMode.SCENE3D)return home();
  if(viewer.scene.mode===Cesium.SceneMode.COLUMBUS_VIEW)return viewer.camera.setView({destination:Cesium.Cartesian3.fromDegrees(STATION.lon,STATION.lat-0.011,1000),orientation:{heading:0,pitch:Cesium.Math.toRadians(-45),roll:0}});
- viewer.camera.setView({destination:Cesium.Rectangle.fromDegrees(STATION.lon-.009,STATION.lat-.006,STATION.lon+.009,STATION.lat+.006)})});
+ viewer.camera.setView({destination:Cesium.Rectangle.fromDegrees(OFFICE.lon-.006,OFFICE.lat-.004,OFFICE.lon+.006,OFFICE.lat+.004)})});
 const vkey=()=>{try{return localStorage.getItem('vwkey')||''}catch(e){return ''}};
 $('style').onchange=e=>{const v=e.target.value,L=viewer.imageryLayers,k=vkey();
  if(v[0]==='v'&&!k){toast('V월드 인증키를 먼저 넣어 주세요');e.target.value='osm';return}
@@ -210,7 +234,7 @@ async function cadLoad(){if(!cadOn)return;const r=viewRect();if(!r)return;
  if(cadSrc)viewer.dataSources.remove(cadSrc);cadSrc=ds;ds.entities.values.forEach(e=>{if(e.polygon){e.polygon.outline=false;e.polyline=new Cesium.PolylineGraphics({positions:e.polygon.hierarchy.getValue().positions.concat([e.polygon.hierarchy.getValue().positions[0]]),width:1.5,material:Cesium.Color.fromCssColorString('#f59e0b').withAlpha(.9),clampToGround:false});e.polygon=undefined}});
  viewer.dataSources.add(ds);viewer.scene.requestRender()}
 viewer.camera.moveEnd.addEventListener(()=>{clearTimeout(cadT);cadT=setTimeout(cadLoad,300)});
-if(vkey()){$('style').value='vcad';$('style').onchange({target:$('style')})}
+if(vkey()){$('style').value='vbase';$('style').onchange({target:$('style')})}
 let routeEnt=null,walker=null;
 window.routeTo=async (id,play=true)=>{const p=PROPS.find(x=>x.id===id);stopAll();toast('길 찾는 중…',0);let pts,dist;
  try{const r=await (await fetch('https://routing.openstreetmap.de/routed-foot/route/v1/foot/'+STATION.lon+','+STATION.lat+';'+p.lng+','+p.lat+'?overview=full&geometries=geojson')).json();
@@ -249,7 +273,7 @@ window.openPhotos=async id=>{const box=$('photoBox');box.style.display='block';$
  }catch(e){$('phMain').innerHTML='<small>사진을 불러오지 못했습니다</small>'}};
 // 카카오 로드뷰: 매물 앞(관리자) 또는 근처 골목(일반), 경로를 따라 넘겨 보기
 let kakaoP=null;function kakaoLoad(){if(kakaoP)return kakaoP;const k=(window.CFG||{}).kakaoJsKey;if(!k)return Promise.reject(new Error('카카오 키 없음'));
- kakaoP=new Promise((ok,no)=>{const s=document.createElement('script');s.src='https://dapi.kakao.com/v2/maps/sdk.js?appkey='+k+'&autoload=false';s.onload=()=>kakao.maps.load(ok);s.onerror=()=>{kakaoP=null;no(new Error('카카오 지도 불러오기 실패 (등록 도메인 확인)'))};document.head.appendChild(s)});return kakaoP}
+ kakaoP=new Promise((ok,no)=>{const s=document.createElement('script');s.src='https://dapi.kakao.com/v2/maps/sdk.js?appkey='+k+'&libraries=services&autoload=false';s.onload=()=>kakao.maps.load(ok);s.onerror=()=>{kakaoP=null;no(new Error('카카오 지도 불러오기 실패 (등록 도메인 확인)'))};document.head.appendChild(s)});return kakaoP}
 let rv=null,rvc=null,rvPts=[],rvI=0;
 function rvGo(i){rvI=Math.max(0,Math.min(rvPts.length-1,i));const [lng,lat]=rvPts[rvI],last=rvI===rvPts.length-1;
  rvc.getNearestPanoId(new kakao.maps.LatLng(lat,lng),last&&!EXACT?120:60,pid=>{if(pid){rv.setPanoId(pid,new kakao.maps.LatLng(lat,lng));$('rvNote').textContent=''}else $('rvNote').textContent='이 지점은 로드뷰 사진이 없습니다. 다음으로 넘겨 보세요.'});
