@@ -38,9 +38,9 @@ body.clean #ui{display:none}
 <div id="rvModal"><div class="rvbar"><b id="rvTitle">로드뷰</b><span><button id="rvPrev">◀ 이전</button><button id="rvNext">다음 ▶</button><button id="rvClose">✕ 닫기</button></span></div><div id="rv"></div><small id="rvNote"></small></div>
 <div id="ui">
   <h1>🏙 혜화역 부동산 메타버스</h1>
-  <small>V월드 3D 지도 · 대학로 혜화72공인중개사사무소 공개 매물</small>
-  <input id="key" autocomplete="off" placeholder="V월드 API 인증키 (vworld.kr 발급)">
-  <button id="applyKey">V월드 위성지도 + 3D 건물 적용</button>
+  <small>V월드 지도 · 대학로 혜화72공인중개사사무소 공개 매물</small>
+  <input id="key" style="display:none" autocomplete="off" placeholder="V월드 API 인증키 (vworld.kr 발급)">
+  <button id="applyKey" style="display:none">V월드 위성지도 + 3D 건물 적용</button>
   <small id="bstat"></small><div id="adm">🔑 관리자 모드: 정확한 위치로 경로·로드뷰를 보여 줍니다 (브리핑용)</div>
   <div id="types"></div><label style="font-size:13px;display:flex;gap:6px;align-items:center"><input type="checkbox" id="onlyPhoto" style="width:auto;margin:0">📷 사진 있는 매물만</label>
   <select id="deal"><option value="">전체 거래</option><option>매매</option><option>전세</option><option>월세</option></select>
@@ -82,24 +82,7 @@ function jsonp(url){return new Promise((ok,no)=>{const cb='vw'+Math.random().toS
  const t=setTimeout(()=>{cleanup();no(new Error('timeout'))},15000);
  function cleanup(){clearTimeout(t);delete window[cb];s.remove()}
  window[cb]=d=>{cleanup();ok(d)};s.onerror=()=>{cleanup();no(new Error('load'))};s.src=url+'&callback='+cb;document.head.appendChild(s)})}
-async function loadBuildings(key){
- const d=0.006,box=`BOX(${STATION.lon-d},${STATION.lat-d*0.8},${STATION.lon+d},${STATION.lat+d*0.8})`;
- const feats=[];bstat.textContent='3D 건물 불러오는 중…';
- try{for(let page=1;page<=10;page++){
-   const u=`https://api.vworld.kr/req/data?service=data&request=GetFeature&data=LT_C_SPBD&key=${key}&domain=${encodeURIComponent(location.origin)}&format=json&size=1000&page=${page}&geometry=true&attribute=true&crs=EPSG:4326&geomFilter=${box}`;
-   const r=await jsonp(u),res=r.response;
-   if(res.status!=='OK'){if(page===1)throw new Error(res.error?res.error.text:res.status);break}
-   feats.push(...res.result.featureCollection.features);
-   if(page>=+res.page.total)break}
- }catch(e){bstat.textContent='건물 로드 실패: '+e.message+' (인증키·등록 도메인 확인)';return}
- if(bldSrc)viewer.dataSources.remove(bldSrc);
- bldSrc=await Cesium.GeoJsonDataSource.load({type:'FeatureCollection',features:feats});
- bldSrc.entities.values.forEach(e=>{if(!e.polygon)return;const p=e.properties;
-  const fl=Math.max(1,+(p.gro_flo_co&&p.gro_flo_co.getValue())||1);
-  e.polygon.extrudedHeight=fl*3.2;e.polygon.height=0;e.polygon.outline=false;
-  e.polygon.material=Cesium.Color.fromCssColorString('#e2e8f0').withAlpha(.85);
-  e.description=undefined});
- viewer.dataSources.add(bldSrc);bstat.textContent=`V월드 건물 ${feats.length}동 표시 중`}
+function loadBuildings(){} // 3D 건물 상자는 쓰지 않음(대표 결정 11-06: 위성·지도만)
 if(saved)loadBuildings(saved);
 // 혜화역 마커
 viewer.entities.add({position:Cesium.Cartesian3.fromDegrees(STATION.lon,STATION.lat,5),point:{pixelSize:14,color:Cesium.Color.fromCssColorString('#3b82f6'),outlineColor:Cesium.Color.WHITE,outlineWidth:3},
