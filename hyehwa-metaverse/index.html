@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>혜화72부동산 메타버스 · 대학로 혜화72공인중개사사무소</title>
+<title>대학로 혜화72부동산 · 매물 지도</title>
 <script src="https://cdn.jsdelivr.net/npm/cesium@1.120.0/Build/Cesium/Cesium.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/cesium@1.120.0/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
 <style>
@@ -45,7 +45,25 @@ body.clean #ui{display:none}
 #adm{display:none;font-size:12px;color:#facc15}
 .chips{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0}.chip{width:auto;padding:5px 11px;margin:0;font-size:13px;border-radius:999px;background:rgba(20,24,45,.8);color:var(--fg);border:1px solid rgba(139,147,184,.22)}.chip.on{background:linear-gradient(135deg,#00e5ff,#ff2bd6);color:#05060d;box-shadow:0 0 12px rgba(255,43,214,.35)}
 .tag{display:inline-block;font-size:11px;padding:1px 6px;border-radius:6px;margin-right:4px;color:#0f172a}
-</style>
+/* 2026-11-06 구글 AI 스튜디오풍: 차분한 회색 면 + 파란 강조 하나 + 분류 아이콘 */
+:root{--bg:#131314;--panel:#1e1f20;--fg:#e3e3e3;--accent:#8ab4f8;--muted:#9aa0a6;--line:#3c4043;--soft:#28292a}
+html,body,#map{font-family:'Google Sans','Pretendard','Noto Sans KR',sans-serif}
+#ui{background:var(--panel);backdrop-filter:none;-webkit-backdrop-filter:none;border:1px solid var(--line);border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,.45)}
+#ui::-webkit-scrollbar-thumb{background:#5f6368}
+h1{font-size:18px;font-weight:600;color:#e3e3e3;background:none;-webkit-text-fill-color:currentColor}h1 .n72{color:var(--accent);font-weight:800;font-size:1.15em}
+input,select,button{border:1px solid var(--line);background:var(--soft);border-radius:10px}
+input:focus,select:focus{border-color:var(--accent);box-shadow:none}
+button{background:var(--soft);color:var(--fg);font-weight:500;border:1px solid var(--line)}button:hover{box-shadow:none;background:#333537}
+.mb,.sub{background:var(--soft);border:1px solid var(--line)}.mb.on{background:#394457;color:#d3e3fd;border-color:#394457}
+.chip{background:transparent;border:1px solid var(--line);border-radius:8px}.chip.on{background:#394457;color:#d3e3fd;border-color:#394457;box-shadow:none}
+.item{background:transparent;border:1px solid transparent;border-left:0;border-bottom:1px solid var(--line);border-radius:10px;padding:9px 8px 9px 40px;position:relative}
+.item::before{content:attr(data-ic);position:absolute;left:8px;top:9px;width:24px;height:24px;border-radius:7px;background:color-mix(in srgb,var(--c) 18%,transparent);display:grid;place-items:center;font-size:13px}
+.item:hover{background:var(--soft);border-color:transparent;box-shadow:none}.item b{color:var(--fg);font-weight:600}
+.grp{border:1px solid var(--line);background:#232425;box-shadow:none;border-radius:12px}.grp .gh{color:var(--fg);font-weight:600}.grp .gh::before{content:'🏢 '}.grp .gn{background:#394457;color:#d3e3fd;box-shadow:none}
+a.cta{background:#394457;color:#d3e3fd;font-weight:600}
+#card{background:var(--panel);backdrop-filter:none;border:1px solid var(--line);border-radius:16px}
+.grid div,.desc{background:var(--soft);border:0}
+#detail,#toast,.pop,#rvModal{border-color:var(--line)}</style>
 </head>
 <body>
 <div id="map"></div><div id="toast"></div>
@@ -53,7 +71,7 @@ body.clean #ui{display:none}
 <div id="rvModal"><div id="rvWrap"><div class="rvbar"><b id="rvTitle">로드뷰</b><span><button id="rvPrev">◀ 이전</button><button id="rvNext">다음 ▶</button><button id="rvClose">✕ 닫기</button></span></div><div id="rv"></div><small id="rvNote"></small></div></div>
 <div id="card"><div class="cHead"><div id="cTitle"></div><button class="x" onclick="closeCard()">✕</button></div><div class="cTabs"><button data-p="info" class="on">매물 정보</button><button data-p="ph">사진</button><button data-p="rv">로드뷰</button><button data-p="land">건물·토지</button><button data-p="st">상점</button></div><div class="cBody"><div id="p-info" class="pane"></div><div id="p-ph" class="pane"></div><div id="p-rv" class="pane"></div><div id="p-land" class="pane"></div><div id="p-st" class="pane"></div></div></div>
 <div id="ui">
-  <h1>🏙 혜화<span style="color:#ff2bd6;-webkit-text-fill-color:#ff2bd6;font-size:1.3em;font-weight:900;text-shadow:0 0 12px rgba(255,43,214,.7)">72</span>부동산 메타버스</h1>
+  <h1>대학로 혜화<span class="n72">72</span>부동산</h1>
   <small>V월드 지도 · 대학로 혜화72공인중개사사무소 공개 매물</small>
   <input id="key" style="display:none" autocomplete="off" placeholder="V월드 API 인증키 (vworld.kr 발급)">
   <button id="applyKey" style="display:none">V월드 위성지도 + 3D 건물 적용</button>
@@ -79,7 +97,7 @@ const TYPES=['전체','원룸·투룸','주택','오피스텔','상가','사무�
 const TYPE=c=>/원룸|투룸/.test(c)?'원룸·투룸':/3룸|빌라|단독|다가구|아파트/.test(c)?'주택':/오피스텔/.test(c)?'오피스텔':/상가/.test(c)?'상가':/사무실/.test(c)?'사무실':/건물/.test(c)?'건물':'주택';
 let curType='전체';
 const GROUP=p=>{const c=typeof p==='string'?p:(p.cat||''),d=typeof p==='string'?'':(p.deal||'');return d==='매매'||/매매|건물/.test(c)?'매매':/상가|사무실/.test(c)?'상가·사무실':/원룸|투룸|3룸/.test(c)?'원룸·주거 임대':'오피스텔·기타 임대'};
-const COLORS={'매매':'#f0294f','상가·사무실':'#2563eb','원룸·주거 임대':'#12d98a','오피스텔·기타 임대':'#9d4edd'};
+const COLORS={'매매':'#d93025','상가·사무실':'#1a73e8','원룸·주거 임대':'#188038','오피스텔·기타 임대':'#9334e6'};const ICON={'매매':'🏢','상가·사무실':'🏪','원룸·주거 임대':'🏠','오피스텔·기타 임대':'🏬'};
 Cesium.Camera.DEFAULT_VIEW_RECTANGLE=Cesium.Rectangle.fromDegrees(OFFICE.lon-.006,OFFICE.lat-.004,OFFICE.lon+.006,OFFICE.lat+.004);Cesium.Camera.DEFAULT_VIEW_FACTOR=0;
 const viewer=new Cesium.Viewer('map',{sceneMode:Cesium.SceneMode.SCENE2D,mapProjection:new Cesium.WebMercatorProjection(),baseLayer:Cesium.ImageryLayer.fromProviderAsync(Promise.resolve(new Cesium.OpenStreetMapImageryProvider({url:'https://tile.openstreetmap.org/'}))),
  baseLayerPicker:false,geocoder:false,timeline:false,animation:false,homeButton:false,sceneModePicker:false,navigationHelpButton:false,infoBox:false});
@@ -127,7 +145,7 @@ async function openCard(p){cardP=p;const g=GROUP(p);$('card').style.display='fle
  if(cardP!==p)return;p._d=d;
  $('p-info').innerHTML='<div class="grid">'+cell('가격',priceTxt(d))+cell('관리비',d.mgmt?d.mgmt+'만원':'')+cell('권리금',d.premium)+cell('면적',d.area_py||(d.excl_m2?d.excl_m2+'㎡':''))+cell('전용면적',d.excl_m2?d.excl_m2+'㎡':'')+cell('해당층',d.floor)+cell('방/욕실',[d.rooms,d.baths].filter(Boolean).join(' · '))+cell('방향',d.direction)+cell('입주가능',d.move_in)+cell('주차',d.parking)+cell('엘리베이터',d.elevator)+'</div>'
   +(d.features?'<p><b>'+esc(d.features)+'</b></p>':'')+'<div class="desc">'+esc(d.ad_desc||'')+'</div>'
-  +(EXACT&&EXACT[p.id]?'<button class="cta" style="width:100%;border:0;cursor:pointer;background:#22c55e" onclick="addHere('+p.id+')">➕ 이 건물에 매물 추가 입력 (다른 층·호수)</button>':'')+'<a class="cta" href="'+SITE+p.id+'" target="_blank">홈페이지에서 보기 · 문의하기</a><a class="cta" href="https://pf.kakao.com/_virmX/chat" target="_blank" style="background:#FEE500;color:#191919">💬 카카오톡으로 문의 (매물번호 '+p.id+')</a><p><small>대학로혜화72공인중개사사무소 · 02-766-0720 · 위치는 '+(EXACT?'정확한 위치(관리자)':'약 100m 범위로 표시')+'</small></p>';
+  +(EXACT&&EXACT[p.id]?'<button class="cta" style="width:100%;border:0;cursor:pointer;background:#22c55e" onclick="addHere('+p.id+')">➕ 이 건물에 매물 추가 입력 (다른 층·호수)</button>':'')+'<a class="cta" href="'+SITE+p.id+'" target="_blank">홈페이지에서 보기 · 문의하기</a><a class="cta" href="https://pf.kakao.com/_virmX/chat" target="_blank" rel="noopener" style="background:#FEE500;color:#191919">💬 카카오톡으로 문의 (매물번호 '+p.id+')</a><p><small>대학로혜화72공인중개사사무소 · 02-766-0720 · 위치는 '+(EXACT?'정확한 위치(관리자)':'약 100m 범위로 표시')+'</small></p>';
  if(d.photos&&d.photos.length){const big=i=>$('p-ph').querySelector('.big').src=ADM+'/sync/pub/photo/'+d.photos[i];
   $('p-ph').innerHTML='<img class="big" alt="매물 사진"><div class="th">'+d.photos.map((x,i)=>'<img loading="lazy" data-i="'+i+'" src="'+ADM+'/sync/pub/photo/'+x+'">').join('')+'</div>';
   $('p-ph').querySelectorAll('.th img').forEach(im=>im.onclick=()=>big(+im.dataset.i));big(0);phB.textContent='사진 '+d.photos.length;phB.style.display=''}
@@ -206,18 +224,18 @@ function render(){pins.forEach(e=>viewer.entities.remove(e));pins=[];
  cells.forEach((c,i)=>{const g=GROUP(c.items[0]),col=Cesium.Color.fromCssColorString(COLORS[g]),H=70;
   pins.push(viewer.entities.add({polyline:{positions:Cesium.Cartesian3.fromDegreesArrayHeights([c.lng,c.lat,0,c.lng,c.lat,H]),width:2,material:col.withAlpha(.7)}}));
   pins.push(viewer.entities.add({id:'c'+i,position:Cesium.Cartesian3.fromDegrees(c.lng,c.lat,H),point:{pixelSize:c.items.length>1?20:14,color:col,outlineColor:Cesium.Color.WHITE,outlineWidth:2,disableDepthTestDistance:Number.POSITIVE_INFINITY},
-   label:{text:c.items.length>1?c.items.length+'건':priceTxt(c.items[0]),font:'bold 13px sans-serif',pixelOffset:new Cesium.Cartesian2(0,-20),showBackground:true,backgroundColor:col.withAlpha(.95),backgroundPadding:new Cesium.Cartesian2(8,5),fillColor:g==='원룸·주거 임대'?Cesium.Color.fromCssColorString('#04140c'):Cesium.Color.WHITE,disableDepthTestDistance:Number.POSITIVE_INFINITY,distanceDisplayCondition:new Cesium.DistanceDisplayCondition(0,c.items.length>1?2500:900)}}))});
+   label:{text:ICON[g]+' '+(c.items.length>1?c.items.length+'건':priceTxt(c.items[0])),font:'600 13px Pretendard, sans-serif',pixelOffset:new Cesium.Cartesian2(0,-20),showBackground:true,backgroundColor:Cesium.Color.fromCssColorString('#ffffff').withAlpha(.96),backgroundPadding:new Cesium.Cartesian2(9,5),fillColor:Cesium.Color.fromCssColorString('#1f1f1f'),disableDepthTestDistance:Number.POSITIVE_INFINITY,distanceDisplayCondition:new Cesium.DistanceDisplayCondition(0,c.items.length>1?2500:900)}}))});
  viewer.scene.requestRender();setTimeout(()=>viewer.scene.requestRender(),500);
  const why=[document.getElementById('deal').value&&('거래: '+document.getElementById('deal').value),document.getElementById('onlyPhoto').checked&&'사진 있는 매물만',$('maxp').value&&('최대 '+$('maxp').value+'만원')].filter(Boolean);
  document.getElementById('cnt').innerHTML='공개 매물 '+list.length+'건 표시 중'+(why.length?' <small style="color:#facc15">(조건: '+why.join(', ')+')</small> <a href="#" id="clr" style="color:var(--accent)">조건 풀기</a>':'');
  const clr=document.getElementById('clr');if(clr)clr.onclick=e=>{e.preventDefault();document.getElementById('deal').value='';document.getElementById('onlyPhoto').checked=false;$('maxp').value='';render()};
  const L=document.getElementById('list');L.innerHTML='';
- const row=(p,inG)=>{const el=document.createElement('div');el.className='item';el.style.setProperty('--c',COLORS[GROUP(p)]);
+ const row=(p,inG)=>{const el=document.createElement('div');el.className='item';el.style.setProperty('--c',COLORS[GROUP(p)]);el.dataset.ic=ICON[GROUP(p)];
   el.innerHTML=`<b>${inG?(p.floor?esc(p.floor)+(/층|지하|B/i.test(p.floor)?'':'층')+' · ':'')+esc(p.cat):esc(p.dong)+' '+esc(p.cat)}</b>${p.hp_pick?' <span class="tag" style="background:#f87171">'+esc(p.hp_pick)+'</span>':''}${p.has_photo?' 📷':''}<br><small>${priceTxt(p)}${inG?'':' · '+walk(p)}</small>`;el.onclick=()=>show(p);return el};
  const seen=new Set();let n=0;
  for(const p of list){if(n>=80)break;const k=p.lat+','+p.lng;if(seen.has(k))continue;seen.add(k);const c=m[k];
   if(c.items.length<2){L.appendChild(row(p));n++;continue}
-  const g=document.createElement('div');g.className='grp';g.innerHTML=`<div class="gh">🏢 같은 건물 매물 <span class="gn">${c.items.length}건</span><br><small>${esc(p.dong)} · ${walk(p)}</small></div>`;
+  const g=document.createElement('div');g.className='grp';g.innerHTML=`<div class="gh">같은 건물 매물 <span class="gn">${c.items.length}건</span><br><small>${esc(p.dong)} · ${walk(p)}</small></div>`;
   g.querySelector('.gh').onclick=()=>cellList(c);c.items.forEach(x=>g.appendChild(row(x,true)));L.appendChild(g);n+=c.items.length}}
 document.getElementById('onlyPhoto').onchange=render;document.getElementById('deal').onchange=render;
 function useData(d,fresh){PROPS=d.filter(p=>p.lat&&p.lng).map(p=>EXACT&&EXACT[p.id]?{...p,lat:EXACT[p.id].lat,lng:EXACT[p.id].lng}:p);const tb=document.getElementById('types');tb.className='chips';tb.innerHTML=TYPES.map(t=>{const n=t==='전체'?PROPS.length:PROPS.filter(p=>TYPE(p.cat)===t).length;return n?`<button class="chip${t===curType?' on':''}" data-t="${t}">${t} ${n}</button>`:''}).join('');
