@@ -246,7 +246,7 @@ function render(){pins.forEach(e=>viewer.entities.remove(e));pins=[];
   const g=document.createElement('div');g.className='grp';g.innerHTML=`<div class="gh">같은 건물 매물 <span class="gn">${c.items.length}건</span><br><small>${esc(p.dong)} · ${walk(p)}</small></div>`;
   g.querySelector('.gh').onclick=()=>cellList(c);c.items.forEach(x=>g.appendChild(row(x,true)));L.appendChild(g);n+=c.items.length}}
 document.getElementById('onlyPhoto').onchange=render;document.getElementById('deal').onchange=render;
-function useData(d,fresh){PROPS=d.filter(p=>p.lat&&p.lng).map(p=>EXACT&&EXACT[p.id]?{...p,lat:EXACT[p.id].lat,lng:EXACT[p.id].lng}:p);const tb=document.getElementById('types');tb.className='chips';tb.innerHTML=TYPES.map(t=>{const n=t==='전체'?PROPS.length:PROPS.filter(p=>TYPE(p.cat)===t).length;return n?`<button class="chip${t===curType?' on':''}" data-t="${t}">${t} ${n}</button>`:''}).join('');
+function useData(d,fresh){PROPS=d.filter(p=>p.lat&&p.lng).map(p=>EXACT&&EXACT[p.id]?{...p,lat:EXACT[p.id].lat,lng:EXACT[p.id].lng,floor:EXACT[p.id].floor||p.floor}:p);const tb=document.getElementById('types');tb.className='chips';tb.innerHTML=TYPES.map(t=>{const n=t==='전체'?PROPS.length:PROPS.filter(p=>TYPE(p.cat)===t).length;return n?`<button class="chip${t===curType?' on':''}" data-t="${t}">${t} ${n}</button>`:''}).join('');
  tb.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{curType=b.dataset.t;tb.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===b));render()});render();
 }
 async function boot(){
