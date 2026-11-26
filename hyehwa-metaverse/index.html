@@ -138,7 +138,7 @@ function tab(n){document.querySelectorAll('.cTabs button').forEach(b=>b.classLis
 function closeCard(){$('card').style.display='none';$('card').classList.remove('wide');if(typeof embedded!=='undefined'&&embedded){embedded=false;$('p-info').innerHTML='';fetch(API+'&t='+Date.now()).then(r=>r.json()).then(d=>{useData(d);try{localStorage.setItem('h72props2',JSON.stringify(d))}catch(e){}}).catch(()=>{})}if(typeof pickEnt!=='undefined'&&pickEnt){viewer.dataSources.remove(pickEnt);pickEnt=null;viewer.scene.requestRender()}if($('p-rv').contains($('rvWrap')))$('rvModal').appendChild($('rvWrap'))}
 const cell=(k,v)=>v?'<div><small>'+k+'</small>'+esc(v)+'</div>':'';
 async function openCard(p){cardP=p;const g=GROUP(p);$('card').style.display='flex';
- $('cTitle').innerHTML='<span class="tag" style="background:'+COLORS[g]+'">'+esc(p.cat)+'</span>'+(p.hp_pick?'<span class="tag" style="background:#f87171">'+esc(p.hp_pick)+'</span>':'')+' <b>'+esc(p.dong)+' '+esc(p.bldg_type||'')+'</b><div class="price" style="color:'+COLORS[g]+'">'+priceTxt(p)+'</div><small>매물번호 '+p.id+' · '+walk(p)+'</small>';
+ $('cTitle').innerHTML='<span class="tag" style="background:'+COLORS[g]+'">'+esc(p.cat)+'</span>'+(p.hp_pick?'<span class="tag" style="background:#f87171">'+esc(p.hp_pick)+'</span>':'')+' <b>'+esc(String(p.addr_pub||p.dong||'').replace(/^\S+구\s*/,''))+' '+esc(p.bldg_type||'')+'</b><div class="price" style="color:'+COLORS[g]+'">'+priceTxt(p)+'</div><small>매물번호 '+p.id+' · '+walk(p)+'</small>';
  const phB=document.querySelector('.cTabs [data-p="ph"]');phB.style.display=p.has_photo?'':'none';phB.textContent='사진';tab('info');
  $('p-info').innerHTML='<small>불러오는 중…</small>';$('p-land').innerHTML='';$('p-land').dataset.id='';$('p-st').innerHTML='';$('p-st').dataset.id='';document.querySelectorAll('.cTabs button').forEach(b=>b.style.display='');$('p-ph').innerHTML='';
  let d=p;try{d={...p,...await (await fetch(ADM+'/sync/pub/listing/'+p.id)).json()}}catch(e){}
@@ -243,7 +243,7 @@ function render(){pins.forEach(e=>viewer.entities.remove(e));pins=[];
  const seen=new Set();let n=0;
  for(const p of list){if(n>=80)break;const k=p.lat+','+p.lng;if(seen.has(k))continue;seen.add(k);const c=m[k];
   if(c.items.length<2){L.appendChild(row(p));n++;continue}
-  const g=document.createElement('div');g.className='grp';g.innerHTML=`<div class="gh">같은 건물 매물 <span class="gn">${c.items.length}건</span><br><small>${esc(p.dong)} · ${walk(p)}</small></div>`;
+  const g=document.createElement('div');g.className='grp';g.innerHTML=`<div class="gh">같은 건물 매물 <span class="gn">${c.items.length}건</span><br><small>${esc(String(p.addr_pub||p.dong||'').replace(/^\S+구\s*/,''))} · ${walk(p)}</small></div>`;
   g.querySelector('.gh').onclick=()=>cellList(c);c.items.forEach(x=>g.appendChild(row(x,true)));L.appendChild(g);n+=c.items.length}}
 document.getElementById('onlyPhoto').onchange=render;document.getElementById('deal').onchange=render;
 function useData(d,fresh){PROPS=d.filter(p=>p.lat&&p.lng).map(p=>EXACT&&EXACT[p.id]?{...p,lat:EXACT[p.id].lat,lng:EXACT[p.id].lng,floor:EXACT[p.id].floor||p.floor}:p);const tb=document.getElementById('types');tb.className='chips';tb.innerHTML=TYPES.map(t=>{const n=t==='전체'?PROPS.length:PROPS.filter(p=>TYPE(p.cat)===t).length;return n?`<button class="chip${t===curType?' on':''}" data-t="${t}">${t} ${n}</button>`:''}).join('');
